@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animation Queue Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">EaseMotion CSS Example</p>
+        <h1>Interactive CSS Animation Queue Simulator</h1>
+        <p>Monitor how rapid animation requests are queued, interrupted, replaced, ignored, or merged by different scheduling strategies.</p>
+      </div>
+      <div class="hero-status" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="runtimeState">Ready</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="workspace" aria-label="Animation queue simulator">
+        <aside class="panel controls-panel" aria-labelledby="controlsTitle">
+          <div class="panel-heading">
+            <span class="panel-kicker">Inputs</span>
+            <h2 id="controlsTitle">Simulation Controls</h2>
+          </div>
+
+          <form class="control-grid">
+            <label>
+              <span>Scheduling strategy</span>
+              <select id="strategySelect">
+                <option value="queue">Queue</option>
+                <option value="interrupt">Interrupt</option>
+                <option value="replace">Replace</option>
+                <option value="ignore">Ignore</option>
+                <option value="merge">Merge</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Animation duration</span>
+              <input id="durationInput" type="range" min="700" max="4200" step="100" value="1800">
+              <output id="durationOutput" for="durationInput">1800 ms</output>
+            </label>
+
+            <label>
+              <span>Trigger interval</span>
+              <input id="intervalInput" type="range" min="150" max="1800" step="50" value="450">
+              <output id="intervalOutput" for="intervalInput">450 ms</output>
+            </label>
+
+            <label>
+              <span>Number of requests</span>
+              <input id="requestCountInput" type="number" min="1" max="30" value="12">
+            </label>
+
+            <label class="toggle-row">
+              <input id="comparisonToggle" type="checkbox">
+              <span>Comparison mode</span>
+            </label>
+
+            <label id="comparisonStrategyWrap" class="is-hidden">
+              <span>Compare with</span>
+              <select id="comparisonStrategySelect">
+                <option value="interrupt">Interrupt</option>
+                <option value="queue">Queue</option>
+                <option value="replace">Replace</option>
+                <option value="ignore">Ignore</option>
+                <option value="merge">Merge</option>
+              </select>
+            </label>
+          </form>
+
+          <div class="button-grid" aria-label="Simulation actions">
+            <button type="button" class="button primary" id="singleButton">Trigger Single Request</button>
+            <button type="button" class="button queue" id="burstButton">Trigger Burst (5 Requests)</button>
+            <button type="button" class="button secondary" id="playButton">Play</button>
+            <button type="button" class="button neutral" id="pauseButton">Pause</button>
+            <button type="button" class="button danger" id="resetButton">Reset</button>
+          </div>
+        </aside>
+
+        <section class="queue-stage" aria-labelledby="queueTitle">
+          <div class="panel-heading queue-heading">
+            <div>
+              <span class="panel-kicker">Scheduler</span>
+              <h2 id="queueTitle">Queue Visualization</h2>
+            </div>
+            <span class="badge info" id="comparisonBadge">Single strategy</span>
+          </div>
+
+          <div class="scenario-grid" id="scenarioGrid">
+            <article class="scenario" aria-labelledby="primaryLaneTitle">
+              <div class="scenario-header">
+                <h3 id="primaryLaneTitle">Primary Lane</h3>
+                <span class="badge primary" id="primaryStrategyLabel">Queue</span>
+              </div>
+              <div class="lane-track" id="primaryQueue" aria-live="polite" aria-label="Primary strategy queue"></div>
+            </article>
+
+            <article class="scenario comparison-lane is-hidden" id="comparisonLane" aria-labelledby="comparisonLaneTitle">
+              <div class="scenario-header">
+                <h3 id="comparisonLaneTitle">Comparison Lane</h3>
+                <span class="badge secondary" id="comparisonStrategyLabel">Interrupt</span>
+              </div>
+              <div class="lane-track" id="comparisonQueue" aria-live="polite" aria-label="Comparison strategy queue"></div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="panel monitor-panel" aria-labelledby="monitorTitle">
+          <div class="panel-heading">
+            <span class="panel-kicker">Live</span>
+            <h2 id="monitorTitle">Execution Monitor</h2>
+          </div>
+
+          <div class="metric-list" id="monitorList" aria-live="polite"></div>
+        </aside>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel history-panel" aria-labelledby="historyTitle">
+          <div class="panel-heading split">
+            <div>
+              <span class="panel-kicker">Trace</span>
+              <h2 id="historyTitle">Execution History</h2>
+            </div>
+            <button type="button" class="button compact neutral" id="clearHistoryButton">Clear History</button>
+          </div>
+          <ol class="history-list" id="historyList" aria-live="polite"></ol>
+        </article>
+
+        <article class="panel explanation-panel" aria-labelledby="explanationTitle">
+          <div class="panel-heading">
+            <span class="panel-kicker">Guide</span>
+            <h2 id="explanationTitle">Strategy Explanation</h2>
+          </div>
+          <div id="strategyExplanation"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const strategies = {
+      queue: {
+        label: "Queue",
+        works: "Processes every animation request in arrival order without interruption.",
+        use: "Use when every visual state must be shown, such as guided tours or serialized transitions.",
+        advantages: "Predictable, fair, and easy to reason about.",
+        tradeoffs: "Backlogs can build when users trigger actions faster than animations finish."
+      },
+      interrupt: {
+        label: "Interrupt",
+        works: "Stops the current animation immediately and starts the newest request.",
+        use: "Use when the latest user intent should win, such as scrubbing, drag feedback, or navigation previews.",
+        advantages: "Feels responsive and avoids stale animation work.",
+        tradeoffs: "Earlier requests are cancelled, so intermediate states may never be seen."
+      },
+      replace: {
+        label: "Replace",
+        works: "Keeps the running animation, discards pending work, and schedules only the latest request next.",
+        use: "Use when finishing the current motion matters but old queued states are no longer useful.",
+        advantages: "Prevents long queues while preserving the active transition.",
+        tradeoffs: "Some pending requests are cancelled before they can run."
+      },
+      ignore: {
+        label: "Ignore",
+        works: "Rejects new requests while an animation is already running or waiting.",
+        use: "Use for buttons, confirmations, or expensive transitions that should not stack.",
+        advantages: "Simple, stable, and protects against accidental rapid firing.",
+        tradeoffs: "Users may need to trigger again after the animation is finished."
+      },
+      merge: {
+        label: "Merge",
+        works: "Combines compatible rapid requests into a single animation cycle.",
+        use: "Use for repeated nudges, counters, notifications, or additive visual effects.",
+        advantages: "Keeps motion compact while still acknowledging repeated requests.",
+        tradeoffs: "Individual requests lose their separate timing and identity."
+      }
+    };
+
+    const els = {
+      runtimeState: document.querySelector("#runtimeState"),
+      strategySelect: document.querySelector("#strategySelect"),
+      comparisonStrategySelect: document.querySelector("#comparisonStrategySelect"),
+      durationInput: document.querySelector("#durationInput"),
+      durationOutput: document.querySelector("#durationOutput"),
+      intervalInput: document.querySelector("#intervalInput"),
+      intervalOutput: document.querySelector("#intervalOutput"),
+      requestCountInput: document.querySelector("#requestCountInput"),
+      comparisonToggle: document.querySelector("#comparisonToggle"),
+      comparisonStrategyWrap: document.querySelector("#comparisonStrategyWrap"),
+      singleButton: document.querySelector("#singleButton"),
+      burstButton: document.querySelector("#burstButton"),
+      playButton: document.querySelector("#playButton"),
+      pauseButton: document.querySelector("#pauseButton"),
+      resetButton: document.querySelector("#resetButton"),
+      clearHistoryButton: document.querySelector("#clearHistoryButton"),
+      primaryQueue: document.querySelector("#primaryQueue"),
+      comparisonQueue: document.querySelector("#comparisonQueue"),
+      primaryStrategyLabel: document.querySelector("#primaryStrategyLabel"),
+      comparisonStrategyLabel: document.querySelector("#comparisonStrategyLabel"),
+      comparisonBadge: document.querySelector("#comparisonBadge"),
+      comparisonLane: document.querySelector("#comparisonLane"),
+      scenarioGrid: document.querySelector("#scenarioGrid"),
+      monitorList: document.querySelector("#monitorList"),
+      historyList: document.querySelector("#historyList"),
+      strategyExplanation: document.querySelector("#strategyExplanation")
+    };
+
+    let requestSequence = 0;
+    let playTimer = 0;
+    let remainingPlayRequests = 0;
+    let historyItems = [];
+
+    class Scheduler {
+      constructor(name, queueNode) {
+        this.name = name;
+        this.queueNode = queueNode;
+        this.strategy = "queue";
+        this.active = null;
+        this.waiting = [];
+        this.completed = [];
+        this.cancelled = [];
+        this.ignored = [];
+        this.timeout = 0;
+      }
+
+      setStrategy(strategy) {
+        if (this.strategy === strategy) {
+          return;
+        }
+        this.strategy = strategy;
+        logEvent(`${this.name}: strategy changed to ${strategies[strategy].label}`);
+        if (strategy === "ignore" && (this.active || this.waiting.length > 1)) {
+          this.cancelPending("ignored by Ignore strategy");
+        }
+        if (strategy === "replace" && this.waiting.length > 1) {
+          const latest = this.waiting.pop();
+          this.cancelPending("replaced by latest request");
+          this.waiting = [latest];
+        }
+        this.render();
+      }
+
+      add(label) {
+        const request = {
+          id: `${this.name}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          label,
+          status: "waiting",
+          createdAt: performance.now(),
+          startedAt: 0,
+          merged: 1
+        };
+
+        if (this.strategy === "queue") {
+          this.enqueue(request);
+        }
+
+        if (this.strategy === "interrupt") {
+          this.cancelActive("interrupted by newest request");
+          this.cancelPending("interrupted by newest request");
+          this.start(request);
+        }
+
+        if (this.strategy === "replace") {
+          this.cancelPending("replaced by latest request");
+          if (this.active) {
+            this.enqueue(request);
+          } else {
+            this.start(request);
+          }
+        }
+
+        if (this.strategy === "ignore") {
+          if (this.active || this.waiting.length) {
+            request.status = "ignored";
+            this.ignored.push(request);
+            logEvent(`${this.name}: Request ${label} ignored`);
+          } else {
+            this.start(request);
+          }
+        }
+
+        if (this.strategy === "merge") {
+          const target = this.active || this.waiting[this.waiting.length - 1];
+          if (target) {
+            target.merged += 1;
+            logEvent(`${this.name}: Request ${label} merged into ${target.label}`);
+          } else {
+            this.start(request);
+          }
+        }
+
+        this.render();
+        updateMonitor();
+      }
+
+      enqueue(request) {
+        request.status = "waiting";
+        this.waiting.push(request);
+        logEvent(`${this.name}: Request ${request.label} queued`);
+        if (!this.active) {
+          this.startNext();
+        }
+      }
+
+      startNext() {
+        if (this.active || !this.waiting.length) {
+          return;
+        }
+        this.start(this.waiting.shift());
+      }
+
+      start(request) {
+        clearTimeout(this.timeout);
+        request.status = "running";
+        request.startedAt = performance.now();
+        this.active = request;
+        logEvent(`${this.name}: Request ${request.label} started`);
+        this.render();
+        updateMonitor();
+        this.timeout = window.setTimeout(() => this.completeActive(), Number(els.durationInput.value));
+      }
+
+      completeActive() {
+        if (!this.active) {
+          return;
+        }
+        this.active.status = "completed";
+        this.completed.push(this.active);
+        logEvent(`${this.name}: Request ${this.active.label} completed`);
+        this.active = null;
+        this.render();
+        updateMonitor();
+        this.startNext();
+      }
+
+      cancelActive(reason) {
+        if (!this.active) {
+          return;
+        }
+        clearTimeout(this.timeout);
+        this.active.status = "cancelled";
+        this.cancelled.push(this.active);
+        logEvent(`${this.name}: Request ${this.active.label} cancelled (${reason})`);
+        this.active = null;
+      }
+
+      cancelPending(reason) {
+        this.waiting.forEach((request) => {
+          request.status = "cancelled";
+          this.cancelled.push(request);
+          logEvent(`${this.name}: Request ${request.label} cancelled (${reason})`);
+        });
+        this.waiting = [];
+      }
+
+      reset() {
+        clearTimeout(this.timeout);
+        this.active = null;
+        this.waiting = [];
+        this.completed = [];
+        this.cancelled = [];
+        this.ignored = [];
+        this.render();
+      }
+
+      get items() {
+        return [
+          ...(this.active ? [this.active] : []),
+          ...this.waiting,
+          ...this.completed.slice(-4),
+          ...this.cancelled.slice(-3),
+          ...this.ignored.slice(-3)
+        ];
+      }
+
+      stats() {
+        const completedRequests = this.completed.reduce((sum, item) => sum + item.merged, 0);
+        const totalWait = this.completed.reduce((sum, item) => sum + Math.max(0, item.startedAt - item.createdAt), 0);
+        return {
+          strategy: strategies[this.strategy].label,
+          active: this.active ? `${this.active.label}${this.active.merged > 1 ? ` x${this.active.merged}` : ""}` : "None",
+          queueLength: this.waiting.length,
+          completed: completedRequests,
+          cancelled: this.cancelled.length,
+          ignored: this.ignored.length,
+          averageWait: this.completed.length ? `${Math.round(totalWait / this.completed.length)} ms` : "0 ms"
+        };
+      }
+
+      render() {
+        this.queueNode.innerHTML = "";
+        const items = this.items;
+        if (!items.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-state";
+          empty.textContent = "No requests scheduled";
+          this.queueNode.append(empty);
+          return;
+        }
+
+        items.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = `queue-item ${item.status}`;
+          card.innerHTML = `
+            <span class="request-id">${item.label}</span>
+            <span class="request-meta">${item.merged > 1 ? `Merged x${item.merged}` : "Animation request"}</span>
+            <span class="status-badge">${capitalize(item.status)}</span>
+            <span class="progress-bar" style="--run-duration: ${Number(els.durationInput.value)}ms" aria-hidden="true"></span>
+          `;
+          this.queueNode.append(card);
+        });
+      }
+    }
+
+    const primaryScheduler = new Scheduler("Primary", els.primaryQueue);
+    const comparisonScheduler = new Scheduler("Compare", els.comparisonQueue);
+
+    function capitalize(value) {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function nextLabel() {
+      const index = requestSequence % 26;
+      const round = Math.floor(requestSequence / 26);
+      requestSequence += 1;
+      return `${String.fromCharCode(65 + index)}${round ? round + 1 : ""}`;
+    }
+
+    function activeSchedulers() {
+      return els.comparisonToggle.checked ? [primaryScheduler, comparisonScheduler] : [primaryScheduler];
+    }
+
+    function triggerRequest(label = nextLabel()) {
+      activeSchedulers().forEach((scheduler) => scheduler.add(label));
+      els.runtimeState.textContent = `Request ${label} dispatched`;
+    }
+
+    function triggerBurst(count) {
+      for (let i = 0; i < count; i += 1) {
+        window.setTimeout(() => triggerRequest(), i * 90);
+      }
+    }
+
+    function play() {
+      clearInterval(playTimer);
+      remainingPlayRequests = Math.max(1, Math.min(30, Number(els.requestCountInput.value)));
+      els.runtimeState.textContent = "Playing request stream";
+      triggerRequest();
+      remainingPlayRequests -= 1;
+      playTimer = window.setInterval(() => {
+        if (remainingPlayRequests <= 0) {
+          pause("Completed request stream");
+          return;
+        }
+        triggerRequest();
+        remainingPlayRequests -= 1;
+      }, Number(els.intervalInput.value));
+    }
+
+    function pause(message = "Paused") {
+      clearInterval(playTimer);
+      playTimer = 0;
+      els.runtimeState.textContent = message;
+    }
+
+    function resetAll() {
+      pause("Reset complete");
+      requestSequence = 0;
+      primaryScheduler.reset();
+      comparisonScheduler.reset();
+      logEvent("Simulation reset");
+      updateMonitor();
+    }
+
+    function clearHistory() {
+      historyItems = [];
+      renderHistory();
+    }
+
+    function logEvent(message) {
+      const time = new Date().toLocaleTimeString([], { hour12: false });
+      historyItems.unshift({ time, message });
+      historyItems = historyItems.slice(0, 80);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      els.historyList.innerHTML = "";
+      if (!historyItems.length) {
+        const item = document.createElement("li");
+        item.className = "history-empty";
+        item.textContent = "No events yet";
+        els.historyList.append(item);
+        return;
+      }
+      historyItems.forEach((entry) => {
+        const item = document.createElement("li");
+        item.innerHTML = `<time>${entry.time}</time><span>${entry.message}</span>`;
+        els.historyList.append(item);
+      });
+    }
+
+    function updateMonitor() {
+      const primaryStats = primaryScheduler.stats();
+      const comparisonStats = comparisonScheduler.stats();
+      const rows = [
+        ["Current strategy", primaryStats.strategy],
+        ["Active animation", primaryStats.active],
+        ["Queue length", primaryStats.queueLength],
+        ["Completed requests", primaryStats.completed],
+        ["Cancelled requests", primaryStats.cancelled],
+        ["Ignored requests", primaryStats.ignored],
+        ["Average wait time", primaryStats.averageWait]
+      ];
+
+      if (els.comparisonToggle.checked) {
+        rows.push(["Compare strategy", comparisonStats.strategy]);
+        rows.push(["Compare active", comparisonStats.active]);
+        rows.push(["Compare queue", comparisonStats.queueLength]);
+      }
+
+      els.monitorList.innerHTML = rows.map(([label, value]) => `
+        <div class="metric-row">
+          <span>${label}</span>
+          <strong>${value}</strong>
+        </div>
+      `).join("");
+    }
+
+    function updateExplanation() {
+      const strategy = strategies[els.strategySelect.value];
+      els.strategyExplanation.innerHTML = `
+        <h3>${strategy.label}</h3>
+        <dl class="explanation-list">
+          <div><dt>How it works</dt><dd>${strategy.works}</dd></div>
+          <div><dt>Use when</dt><dd>${strategy.use}</dd></div>
+          <div><dt>Advantages</dt><dd>${strategy.advantages}</dd></div>
+          <div><dt>Trade-offs</dt><dd>${strategy.tradeoffs}</dd></div>
+        </dl>
+      `;
+    }
+
+    function syncControls() {
+      els.durationOutput.textContent = `${els.durationInput.value} ms`;
+      els.intervalOutput.textContent = `${els.intervalInput.value} ms`;
+      primaryScheduler.setStrategy(els.strategySelect.value);
+      comparisonScheduler.setStrategy(els.comparisonStrategySelect.value);
+      els.primaryStrategyLabel.textContent = strategies[primaryScheduler.strategy].label;
+      els.comparisonStrategyLabel.textContent = strategies[comparisonScheduler.strategy].label;
+      els.comparisonStrategyWrap.classList.toggle("is-hidden", !els.comparisonToggle.checked);
+      els.comparisonLane.classList.toggle("is-hidden", !els.comparisonToggle.checked);
+      els.scenarioGrid.classList.toggle("is-comparing", els.comparisonToggle.checked);
+      els.comparisonBadge.textContent = els.comparisonToggle.checked
+        ? `${strategies[primaryScheduler.strategy].label} vs ${strategies[comparisonScheduler.strategy].label}`
+        : "Single strategy";
+      updateExplanation();
+      updateMonitor();
+    }
+
+    els.singleButton.addEventListener("click", () => triggerRequest());
+    els.burstButton.addEventListener("click", () => triggerBurst(5));
+    els.playButton.addEventListener("click", play);
+    els.pauseButton.addEventListener("click", () => pause());
+    els.resetButton.addEventListener("click", resetAll);
+    els.clearHistoryButton.addEventListener("click", clearHistory);
+    els.strategySelect.addEventListener("change", syncControls);
+    els.comparisonStrategySelect.addEventListener("change", syncControls);
+    els.comparisonToggle.addEventListener("change", syncControls);
+    els.durationInput.addEventListener("input", syncControls);
+    els.intervalInput.addEventListener("input", syncControls);
+
+    renderHistory();
+    syncControls();
+  </script>
+</body>
+</html>

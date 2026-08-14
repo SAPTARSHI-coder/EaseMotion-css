@@ -1,0 +1,128 @@
+// ==========================================================================
+// EaseMotion CSS — Safe Area mixin
+// Issue #63559
+// --------------------------------------------------------------------------
+// Applies `env(safe-area-inset-*)` padding so fixed headers and bottom bars
+// are not obscured by the notch, the rounded display corners, or the home
+// indicator.
+//
+// Two details make or break this:
+//
+//   1. `env()` returns nothing at all on browsers without support, which
+//      makes the WHOLE declaration invalid. `padding-bottom: env(x)` on an
+//      unsupporting browser leaves no padding — not a fallback, zero. The
+//      two-argument form `env(safe-area-inset-bottom, 0px)` supplies the
+//      fallback inside the function, which is why it is used everywhere
+//      here rather than relying on a preceding declaration.
+//
+//   2. The insets are zero unless the document opts in with
+//      `viewport-fit=cover` in the viewport meta tag. Without that, this
+//      mixin is a no-op and the failure looks like the mixin not working.
+//      Documented in the README rather than left to be discovered.
+// ==========================================================================
+
+@use "sass:list";
+@use "sass:meta";
+
+$safe-area-sides: (top, right, bottom, left);
+
+// --------------------------------------------------------------------------
+// safe-area
+//
+// @param {String|List} $sides  Side(s) to pad, or `all`.
+// @param {Number} $extra       Padding added on top of the inset.
+// --------------------------------------------------------------------------
+@mixin safe-area($sides: all, $extra: 0px) {
+    @if meta.type-of($extra) != "number" {
+        @error "safe-area(): $extra must be a number, got `#{$extra}`.";
+    }
+
+    $targets: $sides;
+
+    @if $sides == all {
+        $targets: $safe-area-sides;
+    }
+
+    @each $side in $targets {
+        @if not list.index($safe-area-sides, $side) {
+            @error "safe-area(): unknown side `#{$side}`. "
+                 + "Expected one of: top, right, bottom, left, or `all`.";
+        }
+
+        // Plain fallback first, for engines with no `env()` at all.
+        padding-#{$side}: $extra;
+
+        // Two-argument env() carries its own fallback, so this stays valid
+        // even where the inset is unknown.
+        padding-#{$side}: calc(#{$extra} + env(safe-area-inset-#{$side}, 0px));
+    }
+}
+
+// --------------------------------------------------------------------------
+// safe-area-margin — same treatment for margin.
+// --------------------------------------------------------------------------
+@mixin safe-area-margin($sides: all, $extra: 0px) {
+    $targets: $sides;
+
+    @if $sides == all {
+        $targets: $safe-area-sides;
+    }
+
+    @each $side in $targets {
+        margin-#{$side}: $extra;
+        margin-#{$side}: calc(#{$extra} + env(safe-area-inset-#{$side}, 0px));
+    }
+}
+
+// --------------------------------------------------------------------------
+// safe-area-height
+//
+// Height for a fixed bottom bar, including the home-indicator inset.
+// Without this the bar's touch targets sit under the indicator, where iOS
+// intercepts the gesture and the taps do not register.
+// --------------------------------------------------------------------------
+@mixin safe-area-height($base) {
+    height: $base;
+    height: calc(#{$base} + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+// --------------------------------------------------------------------------
+// safe-area-sticky
+//
+// A fixed header or footer, correctly inset. `$position` chooses which
+// edge; the opposite inset is deliberately not applied.
+// --------------------------------------------------------------------------
+@mixin safe-area-sticky($position: bottom, $extra: 0px, $z: 40) {
+    @if $position != top and $position != bottom {
+        @error "safe-area-sticky(): $position must be `top` or `bottom`, got `#{$position}`.";
+    }
+
+    left: 0;
+    position: fixed;
+    right: 0;
+    z-index: $z;
+
+    @if $position == top {
+        top: 0;
+        @include safe-area((top, left, right), $extra);
+    } @else {
+        bottom: 0;
+        @include safe-area((bottom, left, right), $extra);
+    }
+}
+
+// --------------------------------------------------------------------------
+// safe-area-vars
+//
+// Expose the insets as custom properties, so they can be consumed in
+// calc() elsewhere without repeating the two-argument env() form.
+// --------------------------------------------------------------------------
+@mixin safe-area-vars($prefix: "sa") {
+    :root {
+        --#{$prefix}-top: env(safe-area-inset-top, 0px);
+        --#{$prefix}-right: env(safe-area-inset-right, 0px);
+        --#{$prefix}-bottom: env(safe-area-inset-bottom, 0px);
+        --#{$prefix}-left: env(safe-area-inset-left, 0px);
+    }
+}

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Reveal · Pieces Assemble into Image</title>
+    <meta name="description" content="Interactive jigsaw puzzle with pieces that assemble to reveal a beautiful image with satisfying animation.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🧩 JIGSAW REVEAL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="jigsawCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="assemble-btn" id="assembleBtn">🧩 ASSEMBLE</button>
+                <button class="scatter-btn" id="scatterBtn">💫 SCATTER</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🧩 JIGSAW REVEAL</span>
+            <small>pieces assemble · satisfying · puzzle</small>
+        </div>
+        <div class="hint">
+            <span>🧩 watch pieces assemble to reveal the image</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('jigsawCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const assembleBtn = document.getElementById('assembleBtn');
+            const scatterBtn = document.getElementById('scatterBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isAssembling = false;
+            let assembleProgress = 0;
+
+            // ---- Jigsaw Piece Class ----
+            class JigsawPiece {
+                constructor(x, y, w, h, color) {
+                    this.targetX = x;
+                    this.targetY = y;
+                    this.w = w;
+                    this.h = h;
+                    this.color = color || this.randomColor();
+                    
+                    // Start scattered
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 200 + Math.random() * 150;
+                    this.x = W/2 + Math.cos(angle) * radius;
+                    this.y = H/2 + Math.sin(angle) * radius;
+                    this.rotation = (Math.random() - 0.5) * 0.5;
+                    
+                    this.currentX = this.x;
+                    this.currentY = this.y;
+                    this.currentRotation = this.rotation;
+                    
+                    // Tab/notch (jigsaw edge)
+                    this.tabs = [];
+                    const sides = ['top', 'right', 'bottom', 'left'];
+                    for (let side of sides) {
+                        this.tabs.push({
+                            side: side,
+                            direction: Math.random() > 0.5 ? 1 : -1,
+                            size: 0.2 + Math.random() * 0.15
+                        });
+                    }
+                }
+
+                randomColor() {
+                    const hue = 200 + Math.random() * 60;
+                    return `hsl(${hue}, 50%, ${40 + Math.random() * 30}%)`;
+                }
+
+                update(progress) {
+                    // Interpolate position
+                    const ease = 1 - Math.pow(1 - progress, 3);
+                    this.currentX = this.x + (this.targetX - this.x) * ease;
+                    this.currentY = this.y + (this.targetY - this.y) * ease;
+                    this.currentRotation = this.rotation + (0 - this.rotation) * ease;
+                }
+
+                draw(ctx) {
+                    const x = this.currentX;
+                    const y = this.currentY;
+                    const w = this.w;
+                    const h = this.h;
+                    const rot = this.currentRotation;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rot);
+                    
+                    // Shadow
+                    ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // Piece shape with jigsaw edges
+                    ctx.beginPath();
+                    this.drawJigsawShape(ctx, -w/2, -h/2, w, h);
+                    ctx.closePath();
+                    
+                    // Fill
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 5;
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    
+                    // Border
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                    
+                    // Grid line overlay (puzzle texture)
+                    ctx.globalAlpha = 0.03;
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-w/2, 0);
+                    ctx.lineTo(w/2, 0);
+                    ctx.moveTo(0, -h/2);
+                    ctx.lineTo(0, h/2);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    
+                    ctx.restore();
+                }
+
+                drawJigsawShape(ctx, x, y, w, h) {
+                    const tabSize = Math.min(w, h) * 0.15;
+                    const segments = 4;
+                    const segW = w / segments;
+                    const segH = h / segments;
+                    
+                    // Top edge with tabs
+                    ctx.moveTo(x, y);
+                    for (let i = 0; i < segments; i++) {
+                        const sx = x + i * segW;
+                        const tab = this.tabs[i % this.tabs.length];
+                        const dir = tab.direction;
+                        const size = tabSize * tab.size;
+                        ctx.lineTo(sx, y);
+                        const midX = sx + segW/2;
+                        const midY = y + (dir * size);
+                        ctx.quadraticCurveTo(sx + segW/4, y + dir * size * 0.5, midX, y + dir * size);
+                        ctx.quadraticCurveTo(sx + segW*3/4, y + dir * size * 0.5, sx + segW, y);
+                    }
+                    ctx.lineTo(x + w, y);
+                    
+                    // Right edge
+                    ctx.lineTo(x + w, y);
+                    for (let i = 0; i < segments; i++) {
+                        const sy = y + i * segH;
+                        const tab = this.tabs[(i + 1) % this.tabs.length];
+                        const dir = tab.direction;
+                        const size = tabSize * tab.size;
+                        ctx.lineTo(x + w, sy);
+                        const midY = sy + segH/2;
+                        const midX = x + w + (dir * size);
+                        ctx.quadraticCurveTo(x + w + dir * size * 0.5, sy + segH/4, x + w + dir * size, midY);
+                        ctx.quadraticCurveTo(x + w + dir * size * 0.5, sy + segH*3/4, x + w, sy + segH);
+                    }
+                    ctx.lineTo(x + w, y + h);
+                    
+                    // Bottom edge
+                    ctx.lineTo(x + w, y + h);
+                    for (let i = 0; i < segments; i++) {
+                        const sx = x + w - i * segW;
+                        const tab = this.tabs[(i + 2) % this.tabs.length];
+                        const dir = -tab.direction;
+                        const size = tabSize * tab.size;
+                        ctx.lineTo(sx, y + h);
+                        const midX = sx - segW/2;
+                        const midY = y + h + (dir * size);
+                        ctx.quadraticCurveTo(sx - segW/4, y + h + dir * size * 0.5, midX, y + h + dir * size);
+                        ctx.quadraticCurveTo(sx - segW*3/4, y + h + dir * size * 0.5, sx - segW, y + h);
+                    }
+                    ctx.lineTo(x, y + h);
+                    
+                    // Left edge
+                    ctx.lineTo(x, y + h);
+                    for (let i = 0; i < segments; i++) {
+                        const sy = y + h - i * segH;
+                        const tab = this.tabs[(i + 3) % this.tabs.length];
+                        const dir = -tab.direction;
+                        const size = tabSize * tab.size;
+                        ctx.lineTo(x, sy);
+                        const midY = sy - segH/2;
+                        const midX = x + (dir * size);
+                        ctx.quadraticCurveTo(x + dir * size * 0.5, sy - segH/4, x + dir * size, midY);
+                        ctx.quadraticCurveTo(x + dir * size * 0.5, sy - segH*3/4, x, sy - segH);
+                    }
+                    ctx.lineTo(x, y);
+                }
+
+                setTarget(x, y) {
+                    this.targetX = x;
+                    this.targetY = y;
+                }
+            }
+
+            // ---- Generate Image ----
+            function generateImage() {
+                // Create a colorful abstract image pattern
+                const imageData = ctx.createImageData(W, H);
+                const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const x = (i / 4) % W;
+                    const y = Math.floor((i / 4) / W);
+                    const r = 150 + 80 * Math.sin(x * 0.02 + y * 0.015);
+                    const g = 120 + 80 * Math.sin(x * 0.025 + y * 0.02 + 2);
+                    const b = 180 + 70 * Math.sin(x * 0.018 + y * 0.025 + 4);
+                    data[i] = r;
+                    data[i+1] = g;
+                    data[i+2] = b;
+                    data[i+3] = 255;
+                }
+                return imageData;
+            }
+
+            // ---- Create Jigsaw ----
+            let pieces = [];
+            const COLS = 6;
+            const ROWS = 5;
+            const PIECE_W = W / COLS;
+            const PIECE_H = H / ROWS;
+            let imageData = null;
+            let isAssembled = false;
+
+            function createJigsaw() {
+                pieces = [];
+                imageData = generateImage();
+                
+                // Sample colors from image
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = W;
+                tempCanvas.height = H;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(imageData, 0, 0);
+                
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const x = c * PIECE_W;
+                        const y = r * PIECE_H;
+                        // Sample color from center of piece
+                        const cx = Math.floor(x + PIECE_W/2);
+                        const cy = Math.floor(y + PIECE_H/2);
+                        const pixel = tempCtx.getImageData(cx, cy, 1, 1);
+                        const color = `rgb(${pixel.data[0]}, ${pixel.data[1]}, ${pixel.data[2]})`;
+                        const piece = new JigsawPiece(x + PIECE_W/2, y + PIECE_H/2, PIECE_W * 0.9, PIECE_H * 0.9, color);
+                        pieces.push(piece);
+                    }
+                }
+                
+                isAssembled = false;
+                assembleProgress = 0;
+                isAssembling = false;
+            }
+
+            // ---- Draw Image (background) ----
+            function drawImage() {
+                if (imageData) {
+                    ctx.putImageData(imageData, 0, 0);
+                }
+            }
+
+            // ---- Assemble ----
+            function assemble() {
+                if (isAssembling) return;
+                isAssembling = true;
+                assembleProgress = 0;
+                isAssembled = false;
+                
+                // Reset positions
+                for (let piece of pieces) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 200 + Math.random() * 150;
+                    piece.x = W/2 + Math.cos(angle) * radius;
+                    piece.y = H/2 + Math.sin(angle) * radius;
+                    piece.currentX = piece.x;
+                    piece.currentY = piece.y;
+                    piece.rotation = (Math.random() - 0.5) * 0.5;
+                    piece.currentRotation = piece.rotation;
+                }
+            }
+
+            // ---- Scatter ----
+            function scatter() {
+                isAssembling = false;
+                isAssembled = false;
+                assembleProgress = 0;
+                for (let piece of pieces) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 200 + Math.random() * 150;
+                    piece.x = W/2 + Math.cos(angle) * radius;
+                    piece.y = H/2 + Math.sin(angle) * radius;
+                    piece.currentX = piece.x;
+                    piece.currentY = piece.y;
+                    piece.rotation = (Math.random() - 0.5) * 0.5;
+                    piece.currentRotation = piece.rotation;
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Clear
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw image background
+                drawImage();
+                
+                // Draw pieces
+                for (let piece of pieces) {
+                    piece.draw(ctx);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Assemble animation
+                if (isAssembling && assembleProgress < 1) {
+                    assembleProgress += 0.003 * (speed / 5);
+                    if (assembleProgress >= 1) {
+                        assembleProgress = 1;
+                        isAssembling = false;
+                        isAssembled = true;
+                    }
+                    
+                    // Update pieces
+                    for (let piece of pieces) {
+                        piece.update(assembleProgress);
+                    }
+                } else if (isAssembled) {
+                    // Gentle float when assembled
+                    for (let piece of pieces) {
+                        const float = Math.sin(time * 0.5 + piece.targetX) * 0.5;
+                        piece.currentY = piece.targetY + float;
+                    }
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetJigsaw() {
+                isAssembling = false;
+                isAssembled = false;
+                assembleProgress = 0;
+                createJigsaw();
+                render();
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            assembleBtn.addEventListener('click', assemble);
+            scatterBtn.addEventListener('click', scatter);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetJigsaw);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'a' || e.key === 'A') {
+                    assemble();
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    scatter();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetJigsaw();
+                }
+            });
+
+            // ---- Initialize ----
+            createJigsaw();
+            render();
+            animate();
+
+            console.log('🧩 Jigsaw Reveal · Click Assemble to watch pieces come together!');
+        })();
+    </script>
+</body>
+</html>

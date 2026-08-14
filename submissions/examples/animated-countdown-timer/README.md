@@ -1,15 +1,13 @@
-# Animted Countdown Timer
+# Animated Countdown Timer Component
 
-A countdown timer with flip-card style digit animations and blinking seperators. The digits animate smoothly as the timer counts down.
+A pure CSS-only animated countdown timer designed for flash sales, event landing pages, and launch websites.
 
-## EaseMotion CSS classes used
+## Features
+- **Pure CSS**: Zero JavaScript required.
+- **3D Flip Effect**: Implemented using CSS 3D transforms (`perspective`, `rotateX`, `preserve-3d`).
+- **Responsive Grid**: Automatically adjusts layout seamlessly across desktop and mobile displays.
+- **Accessibility**: Includes built-in support for `prefers-reduced-motion` to disable animations gracefully.
 
-None. This example uses plain CSS animations.
-
-## How to run
-
-Open `demo.html` in a browser.
-
-## Accesibility notes
-
-Supports reduced motion preferences by disabling animations when requested by the user.
+## File Structure
+- `demo.html` - Container and layout grid for the timer items.
+- `style.css` - Component layouts, variables, keyframe animations, and responsiveness.

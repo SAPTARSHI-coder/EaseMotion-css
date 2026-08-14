@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magnetic Moon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="app">
+
+  <header>
+    <span>ORBITAL LABORATORY</span>
+    <h1>Magnetic Moon</h1>
+    <p>Place gravity wells and disturb the orbiting field.</p>
+  </header>
+
+  <section class="space" id="space">
+    <canvas id="canvas"></canvas>
+
+    <div class="planet">
+      <div class="planet-core"></div>
+      <div class="orbit"></div>
+      <div class="moon"></div>
+    </div>
+
+    <div class="hint" id="hint">
+      Click to create a gravity well
+    </div>
+  </section>
+
+  <section class="controls">
+
+    <div class="control">
+      <label>
+        Gravity
+        <span id="gravityValue">50%</span>
+      </label>
+
+      <input
+        id="gravity"
+        type="range"
+        min="10"
+        max="100"
+        value="50"
+      >
+    </div>
+
+    <div class="control">
+      <label>
+        Orbit Speed
+        <span id="speedValue">40%</span>
+      </label>
+
+      <input
+        id="speed"
+        type="range"
+        min="0"
+        max="100"
+        value="40"
+      >
+    </div>
+
+    <button id="clear">Clear Wells</button>
+
+  </section>
+
+  <div class="status" id="status">
+    Active gravity wells: 0
+  </div>
+
+</main>
+
+<script>
+const space = document.getElementById("space");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const gravity = document.getElementById("gravity");
+const speed = document.getElementById("speed");
+
+const gravityValue = document.getElementById("gravityValue");
+const speedValue = document.getElementById("speedValue");
+
+const status = document.getElementById("status");
+
+let width;
+let height;
+let particles = [];
+let wells = [];
+let angle = 0;
+
+function resize() {
+  const rect = space.getBoundingClientRect();
+
+  width = rect.width;
+  height = rect.height;
+
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  createParticles();
+}
+
+function createParticles() {
+  particles = [];
+
+  const cx = width / 2;
+  const cy = height / 2;
+
+  for (let i = 0; i < 70; i++) {
+
+    const radius =
+      80 + Math.random() * Math.min(width, height) * 0.35;
+
+    const a = Math.random() * Math.PI * 2;
+
+    particles.push({
+      x: cx + Math.cos(a) * radius,
+      y: cy + Math.sin(a) * radius,
+      vx: -Math.sin(a) * 0.4,
+      vy: Math.cos(a) * 0.4,
+      size: Math.random() * 2 + 0.5
+    });
+  }
+}
+
+function createWell(x, y) {
+  wells.push({
+    x,
+    y,
+    life: 1,
+    radius: 100
+  });
+
+  updateStatus();
+}
+
+function updateParticles() {
+
+  const cx = width / 2;
+  const cy = height / 2;
+
+  for (const p of particles) {
+
+    const dx = cx - p.x;
+    const dy = cy - p.y;
+
+    const distance =
+      Math.sqrt(dx * dx + dy * dy) || 1;
+
+    const orbitForce = 0.012;
+
+    p.vx += (dx / distance) * orbitForce;
+    p.vy += (dy / distance) * orbitForce;
+
+    for (const well of wells) {
+
+      const wx = well.x - p.x;
+      const wy = well.y - p.y;
+
+      const d =
+        Math.sqrt(wx * wx + wy * wy) || 1;
+
+      if (d < 280) {
+
+        const strength =
+          Number(gravity.value) / 100 *
+          0.035 *
+          well.life;
+
+        p.vx += (wx / d) * strength;
+        p.vy += (wy / d) * strength;
+      }
+    }
+
+    p.vx *= 0.995;
+    p.vy *= 0.995;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (
+      p.x < 0 ||
+      p.x > width ||
+      p.y < 0 ||
+      p.y > height
+    ) {
+      p.x = cx;
+      p.y = cy;
+
+      const a = Math.random() * Math.PI * 2;
+
+      p.vx = Math.cos(a) * 0.5;
+      p.vy = Math.sin(a) * 0.5;
+    }
+  }
+}
+
+function drawBackground() {
+
+  ctx.fillStyle = "#04060d";
+  ctx.fillRect(0, 0, width, height);
+
+  const gradient = ctx.createRadialGradient(
+    width / 2,
+    height / 2,
+    20,
+    width / 2,
+    height / 2,
+    Math.max(width, height) / 2
+  );
+
+  gradient.addColorStop(0, "rgba(80,100,190,0.18)");
+  gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+}
+
+function drawParticles() {
+
+  for (const p of particles) {
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle = "rgba(190,215,255,0.75)";
+
+    ctx.fill();
+  }
+}
+
+function drawWells() {
+
+  for (let i = wells.length - 1; i >= 0; i--) {
+
+    const w = wells[i];
+
+    w.life -= 0.002;
+
+    if (w.life <= 0) {
+      wells.splice(i, 1);
+      continue;
+    }
+
+    const pulse =
+      Math.sin(Date.now() * 0.004) * 8;
+
+    const radius =
+      w.radius + pulse;
+
+    const gradient = ctx.createRadialGradient(
+      w.x,
+      w.y,
+      0,
+      w.x,
+      w.y,
+      radius
+    );
+
+    gradient.addColorStop(
+      0,
+      `rgba(160,190,255,${w.life * 0.25})`
+    );
+
+    gradient.addColorStop(
+      0.7,
+      `rgba(120,150,255,${w.life * 0.08})`
+    );
+
+    gradient.addColorStop(
+      1,
+      "rgba(100,120,255,0)"
+    );
+
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      w.x,
+      w.y,
+      radius,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.arc(
+      w.x,
+      w.y,
+      8,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.strokeStyle =
+      `rgba(180,210,255,${w.life})`;
+
+    ctx.lineWidth = 2;
+
+    ctx.stroke();
+  }
+}
+
+function animate() {
+
+  angle +=
+    0.002 +
+    Number(speed.value) / 100 * 0.01;
+
+  updateParticles();
+
+  drawBackground();
+  drawParticles();
+  drawWells();
+
+  requestAnimationFrame(animate);
+}
+
+space.addEventListener("pointerdown", event => {
+
+  const rect = space.getBoundingClientRect();
+
+  createWell(
+    event.clientX - rect.left,
+    event.clientY - rect.top
+  );
+});
+
+document.addEventListener("keydown", event => {
+
+  if (event.code === "Space") {
+
+    event.preventDefault();
+
+    createWell(
+      width / 2,
+      height / 2
+    );
+  }
+
+  if (event.key.toLowerCase() === "r") {
+    wells = [];
+    updateStatus();
+  }
+});
+
+gravity.addEventListener("input", () => {
+  gravityValue.textContent =
+    gravity.value + "%";
+});
+
+speed.addEventListener("input", () => {
+  speedValue.textContent =
+    speed.value + "%";
+});
+
+document.getElementById("clear").onclick = () => {
+  wells = [];
+  updateStatus();
+};
+
+function updateStatus() {
+  status.textContent =
+    "Active gravity wells: " + wells.length;
+}
+
+window.addEventListener("resize", resize);
+
+resize();
+animate();
+</script>
+
+</body>
+</html>

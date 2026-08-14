@@ -1,0 +1,149 @@
+// ==========================================================================
+// EaseMotion CSS — Optical Align mixin
+// Issue #63798
+// --------------------------------------------------------------------------
+// Geometric centring is not optical centring.
+//
+// A play triangle centred by its bounding box looks shifted left, because
+// its visual mass sits toward the point. Uppercase text in a button sits
+// low, because the line box reserves descender space that uppercase never
+// uses. A circle inside a square looks correct; almost nothing else does.
+//
+// These are not subjective preferences — they are consequences of how the
+// bounding box relates to the perceived centre of mass, and every design
+// system ends up hand-nudging them. This mixin names the offsets so they
+// are applied consistently instead of being re-derived per component.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "sass:list";
+
+// Offsets as a fraction of the element's size. Positive X shifts right.
+// Values are the conventional corrections used across design systems.
+$optical-shapes: (
+    "triangle-right": (x: 0.08, y: 0),
+    "triangle-left": (x: -0.08, y: 0),
+    "triangle-up": (x: 0, y: -0.06),
+    "triangle-down": (x: 0, y: 0.06),
+    "circle": (x: 0, y: 0),
+    "square": (x: 0, y: 0),
+    "diamond": (x: 0, y: 0),
+    "plus": (x: 0, y: 0),
+    "chevron-right": (x: 0.04, y: 0),
+    "chevron-left": (x: -0.04, y: 0),
+) !default;
+
+// --------------------------------------------------------------------------
+// optical-align
+//
+// @param {String} $shape  Key from $optical-shapes.
+// @param {Number} $size   Element size the offset is scaled against.
+// --------------------------------------------------------------------------
+@mixin optical-align($shape, $size: 1em) {
+    @if not map.has-key($optical-shapes, $shape) {
+        @error "optical-align(): unknown shape `#{$shape}`. Known: "
+             + "#{list.join((), map.keys($optical-shapes), $separator: comma)}.";
+    }
+
+    $offset: map.get($optical-shapes, $shape);
+    $x: map.get($offset, x);
+    $y: map.get($offset, y);
+
+    @if $x != 0 or $y != 0 {
+        transform: translate(#{$x * $size}, #{$y * $size});
+    }
+}
+
+// --------------------------------------------------------------------------
+// optical-text-align
+//
+// Uppercase and small-caps text sits low in its line box, because the box
+// reserves descender space that uppercase glyphs never occupy. Nudging up
+// by a fraction of the cap-height difference restores optical centring.
+//
+// @param {Number} $ratio  Fraction of font-size to lift. 0.05 suits most
+//                         humanist sans faces; raise it for tall x-height.
+// --------------------------------------------------------------------------
+@mixin optical-text-align($ratio: 0.05) {
+    @if meta.type-of($ratio) != "number" {
+        @error "optical-text-align(): $ratio must be a number, got `#{$ratio}`.";
+    }
+
+    // `em` keeps the lift proportional if the button's font-size changes.
+    transform: translateY(-#{$ratio}em);
+}
+
+// --------------------------------------------------------------------------
+// optical-icon-button
+//
+// A complete centred icon button. The icon is offset optically while the
+// button itself stays geometrically placed, so surrounding layout is
+// unaffected — applying the offset to the button would misalign it
+// against its neighbours.
+// --------------------------------------------------------------------------
+@mixin optical-icon-button($shape: "circle", $size: 40px, $icon-size: 1em) {
+    align-items: center;
+    display: inline-flex;
+    height: $size;
+    justify-content: center;
+    width: $size;
+
+    > * {
+        @include optical-align($shape, $icon-size);
+
+        flex: 0 0 auto;
+    }
+}
+
+// --------------------------------------------------------------------------
+// optical-inset
+//
+// Trailing-icon buttons need less padding on the icon side: an arrow
+// glyph carries built-in side bearing, so equal padding reads as too much
+// space after the icon.
+//
+// @param {Number} $inline  Base inline padding.
+// @param {Number} $trim    Fraction of it to remove on the icon side.
+// @param {String} $side    `end` (default) or `start`.
+// --------------------------------------------------------------------------
+@mixin optical-inset($inline: 1rem, $trim: 0.25, $side: end) {
+    @if $side != end and $side != start {
+        @error "optical-inset(): $side must be `end` or `start`, got `#{$side}`.";
+    }
+
+    padding-inline: $inline;
+
+    @if $side == end {
+        padding-inline-end: $inline * (1 - $trim);
+    } @else {
+        padding-inline-start: $inline * (1 - $trim);
+    }
+}
+
+// --------------------------------------------------------------------------
+// optical-align-reset
+//
+// Removes an inherited optical offset. Needed when a shape is swapped at
+// runtime — a triangle replaced by a circle would otherwise keep the
+// triangle's shift.
+// --------------------------------------------------------------------------
+@mixin optical-align-reset {
+    transform: none;
+}
+
+// --------------------------------------------------------------------------
+// register-optical-shape
+//
+// Add a project-specific shape offset. Refuses to overwrite an existing
+// key rather than silently changing every existing call site.
+// --------------------------------------------------------------------------
+@mixin register-optical-shape($name, $x: 0, $y: 0) {
+    @if map.has-key($optical-shapes, $name) {
+        @error "register-optical-shape(): `#{$name}` already exists. "
+             + "Pick a different name.";
+    }
+
+    $optical-shapes: map.set($optical-shapes, $name, (x: $x, y: $y)) !global;
+}

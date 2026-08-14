@@ -1,0 +1,88 @@
+@use "sass:map";
+@use "sass:list";
+@use "sass:meta";
+
+$motion-stages: () !default;
+
+@function register-stage($name, $declarations) {
+  @if meta.type-of($name) != string {
+    @error "register-stage: stage name must be a string, got #{meta.type-of($name)}.";
+  }
+
+  @if meta.type-of($declarations) != map {
+    @error "register-stage: declarations for stage '#{$name}' must be a map.";
+  }
+
+  @if map.has-key($motion-stages, $name) {
+    @warn "register-stage: stage '#{$name}' is already registered and will be overwritten.";
+  }
+
+  $motion-stages: map.merge(
+    $motion-stages,
+    (
+      $name: $declarations,
+    )
+  ) !global;
+
+  @return $motion-stages;
+}
+
+@function pipeline-stage($name, $overrides: ()) {
+  @if meta.type-of($overrides) != map {
+    @error "pipeline-stage: overrides must be a map, got #{meta.type-of($overrides)}.";
+  }
+
+  @if map.has-key($overrides, $name) {
+    $stage: map.get($overrides, $name);
+
+    @if meta.type-of($stage) != map {
+      @error "pipeline-stage: override for stage '#{$name}' must be a map of declarations.";
+    }
+
+    @return $stage;
+  }
+
+  @if map.has-key($motion-stages, $name) {
+    @return map.get($motion-stages, $name);
+  }
+
+  @error "pipeline-stage: stage '#{$name}' is not registered. Use register-stage() before referencing it in a pipeline.";
+}
+
+@function compose-pipeline($pipeline, $overrides: ()) {
+  @if meta.type-of($pipeline) == map {
+    @error "motion-pipeline: pipeline must be a list of stage names, not a map.";
+  }
+
+  @if list.length($pipeline) == 0 {
+    @error "motion-pipeline: pipeline cannot be empty.";
+  }
+
+  @if meta.type-of($overrides) != map {
+    @error "motion-pipeline: overrides must be a map, got #{meta.type-of($overrides)}.";
+  }
+
+  $seen: ();
+  $merged: ();
+
+  @each $stage-name in $pipeline {
+    @if list.index($seen, $stage-name) {
+      @warn "motion-pipeline: duplicate stage '#{$stage-name}' found in pipeline; it will be composed again.";
+    }
+
+    $seen: list.append($seen, $stage-name);
+    $merged: map.merge($merged, pipeline-stage($stage-name, $overrides));
+  }
+
+  @return $merged;
+}
+
+@mixin motion-pipeline($pipeline, $overrides: ()) {
+  $composed: compose-pipeline($pipeline, $overrides);
+
+  @each $property, $value in $composed {
+    #{$property}: #{$value};
+  }
+
+  @content;
+}

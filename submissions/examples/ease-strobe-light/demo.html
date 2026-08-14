@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>⚡ Strobe Light – Interactive Strobe Effect</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>⚡ Strobe Light</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Start/Stop strobe">▶️ Start</button>
+                <button class="control-btn" id="flashBtn" title="Single flash">💥 Flash</button>
+                <button class="control-btn" id="patternBtn" title="Change pattern">🔄 Pattern</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="strobeCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="statusDisplay">⏹️ Stopped</span>
+                <span id="bpmDisplay">⚡ 120 BPM</span>
+                <span id="patternDisplay">🎯 Pulse</span>
+            </div>
+            <div class="hint" id="hint">⚡ Click to start strobe</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>⚡ Speed (BPM)</label>
+                <input type="range" id="bpmSlider" min="20" max="300" value="120" step="5" />
+                <span id="bpmLabel">120</span>
+            </div>
+            <div class="slider-group">
+                <label>💡 Brightness</label>
+                <input type="range" id="brightnessSlider" min="10" max="100" value="80" step="5" />
+                <span id="brightnessLabel">80%</span>
+            </div>
+            <div class="slider-group">
+                <label>🎨 Color</label>
+                <input type="color" id="colorPicker" value="#ffffff" />
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Strobe Light – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('strobeCanvas');
+            const ctx = canvas.getContext('2d');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const bpmDisplay = document.getElementById('bpmDisplay');
+            const patternDisplay = document.getElementById('patternDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const flashBtn = document.getElementById('flashBtn');
+            const patternBtn = document.getElementById('patternBtn');
+            const bpmSlider = document.getElementById('bpmSlider');
+            const bpmLabel = document.getElementById('bpmLabel');
+            const brightnessSlider = document.getElementById('brightnessSlider');
+            const brightnessLabel = document.getElementById('brightnessLabel');
+            const colorPicker = document.getElementById('colorPicker');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isRunning = false;
+            let isFlashing = false;
+            let flashTimer = 0;
+            let beatCount = 0;
+            let patternIndex = 0;
+            let time = 0;
+            let animationId = null;
+            let lastFlashTime = 0;
+
+            // --- Parameters ---
+            let bpm = 120;
+            let brightness = 80;
+            let color = '#ffffff';
+
+            // --- Patterns ---
+            const patterns = [
+                { name: 'Pulse', desc: '🎯 Steady pulse' },
+                { name: 'Double', desc: '🔁 Double flash' },
+                { name: 'Triple', desc: '🔁🔁 Triple flash' },
+                { name: 'Wave', desc: '🌊 Wave pattern' },
+                { name: 'Heartbeat', desc: '💓 Heartbeat' },
+                { name: 'Random', desc: '🎲 Random bursts' },
+            ];
+
+            // --- Strobe objects ---
+            let strobeObjects = [];
+
+            // --- Strobe object class ---
+            class StrobeObject {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = 20 + Math.random() * 60;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                    this.opacity = 0.2 + Math.random() * 0.3;
+                    this.type = Math.floor(Math.random() * 3); // 0: circle, 1: square, 2: triangle
+                    this.pulsePhase = Math.random() * Math.PI * 2;
+                    this.pulseSpeed = 0.02 + Math.random() * 0.04;
+                }
+
+                draw(ctx, flashIntensity) {
+                    const alpha = this.opacity * flashIntensity;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.globalAlpha = alpha * 0.3;
+
+                    const color = colorPicker.value;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `${color}${Math.floor(alpha * 50).toString(16).padStart(2, '0')}`;
+
+                    ctx.fillStyle = color;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+
+                    const size = this.size * (0.5 + 0.5 * flashIntensity);
+
+                    switch (this.type) {
+                        case 0: // Circle
+                            ctx.beginPath();
+                            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        case 1: // Square
+                            ctx.fillRect(-size / 2, -size / 2, size, size);
+                            break;
+                        case 2: // Triangle
+                            ctx.beginPath();
+                            ctx.moveTo(0, -size / 2);
+                            ctx.lineTo(-size / 2, size / 2);
+                            ctx.lineTo(size / 2, size / 2);
+                            ctx.closePath();
+                            ctx.fill();
+                            break;
+                    }
+
+                    ctx.restore();
+                }
+
+                update() {
+                    this.rotation += this.rotSpeed;
+                    this.pulsePhase += this.pulseSpeed;
+                    this.x += Math.sin(this.pulsePhase) * 0.2;
+                    this.y += Math.cos(this.pulsePhase * 0.7) * 0.2;
+
+                    if (this.x < 0 || this.x > W) this.reset();
+                    if (this.y < 0 || this.y > H) this.reset();
+                }
+            }
+
+            // --- Create strobe objects ---
+            function createStrobeObjects(count) {
+                strobeObjects = [];
+                for (let i = 0; i < count; i++) {
+                    strobeObjects.push(new StrobeObject());
+                }
+            }
+
+            // --- Pattern generation ---
+            function getPatternFlash(beat, totalBeats) {
+                const pattern = patterns[patternIndex].name;
+
+                switch (pattern) {
+                    case 'Pulse':
+                        return beat % 2 === 0 ? 1 : 0;
+
+                    case 'Double':
+                        const doubleBeat = beat % 4;
+                        return (doubleBeat === 0 || doubleBeat === 1) ? 1 : 0;
+
+                    case 'Triple':
+                        const tripleBeat = beat % 6;
+                        return (tripleBeat >= 0 && tripleBeat <= 2) ? 1 : 0;
+
+                    case 'Wave':
+                        const wavePos = (beat % 8) / 8;
+                        return Math.sin(wavePos * Math.PI * 2) * 0.5 + 0.5;
+
+                    case 'Heartbeat':
+                        const hbBeat = beat % 8;
+                        if (hbBeat === 0) return 1;
+                        if (hbBeat === 1) return 0.6;
+                        if (hbBeat === 2) return 0;
+                        if (hbBeat === 4) return 0.8;
+                        if (hbBeat === 5) return 0.4;
+                        return 0;
+
+                    case 'Random':
+                        return Math.random() > 0.5 ? 1 : 0;
+
+                    default:
+                        return beat % 2 === 0 ? 1 : 0;
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Dark background with subtle gradient
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f1a');
+                grad.addColorStop(0.5, '#060a12');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle grid
+                ctx.save();
+                ctx.globalAlpha = 0.03;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+                for (let x = 0; x <= W; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= H; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // --- Render strobe effect ---
+            function renderStrobe(ctx, flashIntensity) {
+                // Flash overlay
+                if (flashIntensity > 0.05) {
+                    ctx.save();
+                    const color = colorPicker.value;
+                    const alpha = flashIntensity * (brightness / 100) * 0.4;
+
+                    // Parse color
+                    const temp = document.createElement('div');
+                    temp.style.color = color;
+                    document.body.appendChild(temp);
+                    const computed = getComputedStyle(temp).color;
+                    document.body.removeChild(temp);
+
+                    // Use the color with alpha
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Radial glow from center
+                    const glowGrad = ctx.createRadialGradient(
+                        W / 2, H / 2, 50,
+                        W / 2, H / 2, 400
+                    );
+                    glowGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.3})`);
+                    glowGrad.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.1})`);
+                    glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = glowGrad;
+                    ctx.fillRect(0, 0, W, H);
+
+                    ctx.restore();
+                }
+
+                // Draw strobe objects
+                ctx.save();
+                for (const obj of strobeObjects) {
+                    obj.draw(ctx, flashIntensity);
+                }
+                ctx.restore();
+
+                // Flash lines (radial burst)
+                if (flashIntensity > 0.3) {
+                    ctx.save();
+                    const lineCount = 12;
+                    const alpha = flashIntensity * 0.1 * (brightness / 100);
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = colorPicker.value;
+
+                    for (let i = 0; i < lineCount; i++) {
+                        const angle = (i / lineCount) * Math.PI * 2 + time * 0.001;
+                        const len = 100 + Math.sin(time * 0.002 + i) * 50;
+                        ctx.beginPath();
+                        ctx.moveTo(W / 2, H / 2);
+                        ctx.lineTo(
+                            W / 2 + Math.cos(angle) * len,
+                            H / 2 + Math.sin(angle) * len
+                        );
+                        ctx.lineWidth = 1 + Math.sin(time * 0.003 + i * 2) * 0.5;
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // BPM display
+                bpmDisplay.textContent = `⚡ ${bpm} BPM`;
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Calculate flash timing
+                const beatsPerFrame = bpm / 60 / 60;
+                const flashInterval = 1 / (bpm / 60);
+
+                if (isRunning) {
+                    const elapsed = time / 60;
+                    const currentBeat = elapsed * (bpm / 60);
+                    const beat = Math.floor(currentBeat);
+
+                    if (beat > beatCount) {
+                        beatCount = beat;
+                        const pattern = patterns[patternIndex].name;
+
+                        // Get flash intensity from pattern
+                        let flashIntensity = getPatternFlash(beat, 0);
+
+                        // Handle special patterns
+                        if (pattern === 'Wave') {
+                            flashIntensity = Math.sin((beat % 8) / 8 * Math.PI * 2) * 0.5 + 0.5;
+                        }
+
+                        // Update objects on beat
+                        for (const obj of strobeObjects) {
+                            obj.pulsePhase += 0.5;
+                            obj.size *= (1 + flashIntensity * 0.1);
+                        }
+
+                        isFlashing = flashIntensity > 0.1;
+                        flashTimer = flashIntensity;
+
+                        // Update status
+                        statusDisplay.textContent = '⚡ Flashing';
+                        hint.textContent = '⚡ Strobe active!';
+                        hint.classList.add('hidden');
+
+                        // Update pattern display with animation
+                        patternDisplay.textContent = patterns[patternIndex].desc;
+                    }
+
+                    // Fade flash
+                    if (!isFlashing) {
+                        flashTimer *= 0.95;
+                    } else {
+                        flashTimer = Math.max(flashTimer, 0.3);
+                    }
+
+                    if (flashTimer < 0.01) flashTimer = 0;
+
+                    // Update objects
+                    for (const obj of strobeObjects) {
+                        obj.update();
+                    }
+
+                } else {
+                    // Fade out flash when stopped
+                    flashTimer *= 0.98;
+                    if (flashTimer < 0.01) flashTimer = 0;
+                }
+
+                // --- Render ---
+                renderBackground(ctx);
+
+                // Render strobe with current flash intensity
+                const flashIntensity = flashTimer * (brightness / 100);
+                renderStrobe(ctx, flashIntensity);
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleStrobe() {
+                isRunning = !isRunning;
+                toggleBtn.textContent = isRunning ? '⏹️ Stop' : '▶️ Start';
+
+                if (isRunning) {
+                    statusDisplay.textContent = '⚡ Starting...';
+                    beatCount = 0;
+                    hint.textContent = '⚡ Strobe active!';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+
+                    // Reset objects
+                    for (const obj of strobeObjects) {
+                        obj.reset();
+                    }
+                } else {
+                    statusDisplay.textContent = '⏹️ Stopped';
+                    flashTimer = 0;
+                    hint.textContent = '⏹️ Stopped';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function singleFlash() {
+                // Create a powerful single flash
+                flashTimer = 1.0;
+                isFlashing = true;
+                statusDisplay.textContent = '💥 Flash!';
+
+                // Reset objects for flash effect
+                for (const obj of strobeObjects) {
+                    obj.size *= 1.5;
+                    obj.opacity = 0.8;
+                }
+
+                hint.textContent = '💥 Flash!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 500);
+
+                // Auto-stop after flash if not running
+                if (!isRunning) {
+                    setTimeout(() => {
+                        flashTimer *= 0.5;
+                        for (const obj of strobeObjects) {
+                            obj.size *= 0.8;
+                            obj.opacity = 0.3;
+                        }
+                    }, 200);
+                }
+            }
+
+            function nextPattern() {
+                patternIndex = (patternIndex + 1) % patterns.length;
+                patternDisplay.textContent = patterns[patternIndex].desc;
+                hint.textContent = `🔄 Pattern: ${patterns[patternIndex].name}`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+
+                // Reset beat count for new pattern
+                beatCount = 0;
+            }
+
+            // --- Slider handlers ---
+            bpmSlider.addEventListener('input', function() {
+                bpm = parseInt(this.value);
+                bpmLabel.textContent = bpm;
+                bpmDisplay.textContent = `⚡ ${bpm} BPM`;
+            });
+
+            brightnessSlider.addEventListener('input', function() {
+                brightness = parseInt(this.value);
+                brightnessLabel.textContent = `${brightness}%`;
+            });
+
+            colorPicker.addEventListener('input', function() {
+                color = this.value;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleStrobe);
+            flashBtn.addEventListener('click', singleFlash);
+            patternBtn.addEventListener('click', nextPattern);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleStrobe();
+                }
+                if (e.key === 'f' || e.key === 'F') singleFlash();
+                if (e.key === 'p' || e.key === 'P') nextPattern();
+
+                // BPM adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    bpm = Math.min(300, bpm + 10);
+                    bpmSlider.value = bpm;
+                    bpmLabel.textContent = bpm;
+                    bpmDisplay.textContent = `⚡ ${bpm} BPM`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    bpm = Math.max(20, bpm - 10);
+                    bpmSlider.value = bpm;
+                    bpmLabel.textContent = bpm;
+                    bpmDisplay.textContent = `⚡ ${bpm} BPM`;
+                }
+
+                // Brightness adjustments
+                if (e.key === ']') {
+                    brightness = Math.min(100, brightness + 5);
+                    brightnessSlider.value = brightness;
+                    brightnessLabel.textContent = `${brightness}%`;
+                }
+                if (e.key === '[') {
+                    brightness = Math.max(10, brightness - 5);
+                    brightnessSlider.value = brightness;
+                    brightnessLabel.textContent = `${brightness}%`;
+                }
+            });
+
+            // --- Click on canvas to flash ---
+            canvas.addEventListener('click', function(e) {
+                if (!isRunning) {
+                    singleFlash();
+                }
+            });
+
+            // --- Init ---
+            createStrobeObjects(15);
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('⚡ Strobe Light ready!');
+            console.log('Controls: Space (start/stop), F (flash), P (pattern)');
+            console.log('          ↑/↓ (BPM), [/] (brightness)');
+
+        })();
+    </script>
+</body>
+</html>

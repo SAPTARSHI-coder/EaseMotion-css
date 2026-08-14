@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository URL Case-Sensitivity Bug - EaseMotion CSS #40054</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐛 Repository URL Validation Bug Fix</h1>
+            <p class="subtitle">Issue #40054: Case-Sensitive URL Validation in validate:manifest</p>
+        </div>
+
+        <div class="bug-section">
+            <h2>The Problem</h2>
+            <div class="problem-box">
+                <div class="problem-item">
+                    <h3>❌ Current Behavior (Fails)</h3>
+                    <code class="code-block">
+package.json repository URL:<br>
+"url": "git+https://github.com/<strong>saptarshi-coder/easemotion-css</strong>.git"<br>
+<br>
+validate-package.mjs expects:<br>
+"<strong>SAPTARSHI-coder/EaseMotion-css</strong>"<br>
+<br>
+Result: <span class="error">✗ Validation Failed</span><br>
+Error: "repository.url must point to SAPTARSHI-coder/EaseMotion-css"
+                    </code>
+                </div>
+
+                <div class="impact-box">
+                    <h3>⚠️ Impact Chain</h3>
+                    <div class="chain">
+                        <div class="chain-item blocked">
+                            <strong>npm run validate:manifest</strong><br>
+                            <span>❌ BLOCKED</span>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="chain-item blocked">
+                            <strong>release:check</strong><br>
+                            <span>❌ BLOCKED</span><br>
+                            (cannot proceed to bundle, lint, test checks)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="solution-section">
+            <h2>The Solution</h2>
+            <div class="solution-box">
+                <h3>✅ Normalize GitHub URLs Case-Insensitively</h3>
+                <p>Update <code>scripts/validate-package.mjs</code> to normalize GitHub owner/repo names before comparison:</p>
+                
+                <div class="code-comparison">
+                    <div class="before">
+                        <h4>❌ Before (Case-Sensitive)</h4>
+                        <code class="code-block">
+const expectedUrl = 
+  'git+https://github.com/SAPTARSHI-coder/EaseMotion-css.git';
+
+if (pkg.repository.url !== expectedUrl) {
+  throw new Error(
+    `repository.url must point to 
+     SAPTARSHI-coder/EaseMotion-css`
+  );
+}
+                        </code>
+                    </div>
+
+                    <div class="after">
+                        <h4>✅ After (Case-Insensitive)</h4>
+                        <code class="code-block">
+const normalizeGitHubUrl = (url) => {
+  return url.toLowerCase()
+    .replace(/\.git$/, '');
+};
+
+const expectedPattern = 
+  'https://github.com/saptarshi-coder/easemotion-css';
+  
+const normalizedUrl = 
+  normalizeGitHubUrl(pkg.repository.url);
+
+if (!normalizedUrl.includes(expectedPattern)) {
+  throw new Error(
+    `repository.url must point to 
+     saptarshi-coder/easemotion-css (any casing)`
+  );
+}
+                        </code>
+                    </div>
+                </div>
+
+                <div class="implementation-steps">
+                    <h4>Implementation Steps:</h4>
+                    <ol>
+                        <li>Add a <code>normalizeGitHubUrl()</code> helper function</li>
+                        <li>Convert both expected URL and actual URL to lowercase</li>
+                        <li>Remove <code>.git</code> suffix for comparison</li>
+                        <li>Use case-insensitive comparison</li>
+                        <li>Test with <code>npm run validate:manifest</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="steps-section">
+            <h2>Steps to Reproduce the Bug</h2>
+            <div class="steps-box">
+                <code class="code-block">
+# In the EaseMotion CSS repository root:<br>
+<br>
+$ npm ci<br>
+$ npm run validate:manifest<br>
+<br>
+<span class="error">Error: package.json validation failed: <br>
+repository.url must point to SAPTARSHI-coder/EaseMotion-css</span>
+                </code>
+            </div>
+        </div>
+
+        <div class="technical-section">
+            <h2>Technical Details</h2>
+            <div class="details-grid">
+                <div class="detail-card">
+                    <h3>Root Cause</h3>
+                    <p>The validator performs a strict string comparison without normalizing GitHub repository URLs, which differ in casing conventions (GitHub URLs are lowercase, but project branding may use mixed case).</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Why It Matters</h3>
+                    <p>GitHub URLs are case-insensitive (github.com/User/Repo resolves to lowercase), but the validator expected exact casing, causing validation to fail on checked-in code.</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Best Practice</h3>
+                    <p>Always normalize external identifiers (URLs, usernames, etc.) before comparison to avoid case-sensitivity issues across different systems.</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Testing Strategy</h3>
+                    <p>Test with multiple URL casing variations to ensure the validator accepts all valid GitHub URL formats.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <h2>Valid URL Examples (All Should Pass)</h2>
+            <div class="examples-box">
+                <div class="example">
+                    <code>git+https://github.com/saptarshi-coder/easemotion-css.git</code>
+                    <span class="badge">Current</span>
+                </div>
+                <div class="example">
+                    <code>git+https://github.com/SAPTARSHI-CODER/EASEMOTION-CSS.git</code>
+                    <span class="badge">Variant 1</span>
+                </div>
+                <div class="example">
+                    <code>git+https://github.com/Saptarshi-Coder/EaseMotion-CSS.git</code>
+                    <span class="badge">Variant 2</span>
+                </div>
+                <div class="example">
+                    <code>git+https://github.com/SAPTARSHI-coder/EaseMotion-css.git</code>
+                    <span class="badge">Current Expected</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📋 <strong>Issue:</strong> #40054</p>
+            <p>📚 <strong>Type:</strong> Documentation - Bug Analysis & Fix Guide</p>
+            <p>🔗 <strong>Related:</strong> validate:manifest, release:check workflow</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Infinite Scroll Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 1rem;
+      font-family: system-ui, sans-serif;
+    }
+    
+    .demo-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+
+    h1 {
+      color: #0f172a;
+      margin-top: 0;
+    }
+    p { color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const InfiniteFeedLoader = ({ fetchMoreData, renderItem, hasMore = true }) => {
+      const [data, setData] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+      const [isFetchingMore, setIsFetchingMore] = useState(false);
+      const loaderRef = useRef(null);
+
+      useEffect(() => {
+        let isMounted = true;
+        const loadInitial = async () => {
+          setIsLoading(true);
+          try {
+            const initialData = await fetchMoreData();
+            if (isMounted) setData(initialData);
+          } catch (error) {
+            console.error("Error", error);
+          } finally {
+            if (isMounted) setIsLoading(false);
+          }
+        };
+        loadInitial();
+        return () => { isMounted = false; };
+      }, [fetchMoreData]);
+
+      const handleObserver = useCallback((entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !isFetchingMore && !isLoading) {
+          loadMore();
+        }
+      }, [hasMore, isFetchingMore, isLoading]);
+
+      useEffect(() => {
+        const option = { root: null, rootMargin: "100px", threshold: 0 };
+        const observer = new IntersectionObserver(handleObserver, option);
+        if (loaderRef.current) observer.observe(loaderRef.current);
+        return () => { if (loaderRef.current) observer.unobserve(loaderRef.current); };
+      }, [handleObserver]);
+
+      const loadMore = async () => {
+        setIsFetchingMore(true);
+        try {
+          const moreData = await fetchMoreData();
+          setData(prev => [...prev, ...moreData]);
+        } catch (error) {
+          console.error("Error", error);
+        } finally {
+          setIsFetchingMore(false);
+        }
+      };
+
+      const ShimmerCard = () => (
+        <div className="ease-shimmer-card">
+          <div className="ease-shimmer-header">
+            <div className="ease-shimmer-avatar ease-shimmer-anim"></div>
+            <div className="ease-shimmer-text-group">
+              <div className="ease-shimmer-line title ease-shimmer-anim"></div>
+              <div className="ease-shimmer-line subtitle ease-shimmer-anim"></div>
+            </div>
+          </div>
+          <div className="ease-shimmer-body">
+            <div className="ease-shimmer-line full ease-shimmer-anim"></div>
+            <div className="ease-shimmer-line full ease-shimmer-anim"></div>
+            <div className="ease-shimmer-line short ease-shimmer-anim"></div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="ease-infinite-feed">
+          <div className="ease-feed-content">
+            {data.map((item, index) => renderItem(item, index))}
+          </div>
+          {(isLoading || isFetchingMore) && (
+            <div className="ease-feed-loading-container">
+              <ShimmerCard /><ShimmerCard /><ShimmerCard />
+            </div>
+          )}
+          <div ref={loaderRef} className="ease-scroll-trigger" aria-hidden="true" />
+          {!hasMore && !isLoading && (
+            <div className="ease-feed-end">
+              <p>You've caught up on everything!</p>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // --- Demo Application ---
+    
+    // Mock API
+    let globalId = 0;
+    const mockFetch = (page) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const newData = Array.from({ length: 5 }).map(() => {
+            globalId++;
+            return {
+              id: globalId,
+              name: `User ${globalId}`,
+              time: 'Just now',
+              text: 'This is a simulated post fetched from the server. It uses an IntersectionObserver to automatically trigger when you scroll near the bottom.'
+            };
+          });
+          resolve(newData);
+        }, 1200); // Artificial delay to show shimmers
+      });
+    };
+
+    const App = () => {
+      const [page, setPage] = useState(1);
+      const [hasMore, setHasMore] = useState(true);
+
+      const fetchNextPage = useCallback(async () => {
+        if (page > 3) {
+          setHasMore(false);
+          return [];
+        }
+        const data = await mockFetch(page);
+        setPage(p => p + 1);
+        return data;
+      }, [page]);
+
+      const renderPost = (item) => (
+        <div key={item.id} className="demo-card">
+          <div className="demo-card-header">
+            <div className="demo-avatar">{item.name.split(' ')[1]}</div>
+            <div>
+              <h4>{item.name}</h4>
+              <span>{item.time}</span>
+            </div>
+          </div>
+          <p>{item.text}</p>
+        </div>
+      );
+
+      return (
+        <div>
+          <div className="demo-header">
+            <h1>Activity Feed</h1>
+            <p>Scroll down to see the IntersectionObserver trigger the shimmer skeletons.</p>
+          </div>
+          
+          <InfiniteFeedLoader 
+            fetchMoreData={fetchNextPage} 
+            renderItem={renderPost} 
+            hasMore={hasMore} 
+          />
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

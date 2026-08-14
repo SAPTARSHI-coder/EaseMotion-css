@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EaseMotion — VS Code Extension</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../easemotion.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">VS Code Extension</h1>
+    <p class="subtitle">
+      IntelliSense, hover docs, and autocomplete for all <code>ease-*</code> classes
+      and <code>--ease-*</code> custom properties.
+    </p>
+
+    <div class="preview">
+      <div class="preview-header">
+        <div class="preview-dots"><span></span><span></span><span></span></div>
+        <span class="preview-title">easemotion.css — VS Code</span>
+      </div>
+      <div class="preview-body">
+        <div class="editor-line"><span class="line-num">1</span><span class="line-content">&lt;<span class="token-tag">div</span> <span class="token-attr">class</span>=<span class="token-string">"</span></div>
+        <div class="editor-line active-line"><span class="line-num">2</span><span class="line-content">  ease-<span class="token-highlight">fade</span></span></div>
+        <div class="editor-line"><span class="line-num">3</span><span class="line-content">"</span></div>
+        <div class="completion-popup">
+          <div class="completion-header">🔮 ease-fade-in</div>
+          <div class="completion-desc">Fade in with scale. opacity: 0→1, transform: scale(0.95)→1</div>
+          <div class="completion-meta">animation · core/animations.css:120</div>
+          <div class="completion-items">
+            <div class="completion-item selected">ease-fade-in</div>
+            <div class="completion-item">ease-fade-out</div>
+            <div class="completion-item">ease-fade-up</div>
+            <div class="completion-item">ease-fade-down</div>
+            <div class="completion-item">ease-fade-left</div>
+            <div class="completion-item">ease-fade-right</div>
+            <div class="completion-item">ease-fade-scale</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔮</div>
+        <h3>Autocomplete</h3>
+        <p>IntelliSense for all <code>ease-*</code> classes in HTML, JSX, Vue, Svelte, and CSS files. Starts matching as you type <code>ease-</code>.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <h3>Hover Docs</h3>
+        <p>Hover over any ease class to see description, parameters, keyframe values, and usage example.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>CSS Variable Autocomplete</h3>
+        <p>Autocomplete <code>--ease-*</code> variables with type info (color, duration, easing) and current value.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Insert Animation Command</h3>
+        <p>Command palette: <code>EaseMotion: Insert Animation</code> opens a searchable picker.</p>
+      </div>
+    </div>
+
+    <div class="file-section">
+      <h2>Extension Structure</h2>
+      <div class="file-tree">
+        <div class="folder">easemotion-vscode/</div>
+        <div class="file">├── package.json</div>
+        <div class="file">├── tsconfig.json</div>
+        <div class="file">├── src/</div>
+        <div class="file indent">├── extension.ts</div>
+        <div class="file indent">├── completions.ts</div>
+        <div class="file indent">├── hover.ts</div>
+        <div class="file indent">├── animation-data.ts</div>
+        <div class="file">├── scripts/</div>
+        <div class="file indent">├── generate-data.js</div>
+        <div class="file">└── README.md</div>
+      </div>
+    </div>
+
+    <div class="code-section">
+      <h2>Key Source Files</h2>
+
+      <div class="code-block">
+        <div class="code-header">src/extension.ts</div>
+        <pre><code>import * as vscode from 'vscode';
+import { EaseMotionCompletionProvider } from './completions';
+import { EaseMotionHoverProvider } from './hover';
+
+export function activate(context: vscode.ExtensionContext) {
+  const animationData = loadAnimationData();
+
+  const completionProvider = new EaseMotionCompletionProvider(animationData);
+  const hoverProvider = new EaseMotionHoverProvider(animationData);
+
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      ['html', 'javascript', 'typescript', 'vue', 'svelte', 'css'],
+      completionProvider,
+      '.', '-'
+    ),
+    vscode.languages.registerHoverProvider(
+      ['html', 'javascript', 'typescript', 'vue', 'svelte', 'css'],
+      hoverProvider
+    ),
+    vscode.commands.registerCommand(
+      'easemotion.insertAnimation',
+      openAnimationPicker
+    )
+  );
+}</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">src/completions.ts</div>
+        <pre><code>import * as vscode from 'vscode';
+
+export class EaseMotionCompletionProvider
+  implements vscode.CompletionItemProvider {
+
+  constructor(private data: AnimationData[]) {}
+
+  provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+  ): vscode.CompletionItem[] {
+    const linePrefix = document.lineAt(position).text
+      .substring(0, position.character);
+
+    if (!linePrefix.includes('ease-')) return [];
+
+    return this.data.map(anim => {
+      const item = new vscode.CompletionItem(
+        anim.className,
+        vscode.CompletionItemKind.Keyword
+      );
+      item.detail = anim.description;
+      item.documentation = new vscode.MarkdownString(
+        anim.getDocs()
+      );
+      return item;
+    });
+  }
+}</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">scripts/generate-data.js</div>
+        <pre><code>const fs = require('fs');
+const glob = require('glob');
+
+const data = [];
+const classRegex = /\.(ease-[\w-]+)\s*\{/g;
+const keyframeRegex = /@keyframes\s+(ease-[\w-]+)/g;
+
+for (const file of glob.sync('core/**/*.css')) {
+  const content = fs.readFileSync(file, 'utf8');
+  // Extract class names
+  for (const match of content.matchAll(classRegex)) {
+    data.push({
+      className: match[1],
+      file,
+      type: 'class',
+      description: extractComment(content, match.index),
+    });
+  }
+}
+
+fs.writeFileSync(
+  'easemotion-vscode/data/animation-data.json',
+  JSON.stringify(data, null, 2)
+);</code></pre>
+      </div>
+    </div>
+
+    <div class="publish">
+      <h2>Publishing</h2>
+      <div class="code-block">
+        <pre><code># Install VS Code Extension Manager
+npm install -g @vscode/vsce
+
+# Package
+vsce package
+
+# Publish to Marketplace
+vsce publish
+
+# Or install locally
+code --install-extension easemotion-css-intellisense-1.0.0.vsix</code></pre>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

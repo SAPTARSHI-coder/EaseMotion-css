@@ -1,0 +1,3 @@
+1. What does this do? Provides CSS page transition animation classes (enter/exit) in four modes — fade, slide-left, slide-right, zoom — plus a JS `transitionPanel()` utility that orchestrates exit-then-enter sequences for SPA-like navigation.
+2. How is it used? Apply `page-exit` / `page-enter` CSS classes (with mode modifiers like `--slide-left`) to a container. The JS helper `transitionPanel(el, exitClass, enterClass, newHTML)` handles the full cycle: animate out → swap content → animate in.
+3. Why is it useful? Gives EaseMotion a ready-made page transition system for SPA-like routing, with `prefers-reduced-motion: reduce` support that disables all animations for accessibility.

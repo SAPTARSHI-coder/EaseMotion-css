@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📄 Paper Toss</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>📄 Paper Toss</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📊 Streak</span>
+        <span class="stat-value" id="streakDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📈 Level</span>
+        <span class="stat-value" id="levelDisplay">1</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="600" height="400"></canvas>
+      <div class="wind-indicator" id="windIndicator">
+        <span class="wind-label">💨 Wind</span>
+        <div class="wind-bar">
+          <div class="wind-fill" id="windFill"></div>
+        </div>
+        <span class="wind-value" id="windValue">0.0</span>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="aimBtn">🎯 Aim</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>🖱️ Click and drag to set angle & power</span>
+      <span>·</span>
+      <span>💨 Watch the wind!</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">📄 Click Start to begin tossing!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const streakDisplay = document.getElementById('streakDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const levelDisplay = document.getElementById('levelDisplay');
+      const windFill = document.getElementById('windFill');
+      const windValue = document.getElementById('windValue');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const aimBtn = document.getElementById('aimBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 600;
+      const HEIGHT = 400;
+      const GRAVITY = 0.15;
+      const PAPER_RADIUS = 12;
+      const BASKET_WIDTH = 40;
+      const BASKET_HEIGHT = 30;
+
+      // ---------- Game State ----------
+      let paper = { x: 0, y: 0, vx: 0, vy: 0, active: false, trail: [] };
+      let basket = { x: 0, y: 0 };
+      let wind = { speed: 0, direction: 1 };
+      let score = 0;
+      let streak = 0;
+      let bestScore = parseInt(localStorage.getItem('paperTossBest')) || 0;
+      let level = 1;
+      let gameRunning = false;
+      let gameOver = false;
+      let isAiming = false;
+      let isCharging = false;
+      let chargePower = 0;
+      let aimAngle = -Math.PI / 2;
+      let mouseX = 0;
+      let mouseY = 0;
+      let dragStart = null;
+      let gameLoop = null;
+      let canShoot = true;
+      let distance = 200;
+      let tossCount = 0;
+
+      // ---------- Best Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Basket Positioning ----------
+      function positionBasket() {
+        const baseX = 500;
+        const baseY = HEIGHT - 40 - BASKET_HEIGHT;
+        const levelOffset = Math.min(level - 1, 8) * 15;
+        const xOffset = (Math.random() - 0.5) * 30;
+        basket.x = baseX + xOffset;
+        basket.y = baseY - levelOffset * 0.5;
+        distance = basket.x - 80;
+      }
+
+      // ---------- Paper Reset ----------
+      function resetPaper() {
+        paper.x = 80;
+        paper.y = HEIGHT - 30 - PAPER_RADIUS;
+        paper.vx = 0;
+        paper.vy = 0;
+        paper.active = false;
+        paper.trail = [];
+        canShoot = true;
+        isAiming = false;
+        isCharging = false;
+        chargePower = 0;
+        draw();
+      }
+
+      // ---------- Wind Generation ----------
+      function generateWind() {
+        const maxWind = 0.8 + level * 0.05;
+        wind.speed = (Math.random() - 0.5) * maxWind * 2;
+        wind.direction = wind.speed >= 0 ? 1 : -1;
+        updateWindDisplay();
+      }
+
+      function updateWindDisplay() {
+        const percent = Math.abs(wind.speed) / 2 * 100;
+        windFill.style.width = Math.min(percent, 100) + '%';
+        if (wind.speed > 0) {
+          windFill.style.background = 'linear-gradient(to right, #4fc3f7, #0288d1)';
+        } else {
+          windFill.style.background = 'linear-gradient(to left, #4fc3f7, #0288d1)';
+        }
+        windValue.textContent = wind.speed.toFixed(1);
+        windValue.style.color = Math.abs(wind.speed) > 1 ? '#ff6b6b' : '#a8d8ea';
+      }
+
+      // ---------- Shooting ----------
+      function shoot() {
+        if (!canShoot || paper.active || !gameRunning || gameOver) return;
+        
+        const power = chargePower * 12 + 2;
+        if (power < 0.5) {
+          setGameStatus('💪 Pull back more!', false);
+          return;
+        }
+
+        // Add some randomness based on level
+        const accuracy = Math.max(0.85, 1 - (level - 1) * 0.015);
+        const angleOffset = (Math.random() - 0.5) * (0.05 / accuracy);
+        const powerOffset = (Math.random() - 0.5) * (0.5 / accuracy);
+        const finalAngle = aimAngle + angleOffset;
+        const finalPower = power + powerOffset;
+
+        paper.vx = Math.cos(finalAngle) * finalPower;
+        paper.vy = Math.sin(finalAngle) * finalPower;
+        paper.active = true;
+        canShoot = false;
+        isAiming = false;
+        isCharging = false;
+        chargePower = 0;
+        tossCount++;
+        setGameStatus('📄 Paper flying!', true);
+        draw();
+      }
+
+      // ---------- Physics Update ----------
+      function updatePhysics() {
+        if (!paper.active || !gameRunning) return;
+
+        // Apply wind
+        paper.vx += wind.speed * 0.02;
+
+        // Apply gravity
+        paper.vy += GRAVITY;
+
+        // Move paper
+        paper.x += paper.vx;
+        paper.y += paper.vy;
+
+        // Trail
+        paper.trail.push({ x: paper.x, y: paper.y });
+        if (paper.trail.length > 25) paper.trail.shift();
+
+        // Wall collisions
+        if (paper.x - PAPER_RADIUS < 0) { paper.x = PAPER_RADIUS; paper.vx *= -0.3; }
+        if (paper.x + PAPER_RADIUS > WIDTH) { paper.x = WIDTH - PAPER_RADIUS; paper.vx *= -0.3; }
+        if (paper.y - PAPER_RADIUS < 0) { paper.y = PAPER_RADIUS; paper.vy *= -0.3; }
+
+        // Ground collision
+        if (paper.y + PAPER_RADIUS > HEIGHT - 10) {
+          paper.y = HEIGHT - 10 - PAPER_RADIUS;
+          paper.vy *= -0.2;
+          paper.vx *= 0.9;
+          if (Math.abs(paper.vy) < 0.3) {
+            paper.vy = 0;
+          }
+          if (Math.abs(paper.vx) < 0.1 && Math.abs(paper.vy) < 0.1) {
+            paper.active = false;
+            checkBasket();
+          }
+        }
+
+        // Check if paper stopped moving
+        if (Math.abs(paper.vx) < 0.05 && Math.abs(paper.vy) < 0.05 && !paper.active) {
+          checkBasket();
+        }
+
+        // Off screen
+        if (paper.x > WIDTH + 50 || paper.y > HEIGHT + 50) {
+          paper.active = false;
+          checkBasket();
+        }
+
+        draw();
+      }
+
+      // ---------- Basket Check ----------
+      function checkBasket() {
+        if (!paper.active) {
+          const paperCenter = { x: paper.x, y: paper.y };
+          const basketLeft = basket.x;
+          const basketRight = basket.x + BASKET_WIDTH;
+          const basketTop = basket.y;
+          const basketBottom = basket.y + BASKET_HEIGHT;
+
+          if (paperCenter.x > basketLeft + 5 && paperCenter.x < basketRight - 5 &&
+              paperCenter.y > basketTop + 5 && paperCenter.y < basketBottom - 5) {
+            // Score!
+            const points = 10 + Math.floor(level * 2);
+            score += points;
+            streak++;
+            if (streak > 5) {
+              const bonus = Math.floor(streak / 5) * 5;
+              score += bonus;
+              setGameStatus(`🎯 +${points} points! 🔥 ${streak}x streak! +${bonus} bonus!`, true);
+            } else {
+              setGameStatus(`🎯 +${points} points! Streak: ${streak}`, true);
+            }
+            if (score > bestScore) {
+              bestScore = score;
+              localStorage.setItem('paperTossBest', bestScore.toString());
+              bestDisplay.textContent = bestScore;
+            }
+            updateUI();
+            
+            // Level up every 5 tosses
+            if (tossCount % 5 === 0 && tossCount > 0) {
+              level++;
+              distance = Math.min(distance + 15, 450);
+              updateUI();
+              generateWind();
+              positionBasket();
+              setGameStatus(`📈 Level ${level}! Distance increased!`, true);
+            } else {
+              // Reposition basket further
+              positionBasket();
+              generateWind();
+            }
+            
+            // Spawn particles
+            createCelebration(paper.x, paper.y);
+            
+            setTimeout(() => {
+              if (gameRunning && !gameOver) {
+                resetPaper();
+              }
+            }, 500);
+          } else {
+            // Missed
+            streak = 0;
+            setGameStatus('❌ Missed! Try again.', false);
+            updateUI();
+            setTimeout(() => {
+              if (gameRunning && !gameOver) {
+                resetPaper();
+                generateWind();
+              }
+            }, 400);
+          }
+        }
+      }
+
+      // ---------- Particle System ----------
+      let particles = [];
+
+      function createCelebration(x, y) {
+        const colors = ['#ffd54f', '#4fc3f7', '#81c784', '#ff8a65', '#ce93d8', '#ff6b6b'];
+        for (let i = 0; i < 30; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * 4;
+          particles.push({
+            x: x + (Math.random() - 0.5) * 10,
+            y: y + (Math.random() - 0.5) * 10,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            life: 20 + Math.random() * 30,
+            maxLife: 50,
+            radius: 2 + Math.random() * 4,
+            color: colors[Math.floor(Math.random() * colors.length)]
+          });
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background
+        const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        grad.addColorStop(0, '#1a2a3a');
+        grad.addColorStop(0.6, '#2a3a4a');
+        grad.addColorStop(1, '#1a2a2a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Floor
+        ctx.fillStyle = '#2a3a2a';
+        ctx.fillRect(0, HEIGHT - 10, WIDTH, 10);
+        ctx.fillStyle = '#3a4a3a';
+        ctx.fillRect(0, HEIGHT - 10, WIDTH, 2);
+
+        // Distance marker
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(80, HEIGHT - 10, distance, 5);
+
+        // Distance label
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${Math.floor(distance)}px`, 80 + distance/2, HEIGHT - 16);
+
+        // Basket
+        // Basket shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(basket.x + 4, basket.y + 4, BASKET_WIDTH, BASKET_HEIGHT);
+        
+        // Basket body
+        const basketGrad = ctx.createLinearGradient(basket.x, basket.y, basket.x + BASKET_WIDTH, basket.y);
+        basketGrad.addColorStop(0, '#5d4037');
+        basketGrad.addColorStop(0.3, '#8d6e63');
+        basketGrad.addColorStop(0.7, '#8d6e63');
+        basketGrad.addColorStop(1, '#5d4037');
+        ctx.fillStyle = basketGrad;
+        ctx.fillRect(basket.x, basket.y, BASKET_WIDTH, BASKET_HEIGHT);
+        
+        // Basket rim
+        ctx.fillStyle = '#3e2723';
+        ctx.fillRect(basket.x - 4, basket.y - 4, BASKET_WIDTH + 8, 6);
+        ctx.fillStyle = '#5d4037';
+        ctx.fillRect(basket.x - 2, basket.y - 2, BASKET_WIDTH + 4, 4);
+        
+        // Basket inner
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(basket.x + 4, basket.y + 4, BASKET_WIDTH - 8, BASKET_HEIGHT - 8);
+
+        // Basket label
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.font = '8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🗑️', basket.x + BASKET_WIDTH/2, basket.y + BASKET_HEIGHT/2 + 3);
+
+        // Draw particles
+        for (const p of particles) {
+          const alpha = p.life / p.maxLife;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Draw paper trail
+        for (let i = 0; i < paper.trail.length; i++) {
+          const alpha = i / paper.trail.length * 0.3;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(paper.trail[i].x, paper.trail[i].y, 3 * (i / paper.trail.length), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw paper
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 10;
+        const paperGrad = ctx.createRadialGradient(
+          paper.x - 3, paper.y - 3, 2,
+          paper.x, paper.y, PAPER_RADIUS
+        );
+        paperGrad.addColorStop(0, '#ffffff');
+        paperGrad.addColorStop(0.5, '#f5f5f5');
+        paperGrad.addColorStop(1, '#e0e0e0');
+        ctx.fillStyle = paperGrad;
+        ctx.beginPath();
+        ctx.arc(paper.x, paper.y, PAPER_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Paper lines (crinkle effect)
+        ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < 4; i++) {
+          const angle = i * Math.PI / 4 + Date.now() / 5000;
+          const dist = PAPER_RADIUS * 0.4;
+          ctx.beginPath();
+          ctx.moveTo(paper.x + Math.cos(angle) * dist, paper.y + Math.sin(angle) * dist);
+          ctx.lineTo(paper.x + Math.cos(angle + 0.8) * dist * 0.7, paper.y + Math.sin(angle + 0.8) * dist * 0.7);
+          ctx.stroke();
+        }
+
+        // Aim line and power meter
+        if (isAiming && canShoot && !paper.active && gameRunning && !gameOver) {
+          // Aim line
+          ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([6, 6]);
+          ctx.beginPath();
+          ctx.moveTo(paper.x, paper.y);
+          const aimLen = 60 + chargePower * 40;
+          ctx.lineTo(paper.x + Math.cos(aimAngle) * aimLen, paper.y + Math.sin(aimAngle) * aimLen);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          
+          // Aim dot
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.beginPath();
+          ctx.arc(paper.x + Math.cos(aimAngle) * aimLen, paper.y + Math.sin(aimAngle) * aimLen, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Power meter
+          const powerX = 20;
+          const powerY = HEIGHT - 30;
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(powerX, powerY, 150, 10);
+          const grad3 = ctx.createLinearGradient(powerX, 0, powerX + 150, 0);
+          grad3.addColorStop(0, '#4caf50');
+          grad3.addColorStop(0.5, '#ffc107');
+          grad3.addColorStop(1, '#f44336');
+          ctx.fillStyle = grad3;
+          ctx.fillRect(powerX, powerY, chargePower * 150, 10);
+          ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(powerX, powerY, 150, 10);
+          
+          // Power label
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.font = '8px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('Power', powerX, powerY - 4);
+        }
+
+        // Game over overlay
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 36px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🎯 GAME OVER', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '20px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#a8d8ea';
+          ctx.fillText(`Score: ${score}`, WIDTH/2, HEIGHT/2 + 40);
+        }
+
+        if (!gameRunning && !gameOver) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = '28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('📄 Paper Toss', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '16px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.fillText('Click Start to begin', WIDTH/2, HEIGHT/2 + 30);
+        }
+      }
+
+      // ---------- UI Updates ----------
+      function updateUI() {
+        scoreDisplay.textContent = score;
+        streakDisplay.textContent = streak;
+        levelDisplay.textContent = level;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('paperTossBest', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        updatePhysics();
+        // Update particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.05;
+          p.life--;
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        resetGameState();
+        gameRunning = true;
+        gameOver = false;
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        positionBasket();
+        generateWind();
+        resetPaper();
+        setGameStatus('📄 Drag to aim and toss!', true);
+        startLoop();
+      }
+
+      function resetGameState() {
+        score = 0;
+        streak = 0;
+        level = 1;
+        tossCount = 0;
+        particles = [];
+        gameOver = false;
+        distance = 200;
+        updateUI();
+        bestDisplay.textContent = bestScore;
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        resetGameState();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        positionBasket();
+        resetPaper();
+        generateWind();
+        setGameStatus('🔄 Game reset. Click Start to play!', true);
+        draw();
+      }
+
+      // ---------- Event Handlers ----------
+      canvas.addEventListener('mousedown', (e) => {
+        if (!gameRunning || gameOver || !canShoot || paper.active) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        
+        const dx = x - paper.x;
+        const dy = y - paper.y;
+        if (dx * dx + dy * dy < 50 * 50) {
+          isAiming = true;
+          isCharging = true;
+          chargePower = 0;
+          dragStart = { x, y };
+          aimAngle = Math.atan2(dy, dx);
+        }
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        mouseX = x;
+        mouseY = y;
+        
+        if (isAiming && isCharging && canShoot) {
+          const dx = x - dragStart.x;
+          const dy = y - dragStart.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 5) {
+            chargePower = Math.min(1, dist / 120);
+          }
+          aimAngle = Math.atan2(paper.y - mouseY, paper.x - mouseX);
+          draw();
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        if (isCharging) {
+          isCharging = false;
+          isAiming = false;
+          shoot();
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        if (isCharging) {
+          isCharging = false;
+          isAiming = false;
+          chargePower = 0;
+          draw();
+        }
+      });
+
+      // Touch events
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameRunning || gameOver || !canShoot || paper.active) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+        
+        const dx = x - paper.x;
+        const dy = y - paper.y;
+        if (dx * dx + dy * dy < 60 * 60) {
+          isAiming = true;
+          isCharging = true;
+          chargePower = 0;
+          dragStart = { x, y };
+          aimAngle = Math.atan2(dy, dx);
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isAiming || !canShoot) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+        
+        const dx = x - dragStart.x;
+        const dy = y - dragStart.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 5) {
+          chargePower = Math.min(1, dist / 120);
+        }
+        aimAngle = Math.atan2(paper.y - y, paper.x - x);
+        draw();
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (isCharging) {
+          isCharging = false;
+          isAiming = false;
+          shoot();
+        }
+      }, { passive: false });
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' || e.key === 'R') resetGame();
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!gameRunning) startGame();
+          else if (canShoot && !paper.active && !gameOver) shoot();
+        }
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      aimBtn.addEventListener('click', () => {
+        if (gameRunning && canShoot && !paper.active && !gameOver) {
+          // Auto-aim at basket
+          const dx = basket.x + BASKET_WIDTH/2 - paper.x;
+          const dy = basket.y + BASKET_HEIGHT/2 - paper.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const power = Math.min(1, dist / 150);
+          const angle = Math.atan2(dy, dx);
+          chargePower = power;
+          aimAngle = angle;
+          isAiming = true;
+          draw();
+          setTimeout(() => {
+            isAiming = false;
+            shoot();
+          }, 300);
+        }
+      });
+
+      // ---------- Init ----------
+      function init() {
+        positionBasket();
+        resetPaper();
+        generateWind();
+        updateUI();
+        draw();
+        setGameStatus('📄 Click Start to begin tossing!', true);
+        bestDisplay.textContent = bestScore;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

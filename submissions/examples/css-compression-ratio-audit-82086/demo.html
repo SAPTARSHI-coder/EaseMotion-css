@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Compression Ratio Audit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">CSS PERFORMANCE AUDIT</span>
+      <h1>Minified vs Unminified</h1>
+      <p>
+        An interactive audit for comparing stylesheet size and estimating
+        the compression benefit of optimized CSS.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Audit metrics">
+      <article class="metric">
+        <span>Original</span>
+        <strong id="originalSize">--</strong>
+        <small>Unminified CSS</small>
+      </article>
+
+      <article class="metric">
+        <span>Estimated Minified</span>
+        <strong id="minifiedSize">--</strong>
+        <small>Whitespace/comments removed</small>
+      </article>
+
+      <article class="metric">
+        <span>Reduction</span>
+        <strong id="reduction">--</strong>
+        <small>Target: 20%+</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting audit</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runAudit">Run Compression Audit</button>
+      <span id="message">Ready to inspect stylesheet size.</span>
+    </div>
+
+    <section class="comparison">
+      <article class="panel">
+        <div class="panel-heading">
+          <span>01</span>
+          <h2>Unminified CSS</h2>
+        </div>
+
+        <pre id="originalPreview"></pre>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <span>02</span>
+          <h2>Estimated Minified CSS</h2>
+        </div>
+
+        <pre id="minifiedPreview"></pre>
+      </article>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Source Size</h2>
+        <p>
+          Measures the byte size of the original stylesheet.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Minification</h2>
+        <p>
+          Estimates the size after removing comments and unnecessary
+          whitespace.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>CI Budget</h2>
+        <p>
+          The audit fails when the compression reduction is below the
+          configured threshold.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runAudit");
+
+    const originalSizeOutput =
+      document.getElementById("originalSize");
+
+    const minifiedSizeOutput =
+      document.getElementById("minifiedSize");
+
+    const reductionOutput =
+      document.getElementById("reduction");
+
+    const statusOutput =
+      document.getElementById("status");
+
+    const statusText =
+      document.getElementById("statusText");
+
+    const message =
+      document.getElementById("message");
+
+    const originalPreview =
+      document.getElementById("originalPreview");
+
+    const minifiedPreview =
+      document.getElementById("minifiedPreview");
+
+    const BUDGET = {
+      minimumReductionPercent: 20,
+      maximumExecutionMs: 2000
+    };
+
+    function minifyCss(css) {
+      return css
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\s+/g, " ")
+        .replace(/\s*([{}:;,>])\s*/g, "$1")
+        .replace(/;}/g, "}")
+        .trim();
+    }
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Analyzing stylesheet";
+      message.textContent = "Calculating compression ratio...";
+
+      const start = performance.now();
+
+      let css = "";
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        css = await response.text();
+      } catch (error) {
+        statusOutput.textContent = "FAIL";
+        statusText.textContent = "Stylesheet unavailable";
+        message.textContent = "Could not read style.css.";
+        button.disabled = false;
+        return;
+      }
+
+      const minifiedCss = minifyCss(css);
+
+      const originalBytes =
+        new Blob([css]).size;
+
+      const minifiedBytes =
+        new Blob([minifiedCss]).size;
+
+      const reduction =
+        originalBytes === 0
+          ? 0
+          : ((originalBytes - minifiedBytes) /
+              originalBytes) * 100;
+
+      const executionMs =
+        performance.now() - start;
+
+      const passed =
+        reduction >= BUDGET.minimumReductionPercent &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      originalSizeOutput.textContent =
+        `${(originalBytes / 1024).toFixed(2)} KB`;
+
+      minifiedSizeOutput.textContent =
+        `${(minifiedBytes / 1024).toFixed(2)} KB`;
+
+      reductionOutput.textContent =
+        `${reduction.toFixed(1)}%`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Compression budget passed"
+          : "Compression budget failed";
+
+      message.textContent =
+        passed
+          ? "Compression audit completed successfully."
+          : "The configured compression threshold was not reached.";
+
+      originalPreview.textContent =
+        css.slice(0, 1200);
+
+      minifiedPreview.textContent =
+        minifiedCss.slice(0, 1200);
+
+      console.table({
+        originalBytes,
+        minifiedBytes,
+        reductionPercent:
+          Number(reduction.toFixed(2)),
+        executionMs:
+          Number(executionMs.toFixed(2)),
+        minimumReductionPercent:
+          BUDGET.minimumReductionPercent,
+        maximumExecutionMs:
+          BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

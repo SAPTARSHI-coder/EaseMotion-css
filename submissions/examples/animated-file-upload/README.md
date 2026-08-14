@@ -1,22 +1,49 @@
-# Animated File Upload
+# Animated Drag and Drop File Upload Component
 
-A responsive animated file upload component built using pure HTML and CSS.
+A modern drag and drop file upload component built using pure HTML and CSS.
 
 ## Features
 
-- Drag-and-drop inspired upload UI
-- Hover and focus animations
-- Animated upload icon
-- Responsive layout
-- Smooth transitions and motion effects
-- Pure CSS implementation
+- Drag and drop upload area
+- Animated hover effects
+- Upload progress indicators
+- Upload success state
+- File preview section
+- Responsive design
+- Modern UI styling
+- Pure HTML and CSS
+
+## Folder Structure
+
+```text
+animated-file-upload/
+├── demo.html
+├── style.css
+└── README.md
+```
 
 ## Usage
 
-Open `demo.html` in a browser to view the animated file upload component.
+1. Open demo.html in a browser.
+2. Ensure style.css is in the same directory.
+3. Customize upload states and styles.
 
-## Files
+## Components Included
 
-- `demo.html` → Upload component structure
-- `style.css` → Upload animations and styles
-- `README.md` → Documentation
+- Upload drop zone
+- Browse button
+- Progress bars
+- File preview cards
+- Success notification
+
+## Technologies
+
+- HTML5
+- CSS3
+- Flexbox
+- CSS Animations
+- Responsive Design
+
+## Author
+
+Created for EaseMotion CSS under GSSoC 2026.

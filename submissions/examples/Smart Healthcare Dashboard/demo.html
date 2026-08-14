@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JanSetu 2.0 - Central Health Command</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Inline utilities to support the massive new structures without needing CSS file updates */
+    .gap-3 { gap: 1.5rem; } .gap-4 { gap: 2rem; }
+    .mt-3 { margin-top: 1.5rem; } .mt-4 { margin-top: 2rem; }
+    .pt-2 { padding-top: 1rem; } .pb-2 { padding-bottom: 1rem; }
+    .h-100 { height: 100%; }
+    
+    /* Notification Dropdown */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content { display: none; position: absolute; right: 0; background-color: var(--surface); min-width: 300px; box-shadow: var(--shadow-lg); z-index: 1000; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; color: var(--text-main); }
+    .dropdown:hover .dropdown-content { display: block; }
+    .dropdown-header { padding: 10px 15px; background: var(--bg-body); font-weight: bold; border-bottom: 1px solid var(--border); }
+    .dropdown-item { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.85rem; transition: 0.2s; cursor: pointer; }
+    .dropdown-item:hover { background: #f5f6fa; }
+    
+    /* CSS Mock Charts */
+    .chart-container { height: 200px; display: flex; align-items: flex-end; gap: 10px; padding: 10px 0; border-bottom: 2px solid var(--border); border-left: 2px solid var(--border); padding-left: 10px; margin-top: 20px; }
+    .chart-bar { flex: 1; background: var(--gov-blue); border-radius: 4px 4px 0 0; position: relative; transition: height 0.5s ease; min-width: 30px; display: flex; justify-content: center; align-items: flex-start; }
+    .chart-bar:hover { background: var(--gov-blue-light); }
+    .chart-label { position: absolute; bottom: -25px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
+    .chart-value { margin-top: -20px; font-size: 0.75rem; font-weight: bold; color: var(--gov-blue); }
+    
+    /* Modals */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: 0.3s ease; backdrop-filter: blur(3px); }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-box { background: var(--surface); width: 90%; max-width: 800px; border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; transform: scale(0.95); transition: 0.3s ease; display: flex; flex-direction: column; max-height: 90vh; }
+    .modal-overlay.active .modal-box { transform: scale(1); }
+    .modal-header { padding: 20px; background: var(--gov-blue); color: white; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 20px; overflow-y: auto; }
+    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+    
+    /* ECG Animation */
+    .ecg-monitor { background: #111; border-radius: var(--radius); padding: 15px; position: relative; overflow: hidden; border: 2px solid #333; }
+    .ecg-line { stroke: #00ff00; stroke-width: 2; fill: none; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: ecgDash 3s linear infinite; }
+    @keyframes ecgDash { to { stroke-dashoffset: 0; } }
+
+    /* Forms */
+    .settings-group { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="gov-header">
+    <div class="brand">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+      <div>
+        <h1>JanSetu Central Command</h1>
+        <p class="subtitle">State Dept. of Public Health & Emergency Services</p>
+      </div>
+      <span class="badge badge-success" style="margin-left:15px; font-size:0.65rem;">PROD ENV v2.4.1</span>
+    </div>
+    
+    <div class="system-status flex items-center gap-2">
+      <!-- Notifications Dropdown -->
+      <div class="dropdown">
+        <button class="btn btn-outline-blue" style="color:white; border-color:rgba(255,255,255,0.3); position:relative;">
+          🔔 Alerts
+          <span class="pulse-green" style="position:absolute; top:-5px; right:-5px; background:var(--alert-red);"></span>
+        </button>
+        <div class="dropdown-content text-left">
+          <div class="dropdown-header">System Notifications (3)</div>
+          <div class="dropdown-item" style="border-left: 3px solid var(--alert-red);">
+            <strong>CRITICAL:</strong> Oxygen supply low at Metro Trauma Center.
+            <div class="text-muted text-sm mt-1">2 mins ago</div>
+          </div>
+          <div class="dropdown-item" style="border-left: 3px solid var(--warning-orange);">
+            <strong>WARNING:</strong> Heavy traffic reported on Highway 9. Re-routing ALS-102.
+            <div class="text-muted text-sm mt-1">15 mins ago</div>
+          </div>
+          <div class="dropdown-item" style="border-left: 3px solid var(--gov-blue);">
+            <strong>INFO:</strong> Shift handover completed successfully.
+            <div class="text-muted text-sm mt-1">1 hour ago</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Dropdown -->
+      <div class="dropdown">
+        <div class="flex items-center gap-1" style="cursor:pointer; padding:5px 10px; border-radius:4px; background:rgba(0,0,0,0.2);">
+          <div style="width:30px; height:30px; background:white; color:var(--gov-blue); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">DO</div>
+          <div class="text-sm">
+            <div class="font-bold">Desk Opr. 4</div>
+            <div style="font-size:0.7rem; color:#a4b0be;">ID: OP-9921</div>
+          </div>
+        </div>
+        <div class="dropdown-content text-left" style="min-width: 200px;">
+          <div class="dropdown-item">👤 My Profile</div>
+          <div class="dropdown-item">📅 Shift Schedule</div>
+          <div class="dropdown-item">🔒 Lock Terminal</div>
+          <div class="dropdown-item text-red font-bold border-t">🚪 Secure Logout</div>
+        </div>
+      </div>
+
+      <div class="text-right ml-2" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 15px;">
+        <div class="time-display" id="clock">00:00:00</div>
+        <div class="status-indicator"><span class="pulse-green"></span> Server Sync: OK</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav class="main-nav" style="overflow-x: auto; white-space: nowrap;">
+    <button class="nav-btn active" onclick="switchTab('overview')">Live Overview</button>
+    <button class="nav-btn" onclick="switchTab('triage')">Priority Queue <span class="badge" id="triageBadge">3</span></button>
+    <button class="nav-btn" onclick="switchTab('icu')">ICU Bed Matrix</button>
+    <button class="nav-btn" onclick="switchTab('ambulance')">Ambulance Dispatch</button>
+    <button class="nav-btn" onclick="switchTab('blood')">Blood Bank Inventory</button>
+    <button class="nav-btn" onclick="switchTab('personnel')">Active Personnel</button>
+    <button class="nav-btn" onclick="switchTab('analytics')">Analytics & Reports</button>
+    <button class="nav-btn" onclick="switchTab('settings')">System Settings</button>
+  </nav>
+
+  <main class="dashboard-container">
+
+    <!-- 📊 OVERVIEW TAB (Existing) -->
+    <section id="overview" class="tab-content active slide-fade">
+      <div class="grid-4 mb-3">
+        <div class="stat-card">
+          <div class="stat-title">Available ICU Beds</div>
+          <div class="stat-value text-blue" id="stat-beds">42</div>
+          <div class="stat-trend trend-down">▼ -5 in last hour</div>
+        </div>
+        <div class="stat-card alert-card">
+          <div class="stat-title">Critical Emergencies</div>
+          <div class="stat-value text-red blink-text" id="stat-critical">3</div>
+          <div class="stat-trend trend-up">▲ Action Required</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Active Ambulances</div>
+          <div class="stat-value text-green" id="stat-amb">18/24</div>
+          <div class="stat-trend">6 on standby</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Blood Stock Level</div>
+          <div class="stat-value text-orange" id="stat-blood">68%</div>
+          <div class="stat-trend trend-down">▼ O- Shortage Alert</div>
+        </div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="panel">
+          <h3 class="panel-title">Recent Dispatches</h3>
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Type</th><th>Location</th><th>Status</th></tr>
+            </thead>
+            <tbody id="recentDispatches">
+              <tr><td>DISP-892</td><td>Cardiac</td><td>Sector 4</td><td><span class="badge badge-warning">En Route</span></td></tr>
+              <tr><td>DISP-891</td><td>Trauma</td><td>Highway 9</td><td><span class="badge badge-success">On Scene</span></td></tr>
+              <tr><td>DISP-890</td><td>Maternal</td><td>Old Town</td><td><span class="badge badge-gray">Completed</span></td></tr>
+              <tr><td>DISP-889</td><td>Respiratory</td><td>West End</td><td><span class="badge badge-gray">Completed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">System Alerts</h3>
+          <div class="alert-list" id="systemAlerts">
+            <div class="alert-item alert-critical"><strong>CRITICAL:</strong> Metro Trauma Center ICU at full capacity. Divert trauma cases.</div>
+            <div class="alert-item alert-warning"><strong>WARNING:</strong> O- Negative reserves below 10% state-wide.</div>
+            <div class="alert-item alert-info"><strong>INFO:</strong> ALS-105 returning to base after successful transport.</div>
+            <div class="alert-item alert-info"><strong>INFO:</strong> Daily backup completed at 03:00 AM.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🚨 PRIORITY QUEUE (TRIAGE) (Enhanced) -->
+    <section id="triage" class="tab-content slide-fade">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Emergency Triage Queue</h2>
+          <p class="text-muted text-sm">Automated sorting via AI severity assessment.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-outline-blue">Filter: Critical Only</button>
+          <button class="btn btn-blue" onclick="simulateNewEmergency()">+ Simulate Emergency</button>
+        </div>
+      </div>
+      <div class="queue-list" id="triageQueue">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 🛏️ ICU BED MATRIX (Existing) -->
+    <section id="icu" class="tab-content slide-fade">
+      <div class="panel-header mb-2">
+        <div>
+          <h2 class="panel-title">Regional ICU Availability</h2>
+          <p class="text-muted text-sm">Live sync with state hospital management systems.</p>
+        </div>
+        <input type="text" id="hospitalSearch" class="search-input" placeholder="Search Hospital Name or Pincode..." oninput="renderICU()">
+      </div>
+      <div class="grid-3" id="icuGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 🚑 AMBULANCE DISPATCH (Existing) -->
+    <section id="ambulance" class="tab-content slide-fade">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="flex justify-between items-center border-b pb-2 mb-2">
+            <h3 class="panel-title">Active Fleet</h3>
+            <span class="badge badge-success">GPS Tracking Active</span>
+          </div>
+          <div class="fleet-list" id="fleetList">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+        <div class="panel dispatch-form">
+          <h3 class="panel-title border-b pb-2 mb-2">Manual Dispatch Override</h3>
+          <div class="form-group">
+            <label>Emergency Type</label>
+            <select id="dispType">
+              <option>Cardiac Arrest</option>
+              <option>Trauma / Accident</option>
+              <option>Stroke Protocol</option>
+              <option>Maternal Emergency</option>
+              <option>Mass Casualty Incident</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pickup Location Pincode / Landmark</label>
+            <input type="text" id="dispLocation" placeholder="e.g. 400001 or Central Station">
+          </div>
+          <div class="form-group">
+            <label>Priority Level</label>
+            <select id="dispPriority">
+              <option value="critical">Code Red (Critical)</option>
+              <option value="high">Code Yellow (High)</option>
+              <option value="moderate">Code Green (Moderate)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assign Unit</label>
+            <select id="dispUnit">
+              <option value="ALS-101">ALS-101 (Advanced Life Support) - 2.1km away</option>
+              <option value="BLS-204">BLS-204 (Basic Life Support) - 3.5km away</option>
+              <option value="ALS-105">ALS-105 (Advanced Life Support) - 5.0km away</option>
+            </select>
+          </div>
+          <button class="btn btn-red w-100" onclick="dispatchAmbulance()" style="padding:15px; font-size:1.1rem;">SOUND ALARM & DISPATCH UNIT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🩸 BLOOD BANK INVENTORY (Existing) -->
+    <section id="blood" class="tab-content slide-fade">
+      <div class="panel mb-3">
+        <h2 class="panel-title border-b pb-2 mb-3">Statewide Blood Reserves</h2>
+        <div class="blood-grid" id="bloodGrid">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title border-b pb-2 mb-3">Request Logistics Transfer</h3>
+        <p class="text-muted mb-2">Initiate inner-hospital blood transfer for critical shortages using cold-chain logistics.</p>
+        <div class="flex gap-2 items-center">
+          <select class="search-input" style="flex: 1;"><option>O- Negative</option><option>A- Negative</option><option>AB+ Positive</option></select>
+          <input type="number" class="search-input" placeholder="Units (e.g. 5)" style="width:120px;">
+          <select class="search-input" style="flex: 1.5;"><option>From: Central Blood Bank (Stock: High)</option></select>
+          <select class="search-input" style="flex: 1.5;"><option>To: District Hospital (Stock: Critical)</option></select>
+          <button class="btn btn-blue" style="padding: 10px 20px;" onclick="showToast('Transfer Authorized. Cold-chain logistics notified.')">Authorize Request</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 👨‍⚕️ PERSONNEL & ROSTER (NEW) -->
+    <section id="personnel" class="tab-content slide-fade">
+      <div class="panel-header mb-2">
+        <div>
+          <h2 class="panel-title">Active Personnel & Roster</h2>
+          <p class="text-muted text-sm">Directory of currently on-duty paramedics, doctors, and operators.</p>
+        </div>
+        <div class="flex gap-2">
+          <select class="search-input"><option>All Roles</option><option>Paramedic</option><option>Duty Doctor</option><option>Operator</option></select>
+          <input type="text" class="search-input" placeholder="Search Name/ID..." id="personnelSearch" oninput="renderPersonnel()">
+        </div>
+      </div>
+      <div class="panel p-0" style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr><th>Officer ID</th><th>Name</th><th>Role</th><th>Station / Unit</th><th>Contact</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="personnelTable">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 📈 ANALYTICS & REPORTS (NEW) -->
+    <section id="analytics" class="tab-content slide-fade">
+      <div class="panel-header mb-3">
+        <div>
+          <h2 class="panel-title">System Analytics & Reports</h2>
+          <p class="text-muted text-sm">Performance metrics for the last 24 hours.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-outline-blue">Last 7 Days</button>
+          <button class="btn btn-outline-blue">This Month</button>
+          <button class="btn btn-blue" onclick="showToast('Report generating. Download will start shortly.')">📥 Export PDF Report</button>
+        </div>
+      </div>
+      
+      <div class="grid-4 mb-3">
+        <div class="stat-card">
+          <div class="stat-title">Total Incidents</div>
+          <div class="stat-value text-blue">142</div>
+          <div class="stat-trend trend-up">▲ +12% vs Yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Avg. Response Time</div>
+          <div class="stat-value text-green">8m 42s</div>
+          <div class="stat-trend trend-down">▼ -45s vs Yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Successful Transports</div>
+          <div class="stat-value text-blue">98%</div>
+          <div class="stat-trend">Target: 95%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Bed Allocation Rate</div>
+          <div class="stat-value text-orange">85%</div>
+          <div class="stat-trend trend-down">▼ Due to capacity limits</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3 class="panel-title border-b pb-2">Incidents by Hour (Last 12h)</h3>
+          <!-- CSS Mock Bar Chart -->
+          <div class="chart-container" id="incidentChart">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title border-b pb-2">Emergency Breakdown</h3>
+          <table class="data-table mt-2">
+            <tr><td>Cardiac/Respiratory</td><td class="text-right font-bold">45%</td></tr>
+            <tr><td>Trauma/Accidents</td><td class="text-right font-bold">30%</td></tr>
+            <tr><td>Maternal/Child</td><td class="text-right font-bold">15%</td></tr>
+            <tr><td>Other</td><td class="text-right font-bold">10%</td></tr>
+          </table>
+          <button class="btn btn-gray w-100 mt-3" onclick="showToast('Loading detailed demographic breakdown...')">View Detailed Breakdown</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⚙️ SYSTEM SETTINGS (NEW) -->
+    <section id="settings" class="tab-content slide-fade">
+      <div class="grid-2">
+        <div class="panel">
+          <h2 class="panel-title border-b pb-2 mb-3">Notification Protocols</h2>
+          
+          <div class="settings-group">
+            <h3 class="text-md mb-2">ICU Capacity Alerts</h3>
+            <div class="toggle-row">
+              <div>
+                <div class="font-bold">Critical Capacity Warning</div>
+                <div class="text-sm text-muted">Alert when regional ICU beds drop below 10%.</div>
+              </div>
+              <input type="checkbox" checked style="transform: scale(1.5);">
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="font-bold">Auto-Divert Ambulances</div>
+                <div class="text-sm text-muted">Automatically suggest next closest hospital when capacity is 0.</div>
+              </div>
+              <input type="checkbox" checked style="transform: scale(1.5);">
+            </div>
+          </div>
+
+          <div class="settings-group" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+            <h3 class="text-md mb-2">Blood Bank Escalations</h3>
+            <div class="toggle-row">
+              <div>
+                <div class="font-bold">Shortage SMS Broadcast</div>
+                <div class="text-sm text-muted">Send automated SMS to registered donors on critical shortage.</div>
+              </div>
+              <input type="checkbox" checked style="transform: scale(1.5);">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title border-b pb-2 mb-3">System Integrations</h2>
+          
+          <div class="form-group">
+            <label>GPS Tracking API Endpoint (Ambulances)</label>
+            <input type="text" value="https://api.jansetu.gov/v2/fleet/telemetry" readonly class="bg-gray">
+          </div>
+          <div class="form-group">
+            <label>Hospital Management System (HMS) Sync Interval</label>
+            <select>
+              <option>Every 30 Seconds</option>
+              <option selected>Every 1 Minute</option>
+              <option>Every 5 Minutes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Backup Command Center IP</label>
+            <input type="text" value="192.168.10.45" placeholder="IPv4 Address">
+          </div>
+          <div class="mt-4 pt-3 border-t flex justify-between">
+            <button class="btn btn-outline-blue">Test API Connections</button>
+            <button class="btn btn-blue" onclick="showToast('Settings saved to secure server.')">Save Configurations</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALS (NEW) -->
+  <!-- Patient Detail Modal -->
+  <div class="modal-overlay" id="patientModal">
+    <div class="modal-box">
+      <div class="modal-header bg-red">
+        <h2 id="modalPatientTitle">EM-9021 Details</h2>
+        <button class="modal-close" onclick="closeModal('patientModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <div>
+            <h3 class="border-b pb-1 mb-2">Demographics & Triage</h3>
+            <p class="mb-1"><strong>Name:</strong> <span id="modPatName">John Doe</span></p>
+            <p class="mb-1"><strong>Age/Sex:</strong> <span id="modPatAge">45 / M</span></p>
+            <p class="mb-1"><strong>Location:</strong> <span id="modPatLoc">Sector 4</span></p>
+            <p class="mb-1"><strong>Chief Complaint:</strong> <span id="modPatCond" class="text-red font-bold">Severe Chest Pain</span></p>
+            
+            <h3 class="border-b pb-1 mb-2 mt-3">Action Log</h3>
+            <ul style="padding-left:20px; font-size:0.85rem;" class="text-muted">
+              <li>10:42 AM - Call received by Operator OP-9921</li>
+              <li>10:43 AM - Triage algorithm marked as CRITICAL</li>
+              <li>10:45 AM - Paging available ALS units...</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 class="border-b pb-1 mb-2">Simulated Vitals (ALS Telemetry)</h3>
+            <div class="ecg-monitor mb-2">
+              <svg width="100%" height="80" viewBox="0 0 500 80">
+                <path class="ecg-line" d="M0,40 L50,40 L60,20 L70,60 L80,40 L150,40 L160,20 L170,60 L180,40 L250,40 L260,20 L270,60 L280,40 L350,40 L360,20 L370,60 L380,40 L450,40 L460,20 L470,60 L480,40 L500,40" />
+              </svg>
+              <div class="flex justify-between text-white mt-1 text-sm font-bold font-monospace">
+                <div>HR: <span class="text-red blink-text">145 BPM</span></div>
+                <div>SpO2: <span class="text-orange">88%</span></div>
+                <div>BP: 160/95</div>
+              </div>
+            </div>
+            
+            <div class="panel p-2 mt-2 bg-gray border">
+              <h4 class="mb-1">Recommended Action:</h4>
+              <p class="text-sm">Dispatch immediate ALS unit equipped with Defibrillator. Alert Cardiac Ward at State General Hospital.</p>
+            </div>
+          </div>
+        </div>
+        <div class="border-t mt-3 pt-3 text-right">
+          <button class="btn btn-gray mr-2" onclick="closeModal('patientModal')">Close View</button>
+          <button class="btn btn-red" onclick="showToast('ALS Unit Dispatched!'); closeModal('patientModal');">Dispatch ALS Unit Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- EXTENDED MOCK DATA ---
+    let triagePatients = [
+      { id: "EM-9021", name: "John Doe", age: 45, condition: "Severe Chest Pain, suspected MI", severity: "Critical", time: "2 mins ago", location: "Sector 4" },
+      { id: "EM-9022", name: "Unknown Female", age: 30, condition: "RTA Trauma, Head Injury", severity: "Critical", time: "5 mins ago", location: "Highway 9" },
+      { id: "EM-9023", name: "Aarav S.", age: 12, condition: "Asthma Exacerbation", severity: "High", time: "12 mins ago", location: "School Dist" },
+      { id: "EM-9024", name: "Meena K.", age: 68, condition: "Fractured Femur", severity: "Moderate", time: "25 mins ago", location: "Old Town" },
+      { id: "EM-9025", name: "Rajesh V.", age: 52, condition: "Anaphylactic Shock", severity: "Critical", time: "1 min ago", location: "Downtown Mall" }
+    ];
+
+    const hospitals = [
+      { name: "State General Hospital", type: "Govt", bedsTotal: 50, bedsAvailable: 2, oxygen: "98%", distance: "4 km" },
+      { name: "City Care SuperSpeciality", type: "Private", bedsTotal: 30, bedsAvailable: 12, oxygen: "100%", distance: "6 km" },
+      { name: "Metro Trauma Center", type: "Govt", bedsTotal: 40, bedsAvailable: 0, oxygen: "85%", distance: "11 km" },
+      { name: "Apollo Clinics", type: "Private", bedsTotal: 15, bedsAvailable: 4, oxygen: "99%", distance: "3 km" },
+      { name: "District Hospital East", type: "Govt", bedsTotal: 60, bedsAvailable: 18, oxygen: "95%", distance: "15 km" },
+      { name: "Lifeline Maternity & ICU", type: "Private", bedsTotal: 20, bedsAvailable: 1, oxygen: "90%", distance: "8 km" }
+    ];
+
+    const fleet = [
+      { id: "ALS-101", type: "Advanced Life Support", status: "Available", location: "Base Station Alpha" },
+      { id: "BLS-204", type: "Basic Life Support", status: "Available", location: "Sector 9 Checkpoint" },
+      { id: "ALS-102", type: "Advanced Life Support", status: "Dispatched", location: "En route to Highway 9" },
+      { id: "BLS-205", type: "Basic Life Support", status: "Transporting", location: "Arriving at State Gen" },
+      { id: "ALS-105", type: "Advanced Life Support", status: "Available", location: "Base Station Beta" }
+    ];
+
+    const bloodInventory = [
+      { group: "A+", units: 450, capacity: 500 },
+      { group: "A-", units: 40, capacity: 100 },
+      { group: "B+", units: 320, capacity: 400 },
+      { group: "B-", units: 15, capacity: 100 },
+      { group: "O+", units: 510, capacity: 600 },
+      { group: "O-", units: 8, capacity: 150 }, /* Critical */
+      { group: "AB+", units: 120, capacity: 200 },
+      { group: "AB-", units: 22, capacity: 50 }
+    ];
+
+    const personnelData = [
+      { id: "DR-402", name: "Dr. Ananya Sharma", role: "Duty Doctor", unit: "State Gen Triage", contact: "+91 9876543210", status: "Active" },
+      { id: "PM-892", name: "Vikram Singh", role: "Paramedic", unit: "ALS-101", contact: "+91 9123456789", status: "Active" },
+      { id: "PM-893", name: "Rahul Deshmukh", role: "Paramedic", unit: "ALS-102", contact: "+91 9988776655", status: "Dispatched" },
+      { id: "OP-9921", name: "Desk Opr. 4 (You)", role: "Operator", unit: "Central Command", contact: "Ext. 402", status: "Active" },
+      { id: "DR-405", name: "Dr. K. Menon", role: "Duty Doctor", unit: "Metro Trauma", contact: "+91 9888877777", status: "On Break" }
+    ];
+
+    // --- SYSTEM CLOCK ---
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false }) + ' | ' + now.toLocaleDateString();
+    }, 1000);
+
+    // --- ROUTING ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+
+      // Call render functions based on tab
+      if(tabId === 'triage') renderTriage();
+      if(tabId === 'icu') renderICU();
+      if(tabId === 'ambulance') renderFleet();
+      if(tabId === 'blood') renderBlood();
+      if(tabId === 'personnel') renderPersonnel();
+      if(tabId === 'analytics') renderAnalytics();
+    }
+
+    // --- RENDERING FUNCTIONS ---
+    function renderTriage() {
+      const container = document.getElementById('triageQueue');
+      
+      const sorted = [...triagePatients].sort((a, b) => {
+        const val = { "Critical": 3, "High": 2, "Moderate": 1 };
+        return val[b.severity] - val[a.severity];
+      });
+
+      document.getElementById('triageBadge').innerText = sorted.filter(p => p.severity === 'Critical').length;
+      document.getElementById('stat-critical').innerText = sorted.filter(p => p.severity === 'Critical').length;
+
+      container.innerHTML = sorted.map(p => `
+        <div class="queue-card ${p.severity === 'Critical' ? 'border-critical pulse-bg' : ''}">
+          <div class="flex justify-between items-center mb-1">
+            <h3 class="text-lg">${p.id} - ${p.name} (${p.age})</h3>
+            <span class="badge badge-${p.severity.toLowerCase()}">${p.severity}</span>
+          </div>
+          <p class="text-muted mb-2"><strong>Condition:</strong> ${p.condition}</p>
+          <div class="flex justify-between items-center text-sm">
+            <span>📍 ${p.location}</span>
+            <span>⏱️ Reported: ${p.time}</span>
+          </div>
+          <div class="mt-2 pt-2 border-t flex gap-2">
+            <button class="btn btn-outline-blue flex-1" onclick="openPatientModal('${p.id}')">View Details & Vitals</button>
+            <button class="btn btn-red flex-1" onclick="showToast('ALS Unit Dispatched!')">Quick Dispatch</button>
+            <button class="btn btn-gray" onclick="resolveEmergency('${p.id}')">Resolve</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderICU() {
+      const q = document.getElementById('hospitalSearch').value.toLowerCase();
+      const container = document.getElementById('icuGrid');
+      
+      const filtered = hospitals.filter(h => h.name.toLowerCase().includes(q) || h.type.toLowerCase().includes(q));
+      
+      container.innerHTML = filtered.map(h => {
+        const pct = (h.bedsAvailable / h.bedsTotal) * 100;
+        let statusClass = pct > 20 ? 'text-green' : (pct > 0 ? 'text-orange' : 'text-red');
+        
+        return `
+        <div class="card ${h.bedsAvailable === 0 ? 'card-disabled' : ''}">
+          <div class="flex justify-between mb-2 border-b pb-1">
+            <h3 class="text-md">${h.name}</h3>
+            <span class="badge bg-gray">${h.type}</span>
+          </div>
+          <div class="flex justify-between mb-2">
+            <div>
+              <div class="text-sm text-muted">Available ICU Beds</div>
+              <div class="text-xl font-bold ${statusClass}">${h.bedsAvailable} <span class="text-sm text-muted">/ ${h.bedsTotal}</span></div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm text-muted">Distance</div>
+              <div class="font-bold">${h.distance}</div>
+            </div>
+          </div>
+          <div class="progress-bar mb-2">
+            <div class="progress-fill ${statusClass.replace('text', 'bg')}" style="width: ${pct}%"></div>
+          </div>
+          <p class="text-sm text-muted mb-3">Oxygen Supply: ${h.oxygen}</p>
+          <button class="btn btn-blue w-100" ${h.bedsAvailable === 0 ? 'disabled' : ''} onclick="bookBed('${h.name}')">Reserve Bed</button>
+        </div>
+      `}).join('');
+    }
+
+    function renderFleet() {
+      const container = document.getElementById('fleetList');
+      container.innerHTML = fleet.map(f => {
+        const badgeColor = f.status === 'Available' ? 'badge-success' : (f.status === 'Dispatched' ? 'badge-warning' : 'badge-gray');
+        return `
+        <div class="fleet-card flex justify-between items-center p-2 border-b">
+          <div>
+            <div class="font-bold">${f.id} <span class="text-sm text-muted">(${f.type})</span></div>
+            <div class="text-sm text-muted">📍 ${f.location}</div>
+          </div>
+          <span class="badge ${badgeColor}">${f.status}</span>
+        </div>
+      `}).join('');
+    }
+
+    function renderBlood() {
+      const container = document.getElementById('bloodGrid');
+      container.innerHTML = bloodInventory.map(b => {
+        const pct = (b.units / b.capacity) * 100;
+        let color = pct > 50 ? 'bg-green' : (pct > 15 ? 'bg-orange' : 'bg-red');
+        let alert = pct <= 15 ? '<span class="text-red blink-text text-sm ml-2">Critical Shortage</span>' : '';
+        
+        return `
+        <div class="blood-card border p-3 rounded">
+          <div class="flex justify-between items-center mb-2">
+            <div class="text-2xl font-bold text-blue">${b.group}</div>
+            <div class="text-right">
+              <div class="font-bold">${b.units} Units</div>
+              <div class="text-sm text-muted">Cap: ${b.capacity}</div>
+            </div>
+          </div>
+          <div class="progress-bar mb-1">
+            <div class="progress-fill ${color}" style="width: ${pct}%"></div>
+          </div>
+          ${alert}
+        </div>
+      `}).join('');
+    }
+
+    function renderPersonnel() {
+      const q = document.getElementById('personnelSearch').value.toLowerCase();
+      const tbody = document.getElementById('personnelTable');
+      
+      const filtered = personnelData.filter(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+      
+      tbody.innerHTML = filtered.map(p => {
+        const badgeColor = p.status === 'Active' ? 'badge-success' : (p.status === 'Dispatched' ? 'badge-warning' : 'badge-gray');
+        return `
+        <tr>
+          <td class="font-bold">${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.role}</td>
+          <td>${p.unit}</td>
+          <td>${p.contact}</td>
+          <td><span class="badge ${badgeColor}">${p.status}</span></td>
+          <td><button class="btn btn-outline-blue" style="padding: 5px 10px; font-size:0.8rem;" onclick="showToast('Pinging ${p.name}...')">Ping Comm</button></td>
+        </tr>
+      `}).join('');
+    }
+
+    function renderAnalytics() {
+      const chart = document.getElementById('incidentChart');
+      // Mock data for last 12 hours
+      const data = [12, 19, 15, 8, 5, 22, 30, 25, 18, 14, 20, 24]; 
+      const max = 35; // Max value for scaling
+      
+      chart.innerHTML = data.map((val, index) => {
+        const heightPct = (val / max) * 100;
+        const hour = (index + 1) + "h";
+        return `
+          <div class="chart-bar" style="height: 0%;" data-target="${heightPct}">
+            <div class="chart-value">${val}</div>
+            <div class="chart-label">${hour}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Animate bars in
+      setTimeout(() => {
+        document.querySelectorAll('.chart-bar').forEach(bar => {
+          bar.style.height = bar.getAttribute('data-target') + '%';
+        });
+      }, 100);
+    }
+
+    // --- MODALS & ACTIONS ---
+    function openPatientModal(id) {
+      const patient = triagePatients.find(p => p.id === id);
+      if(!patient) return;
+      
+      document.getElementById('modalPatientTitle').innerText = `${patient.id} - Triage Details`;
+      document.getElementById('modPatName').innerText = patient.name;
+      document.getElementById('modPatAge').innerText = patient.age;
+      document.getElementById('modPatLoc').innerText = patient.location;
+      document.getElementById('modPatCond').innerText = patient.condition;
+      
+      document.getElementById('patientModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function dispatchAmbulance() {
+      const unit = document.getElementById('dispUnit').value;
+      const loc = document.getElementById('dispLocation').value;
+      if(!loc) return showToast('Error: Please enter a location pincode.', 'error');
+      
+      const fleetItem = fleet.find(f => f.id === unit);
+      if(fleetItem) {
+        fleetItem.status = 'Dispatched';
+        fleetItem.location = 'En route to ' + loc;
+        renderFleet();
+        showToast(`Success: ${unit} dispatched to ${loc}`);
+        document.getElementById('dispLocation').value = '';
+      }
+    }
+
+    function bookBed(hospitalName) {
+      const hosp = hospitals.find(h => h.name === hospitalName);
+      if(hosp && hosp.bedsAvailable > 0) {
+        hosp.bedsAvailable--;
+        renderICU();
+        showToast(`ICU Bed reserved at ${hospitalName}.`);
+        document.getElementById('stat-beds').innerText = parseInt(document.getElementById('stat-beds').innerText) - 1;
+      }
+    }
+
+    function resolveEmergency(id) {
+      triagePatients = triagePatients.filter(p => p.id !== id);
+      renderTriage();
+      showToast(`Emergency ${id} resolved and archived to reports.`);
+    }
+
+    function simulateNewEmergency() {
+      const id = "EM-" + Math.floor(Math.random() * 9000 + 1000);
+      triagePatients.push({
+        id: id,
+        name: "Unknown / Incoming Patient",
+        age: Math.floor(Math.random() * 80 + 5),
+        condition: "Undiagnosed Trauma / Emergency",
+        severity: "Critical",
+        time: "Just now",
+        location: "Unknown / Parsing GPS..."
+      });
+      showToast('⚠️ NEW CRITICAL EMERGENCY RECEIVED', 'error');
+      renderTriage();
+    }
+
+    function showToast(msg, type='success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type === 'error' ? 'toast-error' : 'toast-success'}`;
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // --- INITIALIZE VIEWS ---
+    renderTriage();
+    renderICU();
+    renderFleet();
+    renderBlood();
+
+  </script>
+</body>
+</html>

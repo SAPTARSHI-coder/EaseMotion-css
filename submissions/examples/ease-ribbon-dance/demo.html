@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ribbon Dance · Ribbons Swirl and Twist</title>
+    <meta name="description" content="Interactive ribbon dance with swirling, twisting ribbons and graceful flowing motion.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎀 RIBBON DANCE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="ribbonCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="dance-btn" id="danceBtn">💃 DANCE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Ribbons</label>
+                <input type="range" id="ribbonsSlider" min="3" max="8" value="5">
+                <span id="ribbonsLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎀 RIBBON DANCE</span>
+            <small>swirl · twist · flow</small>
+        </div>
+        <div class="hint">
+            <span>💃 click to make the ribbons swirl and twist</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('ribbonCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const danceBtn = document.getElementById('danceBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const ribbonsSlider = document.getElementById('ribbonsSlider');
+            const ribbonsLabel = document.getElementById('ribbonsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numRibbons = 5;
+            let time = 0;
+            let isDancing = false;
+            let danceIntensity = 0;
+            let danceTarget = 0;
+
+            // ---- Ribbon Class ----
+            class Ribbon {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    this.segments = 40;
+                    this.points = [];
+                    this.colors = [];
+                    this.baseX = W / 2;
+                    this.baseY = H / 2;
+                    this.phase = (index / total) * Math.PI * 2;
+                    this.speed = 0.5 + (index / total) * 0.5;
+                    
+                    // Color
+                    const hue = (index / total) * 360 + 180;
+                    this.hue = hue % 360;
+                    this.sat = 70 + Math.random() * 20;
+                    this.light = 50 + Math.random() * 20;
+                    
+                    // Initialize points
+                    for (let i = 0; i <= this.segments; i++) {
+                        this.points.push({ x: 0, y: 0 });
+                        this.colors.push({ hue: this.hue, sat: this.sat, light: this.light });
+                    }
+                }
+
+                update(dt) {
+                    const intensity = danceIntensity;
+                    const t = time * 0.3 * this.speed * dt;
+                    
+                    // Base position with swirling motion
+                    const radius = 80 + intensity * 60;
+                    const angle = t * 0.5 + this.phase;
+                    const cx = this.baseX + Math.cos(angle) * radius * 0.3;
+                    const cy = this.baseY + Math.sin(angle * 0.7) * radius * 0.3;
+                    
+                    // Generate ribbon points with wave motion
+                    for (let i = 0; i <= this.segments; i++) {
+                        const progress = i / this.segments;
+                        const wave1 = Math.sin(progress * 8 + t * 0.7 + this.phase) * (20 + intensity * 30);
+                        const wave2 = Math.cos(progress * 5 + t * 0.5 + this.phase * 0.5) * (15 + intensity * 20);
+                        const wave3 = Math.sin(progress * 12 + t * 0.9 + this.phase * 1.3) * (10 + intensity * 15);
+                        
+                        const spread = 120 + intensity * 60;
+                        const x = cx + (progress - 0.5) * spread + wave1 * 0.5 + wave3 * 0.3;
+                        const y = cy + Math.sin(progress * Math.PI * 2 + t * 0.3 + this.phase) * (80 + intensity * 50) + wave2 * 0.5;
+                        
+                        this.points[i].x = x;
+                        this.points[i].y = y;
+                        
+                        // Color shift along ribbon
+                        const hueShift = progress * 60 + t * 10;
+                        this.colors[i].hue = (this.hue + hueShift) % 360;
+                        this.colors[i].sat = this.sat + Math.sin(progress * 3 + t) * 10;
+                        this.colors[i].light = this.light + Math.sin(progress * 4 + t * 0.5 + this.phase) * 15;
+                    }
+                }
+
+                draw(ctx) {
+                    const points = this.points;
+                    const colors = this.colors;
+                    const segments = this.segments;
+                    
+                    // Draw ribbon as connected segments with gradient
+                    for (let i = 0; i < segments; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i + 1];
+                        const c1 = colors[i];
+                        const c2 = colors[i + 1];
+                        const progress = i / segments;
+                        
+                        // Width variation
+                        const width = 3 + Math.sin(progress * 3 + time * 0.1 + this.phase) * 2 + 3;
+                        const alpha = 0.3 + progress * 0.5;
+                        
+                        ctx.save();
+                        ctx.globalAlpha = alpha * (0.4 + danceIntensity * 0.4);
+                        
+                        // Glow
+                        const hue = (c1.hue + c2.hue) / 2;
+                        const sat = (c1.sat + c2.sat) / 2;
+                        const light = (c1.light + c2.light) / 2;
+                        ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.05 * danceIntensity})`;
+                        ctx.shadowBlur = 10 + danceIntensity * 15;
+                        
+                        // Gradient line
+                        const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                        grad.addColorStop(0, `hsla(${c1.hue % 360}, ${c1.sat}%, ${c1.light}%, 0.8)`);
+                        grad.addColorStop(0.5, `hsla(${(c1.hue + c2.hue) / 2 % 360}, ${(c1.sat + c2.sat) / 2}%, ${(c1.light + c2.light) / 2}%, 0.6)`);
+                        grad.addColorStop(1, `hsla(${c2.hue % 360}, ${c2.sat}%, ${c2.light}%, 0.8)`);
+                        
+                        ctx.strokeStyle = grad;
+                        ctx.lineWidth = width * (0.5 + danceIntensity * 0.5);
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                        
+                        ctx.restore();
+                    }
+                    
+                    // Draw glow nodes at points
+                    if (danceIntensity > 0.3) {
+                        for (let i = 0; i < points.length; i += 3) {
+                            const p = points[i];
+                            const c = colors[i];
+                            const progress = i / segments;
+                            const alpha = 0.1 + progress * 0.2 * danceIntensity;
+                            const size = 2 + progress * 3 * danceIntensity;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = alpha;
+                            ctx.fillStyle = `hsla(${c.hue % 360}, 100%, 80%, ${alpha})`;
+                            ctx.shadowColor = `hsla(${c.hue % 360}, 100%, 80%, ${0.05 * danceIntensity})`;
+                            ctx.shadowBlur = 15 * danceIntensity;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+
+            // ---- Create Ribbons ----
+            let ribbons = [];
+
+            function createRibbons() {
+                ribbons = [];
+                for (let i = 0; i < numRibbons; i++) {
+                    const ribbon = new Ribbon(i, numRibbons);
+                    ribbon.baseX = W / 2 + (Math.random() - 0.5) * 100;
+                    ribbon.baseY = H / 2 + (Math.random() - 0.5) * 80;
+                    ribbons.push(ribbon);
+                }
+            }
+
+            // ---- Dance ----
+            function dance() {
+                if (!isDancing) {
+                    danceTarget = 1;
+                    isDancing = true;
+                } else {
+                    danceTarget = 0;
+                    isDancing = false;
+                }
+            }
+
+            // ---- Reset ----
+            function resetRibbons() {
+                danceTarget = 0;
+                danceIntensity = 0;
+                isDancing = false;
+                time = 0;
+                createRibbons();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Subtle grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw ribbons
+                for (let r of ribbons) {
+                    r.draw(ctx);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Ribbons: ${ribbons.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isDancing ? '💃 DANCING' : '🎀 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                const dt = speed / 5;
+                
+                // Smooth dance intensity
+                danceIntensity += (danceTarget - danceIntensity) * 0.03 * dt;
+                
+                // Update ribbons
+                for (let r of ribbons) {
+                    r.update(dt);
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            ribbonsSlider.addEventListener('input', function() {
+                numRibbons = parseInt(this.value);
+                ribbonsLabel.textContent = numRibbons;
+                createRibbons();
+            });
+
+            // ---- Event Listeners ----
+            danceBtn.addEventListener('click', dance);
+            resetBtn.addEventListener('click', resetRibbons);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    dance();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetRibbons();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            createRibbons();
+            render();
+            animate();
+
+            console.log('🎀 Ribbon Dance · Click Dance or press Space to make ribbons swirl!');
+        })();
+    </script>
+</body>
+</html>

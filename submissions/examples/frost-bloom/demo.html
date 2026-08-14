@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frost Bloom</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="app">
+
+  <header>
+    <span>WINTER GLASS STUDY</span>
+    <h1>Frost Bloom</h1>
+    <p>Touch the glass and let crystalline frost grow.</p>
+  </header>
+
+  <section class="glass" id="glass">
+    <canvas id="canvas"></canvas>
+
+    <div class="glass-shine"></div>
+
+    <div class="counter">
+      Blooms
+      <strong id="count">0</strong>
+    </div>
+
+    <div class="hint">
+      Click the glass to grow frost
+    </div>
+  </section>
+
+  <section class="controls">
+
+    <div>
+      <label>
+        Growth Speed
+        <span id="speedValue">50%</span>
+      </label>
+
+      <input
+        id="speed"
+        type="range"
+        min="10"
+        max="100"
+        value="50"
+      >
+    </div>
+
+    <div>
+      <label>
+        Density
+        <span id="densityValue">60%</span>
+      </label>
+
+      <input
+        id="density"
+        type="range"
+        min="20"
+        max="100"
+        value="60"
+      >
+    </div>
+
+    <button id="clear">
+      ❄ Clear Frost
+    </button>
+
+  </section>
+
+</main>
+
+<script>
+const glass = document.getElementById("glass");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const speed = document.getElementById("speed");
+const density = document.getElementById("density");
+
+const speedValue = document.getElementById("speedValue");
+const densityValue = document.getElementById("densityValue");
+
+const count = document.getElementById("count");
+
+let width;
+let height;
+let blooms = [];
+let bloomCount = 0;
+
+function resize() {
+
+  const rect = glass.getBoundingClientRect();
+
+  width = rect.width;
+  height = rect.height;
+
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function createBloom(x, y) {
+
+  const branches = [];
+
+  const amount =
+    4 + Math.floor(
+      Number(density.value) / 100 * 8
+    );
+
+  for (let i = 0; i < amount; i++) {
+
+    const angle =
+      i / amount * Math.PI * 2 +
+      (Math.random() - 0.5) * 0.4;
+
+    branches.push({
+      x,
+      y,
+      angle,
+      length: 25 + Math.random() * 45,
+      progress: 0,
+      depth: 0,
+      children: []
+    });
+  }
+
+  blooms.push({
+    x,
+    y,
+    branches
+  });
+
+  bloomCount++;
+
+  count.textContent = bloomCount;
+}
+
+function growBranch(branch, allBranches) {
+
+  const growth =
+    0.002 +
+    Number(speed.value) / 100 * 0.01;
+
+  branch.progress =
+    Math.min(1, branch.progress + growth);
+
+  if (
+    branch.progress > 0.55 &&
+    branch.children.length === 0 &&
+    branch.depth < 2 &&
+    Math.random() < 0.035
+  ) {
+
+    const childAngle =
+      branch.angle +
+      (Math.random() > 0.5 ? 0.55 : -0.55);
+
+    branch.children.push({
+      x: branch.x,
+      y: branch.y,
+      angle: childAngle,
+      length: branch.length * 0.55,
+      progress: 0,
+      depth: branch.depth + 1,
+      children: []
+    });
+  }
+
+  for (const child of branch.children) {
+    growBranch(child, allBranches);
+  }
+}
+
+function drawBranch(branch) {
+
+  const length =
+    branch.length * branch.progress;
+
+  const x2 =
+    branch.x +
+    Math.cos(branch.angle) * length;
+
+  const y2 =
+    branch.y +
+    Math.sin(branch.angle) * length;
+
+  ctx.beginPath();
+
+  ctx.moveTo(branch.x, branch.y);
+
+  ctx.lineTo(x2, y2);
+
+  ctx.strokeStyle =
+    branch.depth === 0
+      ? "rgba(225,245,255,0.75)"
+      : "rgba(205,235,250,0.5)";
+
+  ctx.lineWidth =
+    Math.max(0.5, 2 - branch.depth * 0.5);
+
+  ctx.shadowBlur = 8;
+  ctx.shadowColor = "rgba(170,220,255,0.6)";
+
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  for (const child of branch.children) {
+    child.x = x2;
+    child.y = y2;
+
+    drawBranch(child);
+  }
+}
+
+function drawBackground() {
+
+  const gradient = ctx.createLinearGradient(
+    0,
+    0,
+    width,
+    height
+  );
+
+  gradient.addColorStop(0, "#132338");
+  gradient.addColorStop(0.5, "#203c53");
+  gradient.addColorStop(1, "#0b1624");
+
+  ctx.fillStyle = gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  for (let i = 0; i < 25; i++) {
+
+    const x =
+      (i * 97) % width;
+
+    const y =
+      (i * 53) % height;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      1 + (i % 3),
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      "rgba(210,240,255,0.08)";
+
+    ctx.fill();
+  }
+}
+
+function animate() {
+
+  drawBackground();
+
+  for (const bloom of blooms) {
+
+    for (const branch of bloom.branches) {
+      growBranch(branch);
+      drawBranch(branch);
+    }
+
+    ctx.beginPath();
+
+    ctx.arc(
+      bloom.x,
+      bloom.y,
+      4,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      "rgba(230,250,255,0.9)";
+
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+glass.addEventListener("pointerdown", event => {
+
+  const rect = glass.getBoundingClientRect();
+
+  createBloom(
+    event.clientX - rect.left,
+    event.clientY - rect.top
+  );
+});
+
+document.addEventListener("keydown", event => {
+
+  if (event.code === "Space") {
+
+    event.preventDefault();
+
+    createBloom(
+      width / 2,
+      height / 2
+    );
+  }
+
+  if (event.key.toLowerCase() === "r") {
+    blooms = [];
+    bloomCount = 0;
+    count.textContent = "0";
+  }
+});
+
+speed.addEventListener("input", () => {
+  speedValue.textContent =
+    speed.value + "%";
+});
+
+density.addEventListener("input", () => {
+  densityValue.textContent =
+    density.value + "%";
+});
+
+document.getElementById("clear").onclick = () => {
+  blooms = [];
+  bloomCount = 0;
+  count.textContent = "0";
+};
+
+window.addEventListener("resize", resize);
+
+resize();
+animate();
+</script>
+
+</body>
+</html>

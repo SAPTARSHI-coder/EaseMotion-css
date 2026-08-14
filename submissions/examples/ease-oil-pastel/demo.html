@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oil Pastel · thick, textured strokes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="oilpastel-container">
+      <div class="oilpastel-display" id="oilpastelDisplay">
+        <!-- Canvas for oil pastel strokes -->
+        <canvas id="oilpastelCanvas"></canvas>
+        
+        <!-- Stroke info -->
+        <div class="stroke-info">
+          <span class="info-label">🖌️ Strokes</span>
+          <span class="info-value" id="strokeCount">0</span>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="color-palette" id="colorPalette">
+          <div class="color-swatch" style="--color: #ef4444;" data-color="#ef4444"></div>
+          <div class="color-swatch" style="--color: #f97316;" data-color="#f97316"></div>
+          <div class="color-swatch" style="--color: #fbbf24;" data-color="#fbbf24"></div>
+          <div class="color-swatch" style="--color: #22c55e;" data-color="#22c55e"></div>
+          <div class="color-swatch" style="--color: #3b82f6;" data-color="#3b82f6"></div>
+          <div class="color-swatch" style="--color: #8b5cf6;" data-color="#8b5cf6"></div>
+          <div class="color-swatch" style="--color: #ec4899;" data-color="#ec4899"></div>
+          <div class="color-swatch" style="--color: #f59e0b;" data-color="#f59e0b"></div>
+          <div class="color-swatch" style="--color: #10b981;" data-color="#10b981"></div>
+          <div class="color-swatch" style="--color: #6366f1;" data-color="#6366f1"></div>
+          <div class="color-swatch" style="--color: #f472b6;" data-color="#f472b6"></div>
+          <div class="color-swatch" style="--color: #14b8a6;" data-color="#14b8a6"></div>
+        </div>
+
+        <!-- Oil Pastel Text -->
+        <div class="oilpastel-text">
+          <span class="text-label">🖌️ Oil Pastel</span>
+          <span class="text-message" id="oilpastelMessage">Click and drag to draw</span>
+        </div>
+      </div>
+      
+      <div class="oilpastel-status">
+        <span id="oilpastelStatus">🖌️ Click and drag to create oil pastel strokes</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-mode" id="modeBtn">🎨 Toggle Texture</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>🖌️ thick textured strokes · oil pastel effect</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('oilpastelCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('oilpastelDisplay');
+      const strokeCount = document.getElementById('strokeCount');
+      const oilpastelStatus = document.getElementById('oilpastelStatus');
+      const oilpastelMessage = document.getElementById('oilpastelMessage');
+      const modeBtn = document.getElementById('modeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const colorSwatches = document.querySelectorAll('.color-swatch');
+
+      // State
+      let isDrawing = false;
+      let strokeCountNum = 0;
+      let currentColor = '#ef4444';
+      let textureMode = 0;
+      let lastX = 0;
+      let lastY = 0;
+      let points = [];
+
+      // Texture modes
+      const textures = [
+        { name: 'Smooth', label: 'Smooth' },
+        { name: 'Textured', label: 'Textured' },
+        { name: 'Rough', label: 'Rough' },
+        { name: 'Impasto', label: 'Impasto' }
+      ];
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        // Redraw existing strokes if any
+        if (points.length > 0) {
+          redrawStrokes();
+        }
+      }
+
+      // Get canvas coordinates
+      function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw oil pastel stroke
+      function drawStroke(x1, y1, x2, y2, color, textureIndex) {
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 1) return;
+
+        const steps = Math.max(Math.floor(dist / 2), 5);
+        const texture = textures[textureIndex % textures.length].name;
+
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t;
+          const y = y1 + (y2 - y1) * t;
+          
+          // Vary size for textured effect
+          let size = 8 + Math.random() * 12;
+          let opacity = 0.6 + Math.random() * 0.4;
+          
+          if (texture === 'Textured') {
+            size = 6 + Math.random() * 20;
+            opacity = 0.4 + Math.random() * 0.5;
+          } else if (texture === 'Rough') {
+            size = 4 + Math.random() * 25;
+            opacity = 0.3 + Math.random() * 0.4;
+            // Add random offsets for rough texture
+            const offsetX = (Math.random() - 0.5) * 8;
+            const offsetY = (Math.random() - 0.5) * 8;
+            drawPastelDot(x + offsetX, y + offsetY, size * 0.7, color, opacity * 0.7);
+          } else if (texture === 'Impasto') {
+            size = 10 + Math.random() * 25;
+            opacity = 0.7 + Math.random() * 0.3;
+            // Impasto has thicker application
+            drawPastelDot(x, y, size * 0.8, color, opacity);
+            // Add secondary thicker layer
+            setTimeout(() => {
+              drawPastelDot(
+                x + (Math.random() - 0.5) * 6,
+                y + (Math.random() - 0.5) * 6,
+                size * 1.2,
+                color,
+                opacity * 0.5
+              );
+            }, 10);
+          }
+
+          // Main dot
+          drawPastelDot(x, y, size, color, opacity);
+          
+          // Add texture variation
+          if (texture !== 'Smooth') {
+            for (let j = 0; j < 2 + Math.random() * 4; j++) {
+              const offsetX = (Math.random() - 0.5) * size * 0.8;
+              const offsetY = (Math.random() - 0.5) * size * 0.8;
+              const subSize = size * (0.2 + Math.random() * 0.3);
+              drawPastelDot(
+                x + offsetX,
+                y + offsetY,
+                subSize,
+                color,
+                opacity * 0.4
+              );
+            }
+          }
+        }
+      }
+
+      // Draw individual pastel dot
+      function drawPastelDot(x, y, size, color, opacity) {
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        
+        // Create oil pastel texture
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+        const baseColor = color;
+        const lightColor = lightenColor(color, 20);
+        const darkColor = darkenColor(color, 20);
+        
+        grad.addColorStop(0, lightColor);
+        grad.addColorStop(0.3, baseColor);
+        grad.addColorStop(0.7, baseColor);
+        grad.addColorStop(1, darkColor);
+        
+        ctx.fillStyle = grad;
+        
+        // Slightly irregular shape for oil pastel feel
+        ctx.beginPath();
+        const points = 12;
+        for (let i = 0; i < points; i++) {
+          const angle = (i / points) * Math.PI * 2;
+          const radiusVariation = 0.7 + Math.random() * 0.3;
+          const r = size * radiusVariation;
+          const px = x + Math.cos(angle) * r;
+          const py = y + Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add subtle texture dots
+        if (Math.random() > 0.6) {
+          ctx.globalAlpha = opacity * 0.3;
+          for (let i = 0; i < 3; i++) {
+            const dotX = x + (Math.random() - 0.5) * size * 0.6;
+            const dotY = y + (Math.random() - 0.5) * size * 0.6;
+            const dotSize = size * (0.05 + Math.random() * 0.15);
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+          }
+        }
+        
+        ctx.restore();
+      }
+
+      // Color helpers
+      function lightenColor(color, percent) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.min(255, (num >> 16) + amt);
+        const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+        const B = Math.min(255, (num & 0x0000FF) + amt);
+        return `rgb(${R},${G},${B})`;
+      }
+
+      function darkenColor(color, percent) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.max(0, (num >> 16) - amt);
+        const G = Math.max(0, ((num >> 8) & 0x00FF) - amt);
+        const B = Math.max(0, (num & 0x0000FF) - amt);
+        return `rgb(${R},${G},${B})`;
+      }
+
+      // Redraw all strokes
+      function redrawStrokes() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Draw background
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 30, 50, 0.3)');
+        grad.addColorStop(1, 'rgba(10, 10, 26, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Redraw all points
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          drawStroke(p1.x, p1.y, p2.x, p2.y, p1.color, p1.texture);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCanvasCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        // Store point
+        points.push({
+          x: lastX,
+          y: lastY,
+          color: currentColor,
+          texture: textureMode
+        });
+        
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+        oilpastelStatus.textContent = '🖌️ Drawing...';
+        oilpastelStatus.style.color = '#fbbf24';
+        oilpastelMessage.textContent = '🖌️ Drawing stroke...';
+        oilpastelMessage.style.color = '#fbbf24';
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCanvasCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        // Store point
+        points.push({
+          x: x,
+          y: y,
+          color: currentColor,
+          texture: textureMode
+        });
+        
+        drawStroke(lastX, lastY, x, y, currentColor, textureMode);
+        lastX = x;
+        lastY = y;
+        
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          oilpastelStatus.textContent = '🖌️ Stroke complete!';
+          oilpastelStatus.style.color = '#4ade80';
+          oilpastelMessage.textContent = 'Click and drag to draw';
+          oilpastelMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            if (!isDrawing) {
+              oilpastelStatus.textContent = '🖌️ Click and drag to create oil pastel strokes';
+              oilpastelStatus.style.color = '#94a3b8';
+            }
+          }, 1500);
+        }
+      }
+
+      // Toggle texture mode
+      function toggleTexture() {
+        textureMode = (textureMode + 1) % textures.length;
+        modeBtn.textContent = `🎨 ${textures[textureMode].label}`;
+        oilpastelStatus.textContent = `🎨 Texture: ${textures[textureMode].name}`;
+        oilpastelStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          oilpastelStatus.textContent = '🖌️ Click and drag to create oil pastel strokes';
+          oilpastelStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        points = [];
+        strokeCountNum = 0;
+        strokeCount.textContent = '0';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Redraw background
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 30, 50, 0.3)');
+        grad.addColorStop(1, 'rgba(10, 10, 26, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        oilpastelStatus.textContent = '🧹 Canvas cleared';
+        oilpastelStatus.style.color = '#94a3b8';
+        oilpastelMessage.textContent = 'Click and drag to draw';
+        oilpastelMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          oilpastelStatus.textContent = '🖌️ Click and drag to create oil pastel strokes';
+          oilpastelStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Color selection
+      colorSwatches.forEach(swatch => {
+        swatch.addEventListener('click', function() {
+          const color = this.dataset.color;
+          currentColor = color;
+          // Update active state
+          colorSwatches.forEach(s => s.classList.remove('active'));
+          this.classList.add('active');
+          oilpastelStatus.textContent = `🎨 Color selected`;
+          oilpastelStatus.style.color = color;
+          setTimeout(() => {
+            oilpastelStatus.textContent = '🖌️ Click and drag to create oil pastel strokes';
+            oilpastelStatus.style.color = '#94a3b8';
+          }, 1000);
+        });
+      });
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleTexture();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 't' || key === 'T') {
+          e.preventDefault();
+          toggleTexture();
+        } else if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      // Set default active color
+      colorSwatches[0].classList.add('active');
+      
+      console.log('🖌️ Oil Pastel ready · shortcuts: [T] Texture, [C] Clear');
+    })();
+  </script>
+</body>
+</html>

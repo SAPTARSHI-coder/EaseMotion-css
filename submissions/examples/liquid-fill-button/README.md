@@ -1,19 +1,5 @@
 # Liquid Fill Button
 
-## Description
-
-A button hover effect where a liquid-like background rises from the bottom.
-
-## Files
-
-- demo.html
-- style.css
-- script.js
-
-## Usage
-
-Open demo.html in a browser and hover over the button.
-
-## Browser Support
-
-Chrome, Firefox, Edge, Safari
+1. What does this do? Fills a button with color from bottom to top on hover.
+2. How is it used? Apply the class `.liquid-fill-btn` to a button element.
+3. Why is it useful? It offers a fluid, material-like hover state without JavaScript.

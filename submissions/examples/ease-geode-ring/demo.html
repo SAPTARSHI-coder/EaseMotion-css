@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geode Ring · concentric crystal rings expand</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="geodering-container">
+      <div class="geodering-display" id="geoderingDisplay">
+        <!-- Canvas for geode ring -->
+        <canvas id="geoderingCanvas"></canvas>
+        
+        <!-- Geode Ring Info -->
+        <div class="geodering-info">
+          <span class="info-label">💎 Rings</span>
+          <span class="info-value" id="ringCount">0</span>
+        </div>
+
+        <!-- Geode Ring Controls -->
+        <div class="geodering-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Expand</label>
+            <input type="range" class="control-slider" id="expandSlider" min="0" max="100" value="50">
+            <span class="control-value" id="expandValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Crystal</label>
+            <div class="crystal-options">
+              <button class="crystal-btn active" data-crystal="amethyst" title="Amethyst">💜</button>
+              <button class="crystal-btn" data-crystal="citrine" title="Citrine">💛</button>
+              <button class="crystal-btn" data-crystal="emerald" title="Emerald">💚</button>
+              <button class="crystal-btn" data-crystal="rose" title="Rose">💗</button>
+              <button class="crystal-btn" data-crystal="sapphire" title="Sapphire">💙</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geode Ring Text -->
+        <div class="geodering-text">
+          <span class="text-label">💎 Geode Ring</span>
+          <span class="text-message" id="geoderingMessage">Concentric crystal rings expanding outward</span>
+        </div>
+      </div>
+      
+      <div class="geodering-status">
+        <span id="geoderingStatus">💎 Crystal rings expanding from the center</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-expand" id="expandBtn">🌀 Expand</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>💎 concentric rings · 5 crystal types · expanding</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('geoderingCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('geoderingDisplay');
+      const ringCount = document.getElementById('ringCount');
+      const geoderingStatus = document.getElementById('geoderingStatus');
+      const geoderingMessage = document.getElementById('geoderingMessage');
+      const expandBtn = document.getElementById('expandBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const expandSlider = document.getElementById('expandSlider');
+      const expandValue = document.getElementById('expandValue');
+      const crystalBtns = document.querySelectorAll('.crystal-btn');
+
+      // State
+      let rings = [];
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+      let currentCrystal = 'amethyst';
+      let expansion = 50;
+
+      // Crystal configurations
+      const crystalData = {
+        amethyst: { name: 'Amethyst', color: '#a78bfa', light: '#c4b5fd', dark: '#7c3aed', glow: 'rgba(167,139,250,0.3)' },
+        citrine: { name: 'Citrine', color: '#fbbf24', light: '#fcd34d', dark: '#f59e0b', glow: 'rgba(251,191,36,0.3)' },
+        emerald: { name: 'Emerald', color: '#34d399', light: '#6ee7b7', dark: '#10b981', glow: 'rgba(52,211,153,0.3)' },
+        rose: { name: 'Rose', color: '#f472b6', light: '#f9a8d4', dark: '#ec4899', glow: 'rgba(244,114,182,0.3)' },
+        sapphire: { name: 'Sapphire', color: '#60a5fa', light: '#93c5fd', dark: '#3b82f6', glow: 'rgba(96,165,250,0.3)' }
+      };
+
+      // Ring class
+      class CrystalRing {
+        constructor(index, radius, color) {
+          this.index = index || 0;
+          this.radius = radius || 20 + Math.random() * 15;
+          this.targetRadius = this.radius * (1.5 + Math.random() * 1.5);
+          this.color = color || currentCrystal;
+          this.width = 1.5 + Math.random() * 2;
+          this.opacity = 0.3 + Math.random() * 0.3;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 0.5;
+          this.glow = 0.3 + Math.random() * 0.3;
+          this.points = [];
+          this.crystals = [];
+          this.growing = true;
+          this.growSpeed = 0.005 + Math.random() * 0.01;
+          this.maxRadius = 50 + Math.random() * 80;
+          
+          // Generate ring points
+          const numPoints = 12 + Math.floor(Math.random() * 12);
+          for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            const wobble = 0.85 + Math.random() * 0.3;
+            this.points.push({ angle, wobble });
+          }
+          
+          // Generate crystal clusters on ring
+          const numCrystals = 3 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < numCrystals; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 0.5 + Math.random() * 0.5;
+            this.crystals.push({
+              angle: angle,
+              dist: dist,
+              size: 2 + Math.random() * 4,
+              phase: Math.random() * Math.PI * 2,
+              speed: 0.5 + Math.random() * 0.5
+            });
+          }
+        }
+
+        update(expansion, time) {
+          const expandFactor = expansion / 100;
+          const target = this.maxRadius * expandFactor;
+          
+          if (this.radius < target) {
+            this.radius += this.growSpeed * (0.5 + expandFactor * 0.5);
+            if (this.radius > target) this.radius = target;
+          }
+          
+          this.phase += 0.02 * this.speed;
+          this.opacity = 0.2 + (this.radius / this.maxRadius) * 0.5;
+          this.glow = 0.2 + (this.radius / this.maxRadius) * 0.3;
+          
+          // Update crystals
+          this.crystals.forEach(c => {
+            c.phase += c.speed * 0.01;
+          });
+          
+          return this.radius < this.maxRadius * 1.1;
+        }
+
+        draw(ctx, color, expansion) {
+          const colorData = crystalData[color];
+          const progress = this.radius / this.maxRadius;
+          const alpha = this.opacity * (0.3 + progress * 0.5);
+          const width = this.width * (0.5 + progress * 0.5);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          
+          // Glow
+          ctx.shadowColor = colorData.color;
+          ctx.shadowBlur = 15 * this.glow;
+          
+          // Draw ring
+          ctx.beginPath();
+          for (let i = 0; i < this.points.length; i++) {
+            const p = this.points[i];
+            const angle = p.angle + this.phase * 0.1;
+            const wobble = p.wobble * (0.9 + Math.sin(this.phase * 0.5 + i) * 0.1);
+            const r = this.radius * wobble;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          
+          ctx.strokeStyle = colorData.color;
+          ctx.lineWidth = width;
+          ctx.stroke();
+          
+          // Inner glow ring
+          ctx.shadowBlur = 5;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.strokeStyle = colorData.light;
+          ctx.lineWidth = width * 0.3;
+          ctx.stroke();
+          
+          // Crystal clusters on ring
+          ctx.shadowBlur = 8;
+          this.crystals.forEach(c => {
+            const angle = c.angle + this.phase * 0.2 + c.phase;
+            const dist = this.radius * c.dist;
+            const x = Math.cos(angle) * dist;
+            const y = Math.sin(angle) * dist;
+            const size = c.size * (0.3 + progress * 0.5);
+            
+            // Crystal glow
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
+            grad.addColorStop(0, colorData.light + '66');
+            grad.addColorStop(0.3, colorData.color + '33');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.globalAlpha = alpha * 0.4;
+            ctx.beginPath();
+            ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Crystal
+            ctx.globalAlpha = alpha * 0.8;
+            ctx.fillStyle = colorData.light;
+            ctx.shadowColor = colorData.color;
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            for (let i = 0; i < 4; i++) {
+              const a = (i / 4) * Math.PI * 2 + c.phase * 0.3;
+              const radius = i % 2 === 0 ? size : size * 0.5;
+              const px = Math.cos(a) * radius;
+              const py = Math.sin(a) * radius;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+          });
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate rings
+      function generateRings() {
+        const count = 5 + Math.floor(Math.random() * 6);
+        rings = [];
+        for (let i = 0; i < count; i++) {
+          const radius = 20 + i * 25 + Math.random() * 10;
+          const ring = new CrystalRing(i, radius, currentCrystal);
+          ring.maxRadius = 60 + i * 40 + Math.random() * 30;
+          ring.growSpeed = 0.005 + Math.random() * 0.015;
+          rings.push(ring);
+        }
+        ringCount.textContent = rings.length;
+      }
+
+      // Draw center
+      function drawCenter() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const colorData = crystalData[currentCrystal];
+        
+        // Center glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+        grad.addColorStop(0, colorData.glow);
+        grad.addColorStop(0.5, colorData.glow);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Center crystal
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.shadowColor = colorData.color;
+        ctx.shadowBlur = 20;
+        
+        const grad2 = ctx.createRadialGradient(-5, -5, 0, 0, 0, 15);
+        grad2.addColorStop(0, colorData.light);
+        grad2.addColorStop(0.4, colorData.color);
+        grad2.addColorStop(0.8, colorData.dark);
+        grad2.addColorStop(1, colorData.dark + '88');
+        ctx.fillStyle = grad2;
+        ctx.globalAlpha = 0.8;
+        
+        // Center crystal shape
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2 + time * 0.01;
+          const radius = i % 2 === 0 ? 15 : 8;
+          const px = Math.cos(angle) * radius;
+          const py = Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateRings();
+      }
+
+      // Animation loop
+      function animate() {
+        const expansion = parseInt(expandSlider.value);
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawCenter();
+        
+        // Update and draw rings
+        rings.forEach(ring => {
+          ring.update(expansion, time);
+          ring.draw(ctx, currentCrystal, expansion);
+        });
+        
+        // Update ring count
+        ringCount.textContent = rings.length;
+        
+        // Update status
+        if (expansion > 70) {
+          geoderingStatus.textContent = '💎 Crystal rings expanding rapidly! ✨';
+          geoderingStatus.style.color = '#fbbf24';
+        } else if (expansion > 30) {
+          geoderingStatus.textContent = '💎 Concentric rings expanding outward';
+          geoderingStatus.style.color = '#818cf8';
+        } else {
+          geoderingStatus.textContent = '💎 Crystal rings expanding from the center';
+          geoderingStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message
+        const colorData = crystalData[currentCrystal];
+        geoderingMessage.textContent = `${colorData.name} rings expanding outward`;
+        geoderingMessage.style.color = colorData.color;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set crystal type
+      function setCrystalType(type) {
+        currentCrystal = type;
+        crystalBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.crystal === type);
+        });
+        const colorData = crystalData[type];
+        geoderingStatus.textContent = `💎 Crystal: ${colorData.name}`;
+        geoderingStatus.style.color = colorData.color;
+        generateRings();
+        setTimeout(() => {
+          if (expansion < 10) {
+            geoderingStatus.textContent = '💎 Crystal rings expanding from the center';
+            geoderingStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetGeodeRing() {
+        expandSlider.value = 50;
+        expandValue.textContent = '50%';
+        generateRings();
+        geoderingStatus.textContent = '🔄 Reset complete';
+        geoderingStatus.style.color = '#94a3b8';
+        geoderingMessage.textContent = 'Concentric crystal rings expanding outward';
+        geoderingMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          geoderingStatus.textContent = '💎 Crystal rings expanding from the center';
+          geoderingStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      expandSlider.addEventListener('input', function() {
+        expandValue.textContent = this.value + '%';
+      });
+
+      crystalBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setCrystalType(this.dataset.crystal);
+        });
+      });
+
+      if (expandBtn) {
+        expandBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const currentExpand = parseInt(expandSlider.value);
+          const newExpand = Math.min(100, currentExpand + 15);
+          expandSlider.value = newExpand;
+          expandValue.textContent = newExpand + '%';
+          geoderingStatus.textContent = '🌀 Rings expanding!';
+          geoderingStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            geoderingStatus.textContent = '💎 Crystal rings expanding from the center';
+            geoderingStatus.style.color = '#94a3b8';
+          }, 1500);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetGeodeRing();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'e' || key === 'E') {
+          e.preventDefault();
+          const currentExpand = parseInt(expandSlider.value);
+          const newExpand = Math.min(100, currentExpand + 15);
+          expandSlider.value = newExpand;
+          expandValue.textContent = newExpand + '%';
+          geoderingStatus.textContent = '🌀 Rings expanding!';
+          geoderingStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            geoderingStatus.textContent = '💎 Crystal rings expanding from the center';
+            geoderingStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetGeodeRing();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('💎 Geode Ring ready · shortcuts: [E] Expand, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

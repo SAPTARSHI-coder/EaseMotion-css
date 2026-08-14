@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Thermal Bloom</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="thermal-card">
+
+      <header class="header">
+
+        <div>
+
+          <span class="eyebrow">
+            MATERIALS LAB / CRYOGENIC ARRAY 04
+          </span>
+
+          <h1>
+            Thermal Bloom
+          </h1>
+
+          <p>
+            Heat the crystal. Watch it transform.
+          </p>
+
+        </div>
+
+        <div class="system-status">
+
+          <span class="status-dot"></span>
+
+          <span id="systemState">
+            SURFACE COLD
+          </span>
+
+        </div>
+
+      </header>
+
+
+      <div class="workspace">
+
+        <section class="thermal-stage">
+
+          <canvas
+            id="thermalCanvas"
+          ></canvas>
+
+          <div class="stage-overlay">
+
+            <div class="temperature-readout">
+
+              <span>
+                CORE TEMPERATURE
+              </span>
+
+              <strong id="stageTemp">
+                04°C
+              </strong>
+
+            </div>
+
+            <div class="interaction-label">
+              MOVE TO HEAT
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <aside class="control-panel">
+
+          <div class="panel-title">
+
+            <span>
+              THERMAL MONITOR
+            </span>
+
+            <span>
+              TB-04
+            </span>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>
+              TEMPERATURE
+            </span>
+
+            <strong id="temperature">
+              04°C
+            </strong>
+
+            <div class="meter">
+
+              <div
+                id="temperatureBar"
+                class="meter-fill"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>
+              HEAT RADIUS
+            </span>
+
+            <strong id="radius">
+              00 PX
+            </strong>
+
+            <div class="meter">
+
+              <div
+                id="radiusBar"
+                class="meter-fill"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>
+              ACTIVE CELLS
+            </span>
+
+            <strong id="activeCells">
+              00
+            </strong>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>
+              MAX TEMP
+            </span>
+
+            <strong id="maxTemp">
+              04°C
+            </strong>
+
+          </div>
+
+
+          <div class="divider"></div>
+
+
+          <div class="controls-title">
+            EXPERIMENT CONTROLS
+          </div>
+
+
+          <div class="controls">
+
+            <button id="burstButton">
+              Heat Burst
+            </button>
+
+            <button
+              id="clearButton"
+              class="secondary"
+            >
+              Clear Heat
+            </button>
+
+            <button
+              id="freezeButton"
+              class="ghost"
+            >
+              Freeze Surface
+            </button>
+
+          </div>
+
+
+          <div class="divider"></div>
+
+
+          <div class="legend-title">
+            THERMAL SCALE
+          </div>
+
+
+          <div class="legend">
+
+            <div>
+              <i class="cold"></i>
+              COLD
+            </div>
+
+            <div>
+              <i class="warm"></i>
+              WARM
+            </div>
+
+            <div>
+              <i class="active"></i>
+              ACTIVE
+            </div>
+
+            <div>
+              <i class="critical"></i>
+              CRITICAL
+            </div>
+
+          </div>
+
+
+          <div class="keyboard">
+
+            <span>SPACE</span>
+            burst
+
+            <span>C</span>
+            clear
+
+            <span>F</span>
+            freeze
+
+          </div>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+    <p class="footer">
+      Conceptual thermal visualization — values are synthetic.
+    </p>
+
+  </main>
+
+
+  <script>
+
+    const canvas =
+      document.getElementById(
+        "thermalCanvas"
+      );
+
+    const ctx =
+      canvas.getContext(
+        "2d"
+      );
+
+
+    const stage =
+      document.querySelector(
+        ".thermal-stage"
+      );
+
+
+    const temperatureElement =
+      document.getElementById(
+        "temperature"
+      );
+
+    const stageTemp =
+      document.getElementById(
+        "stageTemp"
+      );
+
+    const radiusElement =
+      document.getElementById(
+        "radius"
+      );
+
+    const activeCellsElement =
+      document.getElementById(
+        "activeCells"
+      );
+
+    const maxTempElement =
+      document.getElementById(
+        "maxTemp"
+      );
+
+    const temperatureBar =
+      document.getElementById(
+        "temperatureBar"
+      );
+
+    const radiusBar =
+      document.getElementById(
+        "radiusBar"
+      );
+
+    const systemState =
+      document.getElementById(
+        "systemState"
+      );
+
+
+    const CONFIG = {
+
+      resolution: 28,
+
+      diffusion: 0.16,
+
+      cooling: 0.004,
+
+      maxTemperature: 100,
+
+      baseTemperature: 4,
+
+      heatRadius: 110,
+
+      burstIntensity: 75
+
+    };
+
+
+    let width = 0;
+
+    let height = 0;
+
+    let cellSize = 0;
+
+    let cols = 0;
+
+    let rows = 0;
+
+
+    let heat = [];
+
+    let nextHeat = [];
+
+
+    let pointer = {
+
+      x: 0,
+
+      y: 0,
+
+      active: false,
+
+      lastX: 0,
+
+      lastY: 0
+
+    };
+
+
+    let frozen = false;
+
+    let maximumTemperature =
+      CONFIG.baseTemperature;
+
+
+    const cracks = [];
+
+    const blooms = [];
+
+
+    function resize() {
+
+      const rect =
+        stage.getBoundingClientRect();
+
+
+      width =
+        rect.width;
+
+      height =
+        rect.height;
+
+
+      canvas.width =
+        width *
+        devicePixelRatio;
+
+      canvas.height =
+        height *
+        devicePixelRatio;
+
+
+      canvas.style.width =
+        width + "px";
+
+      canvas.style.height =
+        height + "px";
+
+
+      ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+      );
+
+
+      cols =
+        Math.ceil(
+          width /
+          CONFIG.resolution
+        );
+
+
+      rows =
+        Math.ceil(
+          height /
+          CONFIG.resolution
+        );
+
+
+      cellSize =
+        Math.max(
+          width / cols,
+          height / rows
+        );
+
+
+      heat =
+        new Float32Array(
+          cols * rows
+        );
+
+
+      nextHeat =
+        new Float32Array(
+          cols * rows
+        );
+
+    }
+
+
+    function index(
+      x,
+      y
+    ) {
+
+      return (
+        y * cols + x
+      );
+
+    }
+
+
+    function addHeat(
+      px,
+      py,
+      amount,
+      radius
+    ) {
+
+      const gx =
+        Math.floor(
+          px /
+          width *
+          cols
+        );
+
+
+      const gy =
+        Math.floor(
+          py /
+          height *
+          rows
+        );
+
+
+      const gridRadius =
+        Math.ceil(
+          radius /
+          CONFIG.resolution
+        );
+
+
+      for (
+        let y = -gridRadius;
+        y <= gridRadius;
+        y++
+      ) {
+
+        for (
+          let x = -gridRadius;
+          x <= gridRadius;
+          x++
+        ) {
+
+          const cx =
+            gx + x;
+
+          const cy =
+            gy + y;
+
+
+          if (
+            cx < 0 ||
+            cy < 0 ||
+            cx >= cols ||
+            cy >= rows
+          ) {
+
+            continue;
+
+          }
+
+
+          const distance =
+            Math.sqrt(
+              x * x +
+              y * y
+            );
+
+
+          if (
+            distance >
+            gridRadius
+          ) {
+
+            continue;
+
+          }
+
+
+          const falloff =
+            1 -
+            distance /
+            gridRadius;
+
+
+          const i =
+            index(
+              cx,
+              cy
+            );
+
+
+          heat[i] =
+            Math.min(
+              CONFIG.maxTemperature,
+              heat[i] +
+              amount *
+              falloff
+            );
+
+        }
+
+      }
+
+    }
+
+
+    function diffuse() {
+
+      if (frozen) {
+
+        return;
+
+      }
+
+
+      for (
+        let y = 0;
+        y < rows;
+        y++
+      ) {
+
+        for (
+          let x = 0;
+          x < cols;
+          x++
+        ) {
+
+          const i =
+            index(
+              x,
+              y
+            );
+
+
+          const center =
+            heat[i];
+
+
+          const left =
+            heat[
+              index(
+                Math.max(
+                  0,
+                  x - 1
+                ),
+                y
+              )
+            ];
+
+
+          const right =
+            heat[
+              index(
+                Math.min(
+                  cols - 1,
+                  x + 1
+                ),
+                y
+              )
+            ];
+
+
+          const up =
+            heat[
+              index(
+                x,
+                Math.max(
+                  0,
+                  y - 1
+                )
+              )
+            ];
+
+
+          const down =
+            heat[
+              index(
+                x,
+                Math.min(
+                  rows - 1,
+                  y + 1
+                )
+              )
+            ];
+
+
+          const average =
+            (
+              left +
+              right +
+              up +
+              down
+            ) / 4;
+
+
+          nextHeat[i] =
+            center +
+            (
+              average -
+              center
+            ) *
+            CONFIG.diffusion;
+
+
+          nextHeat[i] *=
+            (
+              1 -
+              CONFIG.cooling
+            );
+
+        }
+
+      }
+
+
+      const temp =
+        heat;
+
+      heat =
+        nextHeat;
+
+      nextHeat =
+        temp;
+
+    }
+
+
+    function temperatureColor(
+      value
+    ) {
+
+      const t =
+        value /
+        CONFIG.maxTemperature;
+
+
+      if (
+        t < 0.25
+      ) {
+
+        return {
+          r: 75,
+          g: 120,
+          b: 150,
+          a: 0.28
+        };
+
+      }
+
+
+      if (
+        t < 0.5
+      ) {
+
+        return {
+          r: 90,
+          g: 190,
+          b: 200,
+          a: 0.42
+        };
+
+      }
+
+
+      if (
+        t < 0.75
+      ) {
+
+        return {
+          r: 235,
+          g: 180,
+          b: 85,
+          a: 0.55
+        };
+
+      }
+
+
+      return {
+        r: 255,
+        g: 95,
+        b: 60,
+        a: 0.72
+      };
+
+    }
+
+
+    function drawCrystalGrid() {
+
+      ctx.save();
+
+      ctx.strokeStyle =
+        "rgba(200,240,255,.06)";
+
+      ctx.lineWidth = 1;
+
+
+      for (
+        let x = 0;
+        x <= width;
+        x += cellSize
+      ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x,
+          0
+        );
+
+        ctx.lineTo(
+          x,
+          height
+        );
+
+        ctx.stroke();
+
+      }
+
+
+      for (
+        let y = 0;
+        y <= height;
+        y += cellSize
+      ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          0,
+          y
+        );
+
+        ctx.lineTo(
+          width,
+          y
+        );
+
+        ctx.stroke();
+
+      }
+
+
+      ctx.restore();
+
+    }
+
+
+    function drawHeat() {
+
+      for (
+        let y = 0;
+        y < rows;
+        y++
+      ) {
+
+        for (
+          let x = 0;
+          x < cols;
+          x++
+        ) {
+
+          const value =
+            heat[
+              index(
+                x,
+                y
+              )
+            ];
+
+
+          if (
+            value <
+            1
+          ) {
+
+            continue;
+
+          }
+
+
+          const color =
+            temperatureColor(
+              value
+            );
+
+
+          ctx.fillStyle =
+            `rgba(
+              ${color.r},
+              ${color.g},
+              ${color.b},
+              ${color.a}
+            )`;
+
+
+          ctx.fillRect(
+            x * cellSize,
+            y * cellSize,
+            cellSize + 1,
+            cellSize + 1
+          );
+
+        }
+
+      }
+
+    }
+
+
+    function createCrack(
+      x,
+      y
+    ) {
+
+      const points = [
+
+        {
+          x,
+          y
+        }
+
+      ];
+
+
+      let angle =
+        Math.random() *
+        Math.PI *
+        2;
+
+
+      const length =
+        20 +
+        Math.random() *
+        75;
+
+
+      const segments =
+        4 +
+        Math.floor(
+          Math.random() * 5
+        );
+
+
+      for (
+        let i = 0;
+        i < segments;
+        i++
+      ) {
+
+        angle +=
+          (
+            Math.random() -
+            .5
+          )
+          * .9;
+
+
+        points.push({
+
+          x:
+            points[
+              points.length - 1
+            ].x +
+            Math.cos(angle) *
+            length /
+            segments,
+
+          y:
+            points[
+              points.length - 1
+            ].y +
+            Math.sin(angle) *
+            length /
+            segments
+
+        });
+
+      }
+
+
+      cracks.push({
+
+        points,
+
+        life: 1
+
+      });
+
+
+      if (
+        cracks.length > 100
+      ) {
+
+        cracks.shift();
+
+      }
+
+    }
+
+
+    function createBloom(
+      x,
+      y
+    ) {
+
+      blooms.push({
+
+        x,
+
+        y,
+
+        radius: 5,
+
+        life: 1,
+
+        rotation:
+          Math.random() *
+          Math.PI
+
+      });
+
+
+      if (
+        blooms.length > 30
+      ) {
+
+        blooms.shift();
+
+      }
+
+    }
+
+
+    function inspectHotCells() {
+
+      for (
+        let y = 1;
+        y < rows - 1;
+        y++
+      ) {
+
+        for (
+          let x = 1;
+          x < cols - 1;
+          x++
+        ) {
+
+          const value =
+            heat[
+              index(
+                x,
+                y
+              )
+            ];
+
+
+          if (
+            value >
+            72 &&
+            Math.random() <
+            .003
+          ) {
+
+            const px =
+              x * cellSize +
+              cellSize / 2;
+
+
+            const py =
+              y * cellSize +
+              cellSize / 2;
+
+
+            createCrack(
+              px,
+              py
+            );
+
+          }
+
+
+          if (
+            value >
+            88 &&
+            Math.random() <
+            .002
+          ) {
+
+            const px =
+              x * cellSize +
+              cellSize / 2;
+
+
+            const py =
+              y * cellSize +
+              cellSize / 2;
+
+
+            createBloom(
+              px,
+              py
+            );
+
+          }
+
+        }
+
+      }
+
+    }
+
+
+    function drawCracks() {
+
+      cracks.forEach(
+        crack => {
+
+          crack.life -=
+            .003;
+
+
+          if (
+            crack.life <= 0
+          ) {
+
+            return;
+
+          }
+
+
+          ctx.save();
+
+          ctx.beginPath();
+
+
+          crack.points.forEach(
+            (
+              point,
+              index
+            ) => {
+
+              if (
+                index === 0
+              ) {
+
+                ctx.moveTo(
+                  point.x,
+                  point.y
+                );
+
+              } else {
+
+                ctx.lineTo(
+                  point.x,
+                  point.y
+                );
+
+              }
+
+            }
+          );
+
+
+          ctx.strokeStyle =
+            `rgba(
+              255,
+              226,
+              165,
+              ${crack.life * .65}
+            )`;
+
+
+          ctx.lineWidth =
+            1 +
+            crack.life;
+
+
+          ctx.shadowBlur =
+            8;
+
+
+          ctx.shadowColor =
+            "rgba(255,130,70,.45)";
+
+
+          ctx.stroke();
+
+          ctx.restore();
+
+        }
+      );
+
+    }
+
+
+    function drawBlooms() {
+
+      blooms.forEach(
+        bloom => {
+
+          bloom.life -=
+            .004;
+
+
+          bloom.radius +=
+            .25;
+
+
+          if (
+            bloom.life <= 0
+          ) {
+
+            return;
+
+          }
+
+
+          ctx.save();
+
+          ctx.translate(
+            bloom.x,
+            bloom.y
+          );
+
+
+          ctx.rotate(
+            bloom.rotation
+          );
+
+
+          ctx.strokeStyle =
+            `rgba(
+              255,
+              175,
+              92,
+              ${bloom.life * .6}
+            )`;
+
+
+          ctx.lineWidth =
+            1.2;
+
+
+          const petals = 8;
+
+
+          for (
+            let i = 0;
+            i < petals;
+            i++
+          ) {
+
+            ctx.rotate(
+              Math.PI * 2 /
+              petals
+            );
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+              0,
+              0
+            );
+
+            ctx.quadraticCurveTo(
+              bloom.radius,
+              -bloom.radius * .8,
+              bloom.radius * 1.4,
+              0
+            );
+
+            ctx.quadraticCurveTo(
+              bloom.radius,
+              bloom.radius * .8,
+              0,
+              0
+            );
+
+            ctx.stroke();
+
+          }
+
+
+          ctx.restore();
+
+        }
+      );
+
+    }
+
+
+    function getStats() {
+
+      let total = 0;
+
+      let active = 0;
+
+      let max = 0;
+
+
+      for (
+        let i = 0;
+        i < heat.length;
+        i++
+      ) {
+
+        const value =
+          heat[i];
+
+
+        total +=
+          value;
+
+
+        if (
+          value > 25
+        ) {
+
+          active++;
+
+        }
+
+
+        max =
+          Math.max(
+            max,
+            value
+          );
+
+      }
+
+
+      const average =
+        total /
+        heat.length;
+
+
+      return {
+
+        average,
+
+        active,
+
+        max
+
+      };
+
+    }
+
+
+    function updateUI() {
+
+      const stats =
+        getStats();
+
+
+      const temp =
+        Math.round(
+          stats.average
+        );
+
+
+      const max =
+        Math.round(
+          stats.max
+        );
+
+
+      const state =
+
+        max >= 85
+          ? "CRITICAL"
+          : max >= 60
+            ? "ACTIVE"
+            : max >= 25
+              ? "WARM"
+              : "SURFACE COLD";
+
+
+      temperatureElement.textContent =
+        `${temp}°C`;
+
+
+      stageTemp.textContent =
+        `${temp}°C`;
+
+
+      maxTempElement.textContent =
+        `${max}°C`;
+
+
+      activeCellsElement.textContent =
+        String(
+          stats.active
+        ).padStart(
+          2,
+          "0"
+        );
+
+
+      systemState.textContent =
+        state;
+
+
+      temperatureBar.style.width =
+        `${Math.min(
+          100,
+          temp
+        )}%`;
+
+
+      radiusBar.style.width =
+        pointer.active
+          ? "72%"
+          : "0%";
+
+    }
+
+
+    function draw() {
+
+      ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      const gradient =
+        ctx.createLinearGradient(
+          0,
+          0,
+          0,
+          height
+        );
+
+
+      gradient.addColorStop(
+        0,
+        "#07121a"
+      );
+
+
+      gradient.addColorStop(
+        1,
+        "#03080c"
+      );
+
+
+      ctx.fillStyle =
+        gradient;
+
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      drawCrystalGrid();
+
+      drawHeat();
+
+      drawCracks();
+
+      drawBlooms();
+
+
+      if (
+        pointer.active
+      ) {
+
+        ctx.beginPath();
+
+        ctx.arc(
+          pointer.x,
+          pointer.y,
+          CONFIG.heatRadius,
+          0,
+          Math.PI * 2
+        );
+
+
+        const gradient =
+          ctx.createRadialGradient(
+            pointer.x,
+            pointer.y,
+            0,
+            pointer.x,
+            pointer.y,
+            CONFIG.heatRadius
+          );
+
+
+        gradient.addColorStop(
+          0,
+          "rgba(255,140,80,.18)"
+        );
+
+
+        gradient.addColorStop(
+          .45,
+          "rgba(255,100,60,.07)"
+        );
+
+
+        gradient.addColorStop(
+          1,
+          "rgba(255,80,40,0)"
+        );
+
+
+        ctx.fillStyle =
+          gradient;
+
+
+        ctx.fill();
+
+      }
+
+    }
+
+
+    function loop() {
+
+      if (
+        !frozen
+      ) {
+
+        diffuse();
+
+        if (
+          pointer.active
+        ) {
+
+          const dx =
+            pointer.x -
+            pointer.lastX;
+
+
+          const dy =
+            pointer.y -
+            pointer.lastY;
+
+
+          const speed =
+            Math.sqrt(
+              dx * dx +
+              dy * dy
+            );
+
+
+          const amount =
+            1.8 +
+            Math.min(
+              speed * .2,
+              5
+            );
+
+
+          addHeat(
+            pointer.x,
+            pointer.y,
+            amount,
+            CONFIG.heatRadius
+          );
+
+
+          pointer.lastX =
+            pointer.x;
+
+
+          pointer.lastY =
+            pointer.y;
+
+        }
+
+
+        inspectHotCells();
+
+      }
+
+
+      draw();
+
+      updateUI();
+
+
+      requestAnimationFrame(
+        loop
+      );
+
+    }
+
+
+    function pointerMove(
+      event
+    ) {
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+
+      pointer.x =
+        event.clientX -
+        rect.left;
+
+
+      pointer.y =
+        event.clientY -
+        rect.top;
+
+
+      if (
+        !pointer.active
+      ) {
+
+        pointer.lastX =
+          pointer.x;
+
+        pointer.lastY =
+          pointer.y;
+
+      }
+
+
+      pointer.active =
+        true;
+
+    }
+
+
+    canvas.addEventListener(
+      "pointermove",
+      pointerMove
+    );
+
+
+    canvas.addEventListener(
+      "pointerenter",
+      pointerMove
+    );
+
+
+    canvas.addEventListener(
+      "pointerleave",
+      () => {
+
+        pointer.active =
+          false;
+
+      }
+    );
+
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+
+        pointerMove(
+          event
+        );
+
+
+        addHeat(
+          pointer.x,
+          pointer.y,
+          CONFIG.burstIntensity,
+          CONFIG.heatRadius * 1.6
+        );
+
+      }
+    );
+
+
+    document
+      .getElementById(
+        "burstButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          addHeat(
+            width / 2,
+            height / 2,
+            CONFIG.burstIntensity,
+            CONFIG.heatRadius * 1.7
+          );
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "clearButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          heat.fill(0);
+
+          nextHeat.fill(0);
+
+          cracks.length = 0;
+
+          blooms.length = 0;
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "freezeButton"
+      )
+      .addEventListener(
+        "click",
+        event => {
+
+          frozen =
+            !frozen;
+
+
+          event.target.textContent =
+            frozen
+              ? "Resume Surface"
+              : "Freeze Surface";
+
+        }
+      );
+
+
+    window.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.code ===
+          "Space"
+        ) {
+
+          event.preventDefault();
+
+
+          addHeat(
+            width / 2,
+            height / 2,
+            CONFIG.burstIntensity,
+            CONFIG.heatRadius * 1.7
+          );
+
+        }
+
+
+        if (
+          event.key.toLowerCase()
+          === "c"
+        ) {
+
+          heat.fill(0);
+
+          nextHeat.fill(0);
+
+          cracks.length = 0;
+
+          blooms.length = 0;
+
+        }
+
+
+        if (
+          event.key.toLowerCase()
+          === "f"
+        ) {
+
+          frozen =
+            !frozen;
+
+        }
+
+      }
+    );
+
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+
+    resize();
+
+    loop();
+
+  </script>
+
+</body>
+
+</html>

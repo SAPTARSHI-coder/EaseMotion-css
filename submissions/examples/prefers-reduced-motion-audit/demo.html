@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix: Fragmented prefers-reduced-motion — EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 2rem; font-family: var(--ease-font-sans); max-width: 800px; margin: 0 auto; }
+    h2 { margin-bottom: 0.5rem; }
+    p.intro { color: var(--ease-color-muted); margin-bottom: 1.5rem; max-width: 640px; }
+    h3 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase;
+         letter-spacing: 0.05em; color: var(--ease-color-muted);
+         margin: 2rem 0 1rem; }
+    .info {
+      background: var(--ease-color-neutral-100);
+      border-radius: var(--ease-radius-md);
+      padding: var(--ease-space-4);
+      font-size: 0.8125rem;
+      color: var(--ease-color-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .pram-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      background: var(--ease-color-surface);
+      border: 1px solid var(--ease-color-neutral-200);
+      border-radius: var(--ease-radius-lg);
+      padding: var(--ease-space-5);
+      margin-bottom: 1rem;
+    }
+    .pram-spin {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--ease-color-neutral-200);
+      border-top-color: var(--ease-color-primary);
+      border-radius: 50%;
+    }
+    .pram-toggle-btn {
+      margin-left: auto;
+      background: var(--ease-color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--ease-radius-md);
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 1rem; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--ease-color-neutral-200); }
+    code.inline { font-family: var(--ease-font-mono); background: var(--ease-color-neutral-100); padding: 0.1rem 0.35rem; border-radius: 0.25rem; }
+  </style>
+</head>
+<body>
+  <h2>Fix: Fragmented <code class="inline">prefers-reduced-motion</code> Implementation</h2>
+  <p class="intro">
+    <code class="inline">core/base.css</code> only disables <code class="inline">scroll-behavior</code>
+    under <code class="inline">prefers-reduced-motion: reduce</code> — there's no global
+    animation/transition kill-switch. An audit found 17 component files animating or
+    transitioning something with zero reduced-motion guard at all.
+  </p>
+
+  <div class="info">
+    💡 <strong>Why this matters:</strong> Today, whether a spinning loader or sliding tab
+    respects reduced-motion depends entirely on whether that specific component file
+    remembered to add its own <code class="inline">@media</code> block. A single global
+    catch-all rule in <code class="inline">core/base.css</code> would protect every current
+    and future component automatically.
+  </div>
+
+  <h3>Before (no global guard — spinner always animates)</h3>
+  <div class="pram-row pram-demo-before">
+    <div class="pram-spin"></div>
+    <span>This spinner ignores reduced-motion preference entirely today, since this exact animation lives in a component with no guard.</span>
+  </div>
+
+  <h3>After (patch applied — toggle "simulated reduced motion" below)</h3>
+  <div class="pram-row pram-demo-after" id="pram-after-row">
+    <div class="pram-spin"></div>
+    <span id="pram-after-label">Spinning normally — click the button to simulate prefers-reduced-motion: reduce.</span>
+    <button class="pram-toggle-btn" id="pram-toggle">Simulate reduced motion</button>
+  </div>
+
+  <h3>17 component files with animation/transition but no reduced-motion guard</h3>
+  <table>
+    <tr><th>File</th><th>File</th></tr>
+    <tr><td><code class="inline">announce-bar.css</code></td><td><code class="inline">pagination.css</code></td></tr>
+    <tr><td><code class="inline">avatar.css</code></td><td><code class="inline">password-strength.css</code></td></tr>
+    <tr><td><code class="inline">badges.css</code></td><td><code class="inline">progress.css</code></td></tr>
+    <tr><td><code class="inline">breadcrumb.css</code></td><td><code class="inline">read-more.css</code></td></tr>
+    <tr><td><code class="inline">compare-table.css</code></td><td><code class="inline">skeleton.css</code></td></tr>
+    <tr><td><code class="inline">connection-status.css</code></td><td><code class="inline">tabs.css</code></td></tr>
+    <tr><td><code class="inline">fab.css</code></td><td><code class="inline">toast.css</code></td></tr>
+    <tr><td><code class="inline">loaders.css</code></td><td><code class="inline">view-transitions.css</code></td></tr>
+    <tr><td><code class="inline">navbar.css</code></td><td></td></tr>
+  </table>
+
+  <h3>The exact patch needed in core/base.css</h3>
+  <pre style="background:var(--ease-color-neutral-100);padding:1rem;border-radius:var(--ease-radius-md);font-size:0.8125rem;overflow-x:auto;">@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}</pre>
+
+  <script>
+    const toggle = document.getElementById("pram-after-row").parentElement === document ? null : null;
+    const row = document.getElementById("pram-after-row");
+    const label = document.getElementById("pram-after-label");
+    const btn = document.getElementById("pram-toggle");
+    let reduced = false;
+    btn.addEventListener("click", () => {
+      reduced = !reduced;
+      row.classList.toggle("pram-simulated-reduced-motion", reduced);
+      label.textContent = reduced
+        ? "Reduced motion simulated — spin animation is effectively frozen."
+        : "Spinning normally — click the button to simulate prefers-reduced-motion: reduce.";
+      btn.textContent = reduced ? "Remove simulated reduced motion" : "Simulate reduced motion";
+    });
+  </script>
+</body>
+</html>

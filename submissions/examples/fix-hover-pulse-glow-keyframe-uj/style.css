@@ -1,0 +1,93 @@
+/* =============================================================
+   Submission: fix-hover-pulse-glow-keyframe-uj
+   Bug Fix: Missing @keyframes ease-kf-hover-pulse-glow
+
+   The class .ease-hover-pulse-glow:hover (core/animations.css, Issue #10072)
+   references this keyframe, but it was never defined anywhere in the codebase.
+   The browser silently treats the animation as a no-op.
+
+   This submission adds the missing definition. The effect combines:
+     - A gentle scale pulse (1 → 1.06 → 1)
+     - A layered filter glow using drop-shadow (not box-shadow, so it
+       is not clipped by overflow: hidden parent containers)
+
+   The rgba() fallback ensures the effect works in all browsers.
+   The @supports block upgrades to color-mix() where available so the
+   glow automatically follows --ease-color-primary theme changes.
+
+   Also removes the conflicting `transition` from the base class — having
+   both transition and animation on the same properties (transform, filter)
+   causes them to fight on hover-out, leaving a visual jump.
+   ============================================================= */
+
+/* ── Step 1: Define the missing keyframe ─────────────────────── */
+
+@keyframes ease-kf-hover-pulse-glow {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(108, 99, 255, 0));
+  }
+
+  50% {
+    transform: scale(1.06);
+    /* Layer 1: tight inner glow   Layer 2: wide ambient glow */
+    filter:
+      drop-shadow(0 0 8px  rgba(108, 99, 255, 0.55))
+      drop-shadow(0 0 20px rgba(108, 99, 255, 0.30));
+  }
+
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(108, 99, 255, 0));
+  }
+}
+
+/* Progressive enhancement: use color-mix() to tie glow to the theme token */
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+  @keyframes ease-kf-hover-pulse-glow {
+    0% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0px transparent);
+    }
+
+    50% {
+      transform: scale(1.06);
+      filter:
+        drop-shadow(0 0 8px  color-mix(in srgb, var(--ease-color-primary, #6c63ff) 55%, transparent))
+        drop-shadow(0 0 20px color-mix(in srgb, var(--ease-color-primary, #6c63ff) 30%, transparent));
+    }
+
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0px transparent);
+    }
+  }
+}
+
+/* ── Step 2: Fix the base class ──────────────────────────────── */
+
+/*
+  Remove the conflicting `transition` property.
+  The original class had both `transition: transform, filter` on the base
+  and `animation` on :hover. These fight each other: animation wins on
+  hover-in, but transition fires on hover-out, causing a visual jump.
+  Removing the transition lets `animation: forwards` fill correctly.
+*/
+.hover-pulse-glow {
+  position: relative;
+  z-index: 1;
+  transform-origin: center;
+  /* No transition here — animation handles both in and out states */
+}
+
+.hover-pulse-glow:hover {
+  animation: ease-kf-hover-pulse-glow 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ── Step 3: Respect prefers-reduced-motion ───────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-pulse-glow:hover {
+    animation: none !important;
+  }
+}

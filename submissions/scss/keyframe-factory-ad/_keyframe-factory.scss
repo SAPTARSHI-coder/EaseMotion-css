@@ -1,0 +1,215 @@
+// ==========================================================================
+// EaseMotion CSS — Keyframe Factory mixin
+// Issue #63557
+// --------------------------------------------------------------------------
+// Generates matched directional entrance/exit keyframes from one definition.
+//
+// Hand-writing four directions means four chances to typo a sign. The
+// classic result is `slide-in-from-left` and `slide-in-from-right` that
+// travel different distances, or a `-from-top` that animates upward. It
+// looks fine in isolation and only reads as wrong when two of them run
+// side by side.
+//
+// Generating them from a single distance guarantees the set stays
+// symmetric, and makes changing the travel distance a one-line edit.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:list";
+@use "sass:meta";
+
+$keyframe-factory-distance: 24px !default;
+$keyframe-factory-scale: 0.94 !default;
+
+// Axis and sign per direction. Entrance starts offset in the direction
+// named and travels to zero — `from-left` starts LEFT of its resting
+// position, i.e. a negative X.
+$keyframe-factory-directions: (
+    "left": (x: -1, y: 0),
+    "right": (x: 1, y: 0),
+    "top": (x: 0, y: -1),
+    "bottom": (x: 0, y: 1),
+);
+
+// --------------------------------------------------------------------------
+// offset-for — resolve a direction to a translate() value.
+// --------------------------------------------------------------------------
+@function offset-for($direction, $distance) {
+    @if not map.has-key($keyframe-factory-directions, $direction) {
+        @error "keyframe-factory: unknown direction `#{$direction}`. "
+             + "Expected one of: #{list.join((), map.keys($keyframe-factory-directions), $separator: comma)}.";
+    }
+
+    $axis: map.get($keyframe-factory-directions, $direction);
+
+    @return translate(
+        map.get($axis, x) * $distance,
+        map.get($axis, y) * $distance
+    );
+}
+
+// --------------------------------------------------------------------------
+// keyframe-factory
+//
+// Emits `<name>-from-<direction>` keyframes for each requested direction.
+//
+// @param {String} $name        Base keyframe name.
+// @param {Number} $distance    Travel distance.
+// @param {List}   $directions  Directions to emit.
+// @param {Bool}   $fade        Include an opacity ramp.
+// --------------------------------------------------------------------------
+@mixin keyframe-factory(
+    $name,
+    $distance: $keyframe-factory-distance,
+    $directions: ("left", "right", "top", "bottom"),
+    $fade: true
+) {
+    @if meta.type-of($distance) != "number" {
+        @error "keyframe-factory(): $distance must be a number, got `#{$distance}`.";
+    }
+
+    @each $direction in $directions {
+        @keyframes #{$name}-from-#{$direction} {
+            from {
+                @if $fade {
+                    opacity: 0;
+                }
+
+                transform: offset-for($direction, $distance);
+            }
+
+            to {
+                @if $fade {
+                    opacity: 1;
+                }
+
+                transform: translate(0, 0);
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// keyframe-factory-exit
+//
+// Exit keyframes travel the OPPOSITE way — content leaving toward the left
+// should exit leftward, not re-enter from it. Reusing the entrance
+// keyframes in reverse is the common shortcut and it produces exits that
+// visually contradict the direction they are named for.
+// --------------------------------------------------------------------------
+@mixin keyframe-factory-exit(
+    $name,
+    $distance: $keyframe-factory-distance,
+    $directions: ("left", "right", "top", "bottom"),
+    $fade: true
+) {
+    @each $direction in $directions {
+        @keyframes #{$name}-to-#{$direction} {
+            from {
+                @if $fade {
+                    opacity: 1;
+                }
+
+                transform: translate(0, 0);
+            }
+
+            to {
+                @if $fade {
+                    opacity: 0;
+                }
+
+                transform: offset-for($direction, $distance);
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// keyframe-factory-zoom
+//
+// Scale-based entrance, sharing the same naming convention so zoom and
+// slide variants compose in the same utility set.
+// --------------------------------------------------------------------------
+@mixin keyframe-factory-zoom(
+    $name,
+    $scale: $keyframe-factory-scale,
+    $fade: true
+) {
+    @if $scale <= 0 {
+        @error "keyframe-factory-zoom(): $scale must be positive, got `#{$scale}`.";
+    }
+
+    @keyframes #{$name}-zoom-in {
+        from {
+            @if $fade {
+                opacity: 0;
+            }
+
+            transform: scale($scale);
+        }
+
+        to {
+            @if $fade {
+                opacity: 1;
+            }
+
+            transform: scale(1);
+        }
+    }
+
+    @keyframes #{$name}-zoom-out {
+        from {
+            @if $fade {
+                opacity: 1;
+            }
+
+            transform: scale(1);
+        }
+
+        to {
+            @if $fade {
+                opacity: 0;
+            }
+
+            transform: scale($scale);
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// keyframe-factory-utilities
+//
+// Emit utility classes bound to the generated keyframes. `both` fill is
+// applied because entrance animations carry opacity — without it an
+// element with an animation-delay flashes at full opacity first.
+// --------------------------------------------------------------------------
+@mixin keyframe-factory-utilities(
+    $name,
+    $prefix: null,
+    $duration: 420ms,
+    $easing: cubic-bezier(0.16, 1, 0.3, 1),
+    $directions: ("left", "right", "top", "bottom")
+) {
+    $class-prefix: $name;
+
+    @if $prefix {
+        $class-prefix: $prefix;
+    }
+
+    @each $direction in $directions {
+        .#{$class-prefix}-from-#{$direction} {
+            animation: #{$name}-from-#{$direction} $duration $easing both;
+        }
+    }
+
+    // Shortened, never removed — `both` fill would otherwise strand every
+    // element at opacity 0.
+    @media (prefers-reduced-motion: reduce) {
+        @each $direction in $directions {
+            .#{$class-prefix}-from-#{$direction} {
+                animation-duration: 1ms;
+                animation-delay: 0s;
+            }
+        }
+    }
+}

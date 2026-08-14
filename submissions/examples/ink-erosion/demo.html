@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Ink Erosion</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="ink-card">
+
+      <header class="header">
+
+        <div>
+
+          <span class="eyebrow">
+            FLUID MATERIAL STUDY / 07
+          </span>
+
+          <h1>Ink Erosion</h1>
+
+          <p>
+            Disturb the pigment. Watch the surface dissolve.
+          </p>
+
+        </div>
+
+        <div class="status">
+
+          <span
+            id="statusDot"
+            class="status-dot"
+          ></span>
+
+          <span id="statusText">
+            FLOW ACTIVE
+          </span>
+
+        </div>
+
+      </header>
+
+
+      <div class="workspace">
+
+        <section class="canvas-shell">
+
+          <canvas
+            id="inkCanvas"
+          ></canvas>
+
+          <div class="canvas-label">
+            <span>WET SURFACE</span>
+            <strong id="inkPercent">100%</strong>
+          </div>
+
+          <div class="hint">
+            MOVE THROUGH THE INK
+          </div>
+
+        </section>
+
+
+        <aside class="panel">
+
+          <div class="panel-heading">
+
+            <span>
+              MATERIAL MONITOR
+            </span>
+
+            <span>
+              IE-07
+            </span>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>FLOW</span>
+
+            <strong id="flowValue">
+              42
+            </strong>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>EROSION</span>
+
+            <strong id="erosionValue">
+              18
+            </strong>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>DENSITY</span>
+
+            <strong id="densityValue">
+              76
+            </strong>
+
+          </div>
+
+
+          <div class="metric">
+
+            <span>DISTURBANCE</span>
+
+            <strong id="disturbanceValue">
+              IDLE
+            </strong>
+
+          </div>
+
+
+          <div class="divider"></div>
+
+
+          <span class="section-title">
+            ACTIONS
+          </span>
+
+
+          <div class="buttons">
+
+            <button id="eraseButton">
+              Erase All
+            </button>
+
+            <button id="reloadButton">
+              Reload Ink
+            </button>
+
+            <button
+              id="pauseButton"
+              class="secondary"
+            >
+              Pause Flow
+            </button>
+
+          </div>
+
+
+          <div class="divider"></div>
+
+
+          <span class="section-title">
+            INPUT
+          </span>
+
+
+          <div class="keys">
+
+            <div>
+              <kbd>SPACE</kbd>
+              pause
+            </div>
+
+            <div>
+              <kbd>R</kbd>
+              reload
+            </div>
+
+            <div>
+              <kbd>C</kbd>
+              erase
+            </div>
+
+          </div>
+
+
+          <div class="note">
+
+            The surface is intentionally
+            non-deterministic. Repeated
+            gestures produce different
+            erosion patterns.
+
+          </div>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+
+    <footer>
+      Synthetic fluid visualization — not a physical fluid simulation.
+    </footer>
+
+  </main>
+
+
+<script>
+
+const canvas =
+  document.getElementById("inkCanvas");
+
+const ctx =
+  canvas.getContext("2d");
+
+
+const shell =
+  document.querySelector(".canvas-shell");
+
+
+const flowValue =
+  document.getElementById("flowValue");
+
+const erosionValue =
+  document.getElementById("erosionValue");
+
+const densityValue =
+  document.getElementById("densityValue");
+
+const disturbanceValue =
+  document.getElementById("disturbanceValue");
+
+const inkPercent =
+  document.getElementById("inkPercent");
+
+const statusText =
+  document.getElementById("statusText");
+
+
+const CONFIG = {
+
+  particleCount: 1100,
+
+  flowStrength: 0.42,
+
+  erosionStrength: 0.018,
+
+  disturbanceRadius: 90,
+
+  particleSize: 1.8,
+
+  fadeSpeed: 0.0008,
+
+  trailAlpha: 0.09
+
+};
+
+
+let width = 0;
+let height = 0;
+
+let particles = [];
+
+let paused = false;
+
+let pointer = {
+
+  x: 0,
+
+  y: 0,
+
+  active: false,
+
+  speed: 0,
+
+  previousX: 0,
+
+  previousY: 0
+
+};
+
+
+function random(min, max) {
+
+  return (
+    Math.random() *
+    (max - min) +
+    min
+  );
+
+}
+
+
+function resize() {
+
+  const rect =
+    shell.getBoundingClientRect();
+
+  width = rect.width;
+  height = rect.height;
+
+  canvas.width =
+    width *
+    devicePixelRatio;
+
+  canvas.height =
+    height *
+    devicePixelRatio;
+
+  canvas.style.width =
+    width + "px";
+
+  canvas.style.height =
+    height + "px";
+
+  ctx.setTransform(
+    devicePixelRatio,
+    0,
+    0,
+    devicePixelRatio,
+    0,
+    0
+  );
+
+}
+
+
+function createParticle() {
+
+  return {
+
+    x: random(0, width),
+
+    y: random(0, height),
+
+    vx: random(-0.2, 0.2),
+
+    vy: random(-0.2, 0.2),
+
+    density: random(
+      0.25,
+      1
+    ),
+
+    size: random(
+      0.5,
+      CONFIG.particleSize
+    ),
+
+    phase: random(
+      0,
+      Math.PI * 2
+    )
+
+  };
+
+}
+
+
+function initialize() {
+
+  particles = [];
+
+  for (
+    let i = 0;
+    i < CONFIG.particleCount;
+    i++
+  ) {
+
+    particles.push(
+      createParticle()
+    );
+
+  }
+
+}
+
+
+function noise(x, y, time) {
+
+  return (
+
+    Math.sin(
+      x * 0.009 +
+      time * 0.0003
+    )
+
+    +
+
+    Math.cos(
+      y * 0.011 -
+      time * 0.0002
+    )
+
+    +
+
+    Math.sin(
+      (x + y) * 0.004 +
+      time * 0.00015
+    )
+
+  ) / 3;
+
+}
+
+
+function disturbParticle(
+  particle
+) {
+
+  if (
+    !pointer.active
+  ) {
+
+    return;
+
+  }
+
+
+  const dx =
+    particle.x -
+    pointer.x;
+
+  const dy =
+    particle.y -
+    pointer.y;
+
+
+  const distance =
+    Math.sqrt(
+      dx * dx +
+      dy * dy
+    );
+
+
+  if (
+    distance >
+    CONFIG.disturbanceRadius
+  ) {
+
+    return;
+
+  }
+
+
+  const influence =
+    1 -
+    distance /
+    CONFIG.disturbanceRadius;
+
+
+  const safeDistance =
+    Math.max(
+      distance,
+      0.01
+    );
+
+
+  particle.vx +=
+    (
+      dx /
+      safeDistance
+    ) *
+    influence *
+    (
+      0.5 +
+      pointer.speed *
+      0.04
+    );
+
+
+  particle.vy +=
+    (
+      dy /
+      safeDistance
+    ) *
+    influence *
+    (
+      0.5 +
+      pointer.speed *
+      0.04
+    );
+
+
+  particle.density -=
+    CONFIG.erosionStrength *
+    influence *
+    (
+      1 +
+      pointer.speed *
+      0.05
+    );
+
+
+  particle.density =
+    Math.max(
+      0,
+      particle.density
+    );
+
+}
+
+
+function update(time) {
+
+  if (paused) {
+
+    return;
+
+  }
+
+
+  particles.forEach(
+    particle => {
+
+      const field =
+        noise(
+          particle.x,
+          particle.y,
+          time
+        );
+
+
+      const angle =
+        field *
+        Math.PI *
+        2;
+
+
+      particle.vx +=
+        Math.cos(angle) *
+        CONFIG.flowStrength *
+        0.01;
+
+
+      particle.vy +=
+        Math.sin(angle) *
+        CONFIG.flowStrength *
+        0.01;
+
+
+      disturbParticle(
+        particle
+      );
+
+
+      particle.vx *= 0.985;
+      particle.vy *= 0.985;
+
+
+      particle.x +=
+        particle.vx;
+
+      particle.y +=
+        particle.vy;
+
+
+      if (
+        particle.x < -10
+      ) {
+
+        particle.x =
+          width + 10;
+
+      }
+
+
+      if (
+        particle.x >
+        width + 10
+      ) {
+
+        particle.x = -10;
+
+      }
+
+
+      if (
+        particle.y < -10
+      ) {
+
+        particle.y =
+          height + 10;
+
+      }
+
+
+      if (
+        particle.y >
+        height + 10
+      ) {
+
+        particle.y = -10;
+
+      }
+
+
+      particle.density -=
+        CONFIG.fadeSpeed;
+
+
+      if (
+        particle.density <= 0
+      ) {
+
+        Object.assign(
+          particle,
+          createParticle()
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+function drawPaper() {
+
+  ctx.fillStyle =
+    "#eee9df";
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  ctx.fillStyle =
+    "rgba(70,60,50,.025)";
+
+
+  for (
+    let i = 0;
+    i < 500;
+    i++
+  ) {
+
+    const x =
+      Math.random() *
+      width;
+
+    const y =
+      Math.random() *
+      height;
+
+    ctx.fillRect(
+      x,
+      y,
+      1,
+      1
+    );
+
+  }
+
+}
+
+
+function drawParticles() {
+
+  particles.forEach(
+    particle => {
+
+      if (
+        particle.density <= 0
+      ) {
+
+        return;
+
+      }
+
+
+      const alpha =
+        Math.min(
+          0.8,
+          particle.density
+        );
+
+
+      ctx.fillStyle =
+        `rgba(
+          25,
+          31,
+          34,
+          ${alpha}
+        )`;
+
+
+      ctx.beginPath();
+
+      ctx.arc(
+        particle.x,
+        particle.y,
+        particle.size *
+        (
+          0.6 +
+          particle.density
+        ),
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+
+    }
+  );
+
+}
+
+
+function drawInteraction() {
+
+  if (
+    !pointer.active
+  ) {
+
+    return;
+
+  }
+
+
+  const gradient =
+    ctx.createRadialGradient(
+      pointer.x,
+      pointer.y,
+      0,
+      pointer.x,
+      pointer.y,
+      CONFIG.disturbanceRadius
+    );
+
+
+  gradient.addColorStop(
+    0,
+    "rgba(255,255,255,.28)"
+  );
+
+
+  gradient.addColorStop(
+    .5,
+    "rgba(255,255,255,.08)"
+  );
+
+
+  gradient.addColorStop(
+    1,
+    "rgba(255,255,255,0)"
+  );
+
+
+  ctx.fillStyle =
+    gradient;
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    pointer.x,
+    pointer.y,
+    CONFIG.disturbanceRadius,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+}
+
+
+function getDensity() {
+
+  let total = 0;
+
+  particles.forEach(
+    particle => {
+
+      total +=
+        particle.density;
+
+    }
+  );
+
+  return Math.round(
+    total /
+    particles.length *
+    100
+  );
+
+}
+
+
+function draw(time) {
+
+  drawPaper();
+
+  drawParticles();
+
+  drawInteraction();
+
+  const density =
+    getDensity();
+
+
+  densityValue.textContent =
+    density;
+
+
+  inkPercent.textContent =
+    `${density}%`;
+
+
+  flowValue.textContent =
+    Math.round(
+      CONFIG.flowStrength * 100
+    );
+
+
+  erosionValue.textContent =
+    Math.round(
+      CONFIG.erosionStrength * 1000
+    );
+
+
+  disturbanceValue.textContent =
+    pointer.active
+      ? "ACTIVE"
+      : "IDLE";
+
+}
+
+
+function loop(time) {
+
+  update(time);
+
+  draw(time);
+
+  requestAnimationFrame(
+    loop
+  );
+
+}
+
+
+function updatePointer(event) {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+
+  const x =
+    event.clientX -
+    rect.left;
+
+  const y =
+    event.clientY -
+    rect.top;
+
+
+  const dx =
+    x -
+    pointer.previousX;
+
+  const dy =
+    y -
+    pointer.previousY;
+
+
+  pointer.speed =
+    Math.sqrt(
+      dx * dx +
+      dy * dy
+    );
+
+
+  pointer.x = x;
+  pointer.y = y;
+
+
+  pointer.previousX = x;
+  pointer.previousY = y;
+
+  pointer.active = true;
+
+}
+
+
+canvas.addEventListener(
+  "pointermove",
+  updatePointer
+);
+
+
+canvas.addEventListener(
+  "pointerenter",
+  updatePointer
+);
+
+
+canvas.addEventListener(
+  "pointerleave",
+  () => {
+
+    pointer.active =
+      false;
+
+  }
+);
+
+
+canvas.addEventListener(
+  "pointerdown",
+  event => {
+
+    updatePointer(event);
+
+    for (
+      let i = 0;
+      i < 5;
+      i++
+    ) {
+
+      particles.forEach(
+        particle => {
+
+          disturbParticle(
+            particle
+          );
+
+        }
+      );
+
+    }
+
+  }
+);
+
+
+document
+  .getElementById(
+    "eraseButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      particles.forEach(
+        particle => {
+
+          particle.density =
+            0;
+
+        }
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "reloadButton"
+  )
+  .addEventListener(
+    "click",
+    initialize
+  );
+
+
+document
+  .getElementById(
+    "pauseButton"
+  )
+  .addEventListener(
+    "click",
+    event => {
+
+      paused =
+        !paused;
+
+
+      event.target.textContent =
+        paused
+          ? "Resume Flow"
+          : "Pause Flow";
+
+
+      statusText.textContent =
+        paused
+          ? "FLOW PAUSED"
+          : "FLOW ACTIVE";
+
+    }
+  );
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    const key =
+      event.key.toLowerCase();
+
+
+    if (
+      event.code ===
+      "Space"
+    ) {
+
+      event.preventDefault();
+
+      paused =
+        !paused;
+
+      statusText.textContent =
+        paused
+          ? "FLOW PAUSED"
+          : "FLOW ACTIVE";
+
+    }
+
+
+    if (
+      key === "r"
+    ) {
+
+      initialize();
+
+    }
+
+
+    if (
+      key === "c"
+    ) {
+
+      particles.forEach(
+        particle => {
+
+          particle.density =
+            0;
+
+        }
+      );
+
+    }
+
+  }
+);
+
+
+window.addEventListener(
+  "resize",
+  resize
+);
+
+
+resize();
+
+initialize();
+
+loop(0);
+
+</script>
+
+</body>
+
+</html>

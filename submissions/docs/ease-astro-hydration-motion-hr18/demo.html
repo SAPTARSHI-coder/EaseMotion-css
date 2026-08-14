@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Astro Island Hydration &amp; EaseMotion Class Timing</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="ahm-hr18">
+  <div class="ahm-wrap-hr18">
+
+    <header class="ahm-header-hr18">
+      <span class="ahm-eyebrow-hr18">EaseMotion-css · submissions/docs</span>
+      <h1>Astro Island Hydration &amp; EaseMotion Class Timing</h1>
+      <p>EaseMotion's classes are plain CSS, so they render the instant the
+        stylesheet loads. But if a hover or click needs a <em>component</em> to
+        add or remove that class, Astro's island hydration model means the
+        interaction isn't live until the island actually hydrates —
+        <code>client:load</code>, <code>client:idle</code>, and
+        <code>client:visible</code> all hydrate at different times. This guide
+        shows the gap and how to design around it.</p>
+    </header>
+
+    <!-- Live demo -->
+    <section class="ahm-section-hr18" aria-labelledby="ahmDemoHeading">
+      <h2 id="ahmDemoHeading">See the gap</h2>
+      <p class="ahm-lede-hr18">Reload this page (or replay the button below) to
+        watch the difference between a pure-CSS interaction and a
+        JS-hydrated one.</p>
+
+      <div class="ahm-demo-grid-hr18">
+        <div class="ahm-demo-card-hr18">
+          <h3>CSS-only entrance + hover</h3>
+          <div class="ahm-box-hr18">
+            <div class="ahm-css-box-hr18" aria-hidden="true"></div>
+          </div>
+          <p>Uses <code>ease-fade-in-hr18</code> and a plain <code>:hover</code>
+            rule. No JavaScript involved — it animates in and responds to hover
+            immediately, even before any framework code has run.</p>
+        </div>
+
+        <div class="ahm-demo-card-hr18">
+          <h3>JS-toggled, simulating a hydrated island</h3>
+          <div class="ahm-box-hr18">
+            <div class="ahm-js-box-hr18" id="ahmJsBox" aria-hidden="true"></div>
+          </div>
+          <span class="ahm-status-pill-hr18" id="ahmStatusPill">Hydrating&hellip;</span>
+          <button type="button" class="ahm-js-btn-hr18" id="ahmJsBtn" disabled>Toggle class</button>
+          <button type="button" class="ahm-js-btn-hr18" id="ahmReplayBtn">Replay hydration delay</button>
+          <p>This box's click handler is disabled for a couple of seconds to
+            simulate a <code>client:idle</code>-style island — the same gap a
+            real visitor sees if they interact before hydration finishes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Directive table -->
+    <section class="ahm-section-hr18" aria-labelledby="ahmTableHeading">
+      <h2 id="ahmTableHeading">Astro's hydration directives, at a glance</h2>
+      <p class="ahm-lede-hr18">Each directive controls <em>when</em> a component's
+        JavaScript runs — not when its CSS applies. EaseMotion classes present
+        in the markup are already styled before any of these fire.</p>
+
+      <div class="ahm-table-wrap-hr18">
+        <table class="ahm-table-hr18">
+          <thead>
+            <tr>
+              <th>Directive</th>
+              <th>Hydrates when&hellip;</th>
+              <th>Good fit for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>client:load</td>
+              <td>Immediately, as soon as the page loads.</td>
+              <td>Above-the-fold interactions the visitor needs right away.</td>
+            </tr>
+            <tr>
+              <td>client:idle</td>
+              <td>Once the main thread is free (via <code>requestIdleCallback</code>).</td>
+              <td>Useful, non-urgent interactivity that shouldn't compete with initial paint.</td>
+            </tr>
+            <tr>
+              <td>client:visible</td>
+              <td>When the component scrolls into the viewport.</td>
+              <td>Below-the-fold islands — the usual default for performance.</td>
+            </tr>
+            <tr>
+              <td>client:media</td>
+              <td>When a given CSS media query first matches.</td>
+              <td>Interactivity that only matters at certain breakpoints (e.g. a mobile-only menu).</td>
+            </tr>
+            <tr>
+              <td>client:only</td>
+              <td>Client-side only — skips server rendering entirely.</td>
+              <td>Components that can't render meaningfully without a browser API.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pattern comparison -->
+    <section class="ahm-section-hr18" aria-labelledby="ahmPatternHeading">
+      <h2 id="ahmPatternHeading">Problematic vs recommended timing</h2>
+      <p class="ahm-lede-hr18">The fix is usually to stop asking JavaScript to
+        do something CSS can already do on its own.</p>
+
+      <div class="ahm-pattern-grid-hr18">
+        <article class="ahm-pattern-card-hr18 problematic">
+          <div class="ahm-pattern-head-hr18">&#10007; Hover effect gated on hydration</div>
+          <pre class="ahm-pattern-code-hr18">---
+// Card.astro
+---
+&lt;div client:visible&gt;
+  &lt;CardReact client:visible /&gt;
+&lt;/div&gt;
+
+// CardReact.jsx
+&lt;div
+  className={hovered ? "ease-hover-grow" : ""}
+  onMouseEnter={() =&gt; setHovered(true)}
+  onMouseLeave={() =&gt; setHovered(false)}
+&gt;</pre>
+          <p class="ahm-pattern-note-hr18">The hover class only gets applied
+            once React state updates — which can't happen until the component
+            hydrates. Until then, hovering silently does nothing, which reads
+            as a bug rather than a loading state.</p>
+        </article>
+
+        <article class="ahm-pattern-card-hr18 recommended">
+          <div class="ahm-pattern-head-hr18">&#10003; Hover handled entirely in CSS</div>
+          <pre class="ahm-pattern-code-hr18">---
+// Card.astro
+---
+&lt;div class="ease-card ease-hover-grow"&gt;
+  &lt;CardReact client:visible /&gt;
+&lt;/div&gt;
+
+/* No hover state in JS at all —
+   :hover is native, so it works
+   before the island ever hydrates. */</pre>
+          <p class="ahm-pattern-note-hr18">The hover animation lives entirely
+            in the <code>ease-*</code> classes and a native <code>:hover</code>
+            rule. <code>client:visible</code> is still used for whatever
+            <em>actually</em> needs React (form state, data fetching), but the
+            motion itself never waits on it.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Copy-ready snippet -->
+    <section class="ahm-section-hr18" aria-labelledby="ahmSnippetHeading">
+      <h2 id="ahmSnippetHeading">Copy-ready integration snippet</h2>
+      <p class="ahm-lede-hr18">A minimal pattern: CSS-driven entrance and hover
+        on the wrapper, hydration reserved for whatever genuinely needs
+        JavaScript inside it.</p>
+
+      <div class="ahm-snippet-card-hr18">
+        <div class="ahm-snippet-head-hr18">
+          <span>ProductCard.astro</span>
+          <button type="button" class="ahm-copy-btn-hr18" id="ahmCopyBtn">Copy snippet</button>
+        </div>
+        <pre class="ahm-snippet-code-hr18" id="ahmSnippetCode">---
+import AddToCartButton from "./AddToCartButton.jsx";
+const { product } = Astro.props;
+---
+&lt;article class="ease-card ease-fade-in ease-hover-grow"&gt;
+  &lt;img src={product.image} alt={product.name} /&gt;
+  &lt;h3&gt;{product.name}&lt;/h3&gt;
+
+  &lt;!-- Only this part needs JS, so only this part hydrates --&gt;
+  &lt;AddToCartButton client:visible productId={product.id} /&gt;
+&lt;/article&gt;</pre>
+        <p class="ahm-status-hr18" id="ahmSnippetStatus" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- Checklist -->
+    <section class="ahm-section-hr18" aria-labelledby="ahmChecklistHeading">
+      <h2 id="ahmChecklistHeading">Choosing a strategy by interaction criticality</h2>
+      <ul class="ahm-checklist-hr18">
+        <li><strong>Purely decorative</strong> — entrance animations, hover states, focus rings: keep these in CSS with <code>ease-*</code> classes and skip hydration for them entirely.</li>
+        <li><strong>Above-the-fold and essential</strong> — a hero CTA that must respond instantly: <code>client:load</code>.</li>
+        <li><strong>Useful but not urgent</strong> — a "save for later" button below a long article: <code>client:idle</code>.</li>
+        <li><strong>Below the fold</strong> — most cards, accordions, and secondary widgets: <code>client:visible</code>, so hydration cost is paid only if the visitor scrolls that far.</li>
+        <li><strong>Breakpoint-specific</strong> — a mobile nav toggle that doesn't exist on desktop: <code>client:media="(max-width: 768px)"</code>.</li>
+        <li><strong>Browser-API-dependent</strong> — anything that can't render meaningfully server-side: <code>client:only</code>, used sparingly since it delays first paint of that component.</li>
+      </ul>
+    </section>
+
+    <p class="ahm-footnote-hr18">submissions/docs/ease-astro-hydration-motion-hr18 &middot; no build tools or external CDN required</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var jsBox = document.getElementById("ahmJsBox");
+  var jsBtn = document.getElementById("ahmJsBtn");
+  var replayBtn = document.getElementById("ahmReplayBtn");
+  var statusPill = document.getElementById("ahmStatusPill");
+  var toggled = false;
+  var hydrateTimer = null;
+
+  function setPending() {
+    jsBtn.disabled = true;
+    jsBtn.classList.remove("is-hydrated-hr18");
+    jsBtn.textContent = "Toggle class";
+    statusPill.textContent = "Hydrating\u2026";
+    statusPill.classList.remove("is-hydrated-hr18");
+    jsBox.classList.remove("is-hydrated-hr18");
+    toggled = false;
+  }
+
+  function setHydrated() {
+    jsBtn.disabled = false;
+    jsBtn.classList.add("is-hydrated-hr18");
+    statusPill.textContent = "Hydrated \u2014 try the button";
+    statusPill.classList.add("is-hydrated-hr18");
+  }
+
+  function runHydrationDelay() {
+    window.clearTimeout(hydrateTimer);
+    setPending();
+    hydrateTimer = window.setTimeout(setHydrated, 2200);
+  }
+
+  jsBtn.addEventListener("click", function () {
+    if (jsBtn.disabled) return;
+    toggled = !toggled;
+    jsBox.classList.toggle("is-hydrated-hr18", toggled || jsBtn.classList.contains("is-hydrated-hr18"));
+  });
+
+  replayBtn.addEventListener("click", runHydrationDelay);
+
+  runHydrationDelay();
+
+  // ---- Copy snippet ----
+  var copyBtn = document.getElementById("ahmCopyBtn");
+  var snippetCode = document.getElementById("ahmSnippetCode");
+  var snippetStatus = document.getElementById("ahmSnippetStatus");
+
+  function announce(message) {
+    snippetStatus.textContent = message;
+    window.setTimeout(function () {
+      snippetStatus.textContent = "";
+    }, 3000);
+  }
+
+  function fallbackCopy(text) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    try {
+      var ok = document.execCommand("copy");
+      announce(ok ? "Copied to clipboard." : "Copy failed \u2014 select and copy manually.");
+    } catch (err) {
+      announce("Copy failed \u2014 select and copy manually.");
+    }
+    document.body.removeChild(textarea);
+  }
+
+  copyBtn.addEventListener("click", function () {
+    var text = snippetCode.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        announce("Copied to clipboard.");
+      }, function () {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snowflake Catcher · catch unique snowflakes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="catcher-container">
+      <div class="catcher-display" id="catcherDisplay">
+        <!-- Canvas for snowflake catcher -->
+        <canvas id="catcherCanvas"></canvas>
+        
+        <!-- Catcher Info -->
+        <div class="catcher-info">
+          <span class="info-label">❄️ Caught</span>
+          <span class="info-value" id="catchCount">0</span>
+        </div>
+
+        <!-- Catcher Controls -->
+        <div class="catcher-controls">
+          <div class="control-group">
+            <label class="control-label">📐 Size</label>
+            <input type="range" class="control-slider" id="sizeSlider" min="1" max="10" value="5">
+            <span class="control-value" id="sizeValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Collection</label>
+            <div class="collection-options">
+              <button class="collection-btn active" data-collection="classic" title="Classic">❄️</button>
+              <button class="collection-btn" data-collection="crystal" title="Crystal">💎</button>
+              <button class="collection-btn" data-collection="frost" title="Frost">🌨️</button>
+              <button class="collection-btn" data-collection="rainbow" title="Rainbow">🌈</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catcher Text -->
+        <div class="catcher-text">
+          <span class="text-label">❄️ Snowflake Catcher</span>
+          <span class="text-message" id="catcherMessage">Move your cursor to catch snowflakes</span>
+        </div>
+      </div>
+      
+      <div class="catcher-status">
+        <span id="catcherStatus">❄️ Move your cursor to catch unique snowflakes</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>❄️ catch unique snowflakes · 4 collections</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('catcherCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('catcherDisplay');
+      const catchCount = document.getElementById('catchCount');
+      const catcherStatus = document.getElementById('catcherStatus');
+      const catcherMessage = document.getElementById('catcherMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const collectionBtns = document.querySelectorAll('.collection-btn');
+
+      // State
+      let snowflakes = [];
+      let caught = [];
+      let animationId = null;
+      let time = 0;
+      let currentCollection = 'classic';
+      let catcherSize = 5;
+      let mouseX = 0;
+      let mouseY = 0;
+      let totalCaught = 0;
+
+      // Collection configurations
+      const collections = {
+        classic: {
+          name: 'Classic',
+          colors: ['#e2e8f0', '#f1f5f9', '#cbd5e1', '#ffffff'],
+          glow: 'rgba(226,232,240,0.15)'
+        },
+        crystal: {
+          name: 'Crystal',
+          colors: ['#a78bfa', '#c4b5fd', '#8b5cf6', '#ddd6fe'],
+          glow: 'rgba(167,139,250,0.15)'
+        },
+        frost: {
+          name: 'Frost',
+          colors: ['#34d399', '#6ee7b7', '#10b981', '#a7f3d0'],
+          glow: 'rgba(52,211,153,0.15)'
+        },
+        rainbow: {
+          name: 'Rainbow',
+          colors: ['#ef4444', '#fbbf24', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
+          glow: 'rgba(255,255,255,0.1)'
+        }
+      };
+
+      // Snowflake class
+      class Snowflake {
+        constructor() {
+          this.reset();
+          this.y = -20 - Math.random() * 50;
+        }
+
+        reset() {
+          const w = canvas.width;
+          const h = canvas.height;
+          this.x = 20 + Math.random() * (w - 40);
+          this.y = -30 - Math.random() * 80;
+          this.size = 5 + Math.random() * 12;
+          this.speed = 0.2 + Math.random() * 0.5;
+          this.wobble = 0.3 + Math.random() * 0.7;
+          this.phase = Math.random() * Math.PI * 2;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+          this.opacity = 0.5 + Math.random() * 0.5;
+          this.points = 6;
+          this.branches = 3 + Math.floor(Math.random() * 3);
+          this.complexity = 0.5 + Math.random() * 0.5;
+          this.color = this.getColor();
+          this.caught = false;
+          this.collection = currentCollection;
+          this.uniqueId = Math.random().toString(36).substr(2, 6);
+        }
+
+        getColor() {
+          const colors = collections[currentCollection].colors;
+          return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        update() {
+          this.y += this.speed;
+          this.phase += 0.02;
+          this.x += Math.sin(this.phase) * this.wobble * 0.2;
+          this.rotation += this.rotationSpeed;
+          
+          if (this.y > canvas.height + 30) {
+            this.reset();
+          }
+        }
+
+        draw(ctx) {
+          const alpha = this.opacity * 0.8;
+          const size = this.size * (0.5 + Math.sin(this.phase * 0.5) * 0.1 + 0.4);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          
+          // Glow
+          const collectionData = collections[currentCollection];
+          ctx.shadowColor = collectionData.glow;
+          ctx.shadowBlur = 10;
+          
+          // Draw snowflake
+          const points = this.points;
+          const branches = this.branches;
+          const complexity = this.complexity;
+          
+          ctx.fillStyle = this.color;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = 1.5;
+          
+          // Main arms
+          for (let i = 0; i < points; i++) {
+            const angle = (i / points) * Math.PI * 2;
+            const length = size * (0.6 + Math.sin(this.phase + i) * 0.1 + 0.3);
+            
+            ctx.save();
+            ctx.rotate(angle);
+            
+            // Main branch
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -length);
+            ctx.stroke();
+            
+            // Side branches
+            for (let j = 0; j < branches; j++) {
+              const t = (j + 1) / (branches + 1);
+              const branchY = -length * t;
+              const branchLength = size * 0.3 * (1 - t * 0.5) * complexity;
+              const branchAngle = 0.5 + Math.sin(this.phase + j + i) * 0.2;
+              
+              ctx.save();
+              ctx.translate(0, branchY);
+              
+              // Left branch
+              ctx.rotate(-branchAngle);
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(-branchLength, 0);
+              ctx.stroke();
+              
+              // Right branch
+              ctx.rotate(branchAngle * 2);
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(branchLength, 0);
+              ctx.stroke();
+              
+              // Small tips
+              if (j % 2 === 0) {
+                const tipSize = branchLength * 0.3;
+                ctx.rotate(-branchAngle);
+                ctx.beginPath();
+                ctx.moveTo(-branchLength, 0);
+                ctx.lineTo(-branchLength - tipSize, -tipSize * 0.3);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(branchLength, 0);
+                ctx.lineTo(branchLength + tipSize, -tipSize * 0.3);
+                ctx.stroke();
+              }
+              
+              ctx.restore();
+            }
+            
+            // Tip detail
+            ctx.beginPath();
+            ctx.arc(0, -length, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+          
+          // Center dot
+          ctx.shadowBlur = 0;
+          ctx.beginPath();
+          ctx.arc(0, 0, 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+        }
+
+        isCaught(cx, cy, radius) {
+          const dx = this.x - cx;
+          const dy = this.y - cy;
+          return dx * dx + dy * dy < radius * radius;
+        }
+      }
+
+      // Generate snowflakes
+      function generateSnowflakes() {
+        const count = 15 + Math.floor(Math.random() * 10);
+        snowflakes = [];
+        for (let i = 0; i < count; i++) {
+          const flake = new Snowflake();
+          flake.y = Math.random() * canvas.height;
+          snowflakes.push(flake);
+        }
+      }
+
+      // Draw catcher
+      function drawCatcher() {
+        const radius = 10 + catcherSize * 3;
+        const collectionData = collections[currentCollection];
+        
+        ctx.save();
+        
+        // Catcher glow
+        const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, radius * 2);
+        grad.addColorStop(0, collectionData.glow);
+        grad.addColorStop(0.5, collectionData.glow);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, radius * 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Catcher ring
+        ctx.shadowColor = collectionData.colors[0];
+        ctx.shadowBlur = 15;
+        ctx.strokeStyle = collectionData.colors[0];
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Inner ring
+        ctx.shadowBlur = 5;
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = collectionData.colors[1] || collectionData.colors[0];
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, radius * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Center dot
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = collectionData.colors[0];
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      }
+
+      // Draw caught snowflakes
+      function drawCaught() {
+        caught.forEach((flake, index) => {
+          const angle = (index / caught.length) * Math.PI * 2 + time * 0.02;
+          const dist = 30 + index * 2;
+          const x = mouseX + Math.cos(angle) * dist;
+          const y = mouseY + Math.sin(angle) * dist;
+          
+          ctx.save();
+          ctx.globalAlpha = 0.6 + Math.sin(time + index) * 0.1;
+          ctx.translate(x, y);
+          ctx.scale(0.3, 0.3);
+          ctx.rotate(time * 0.01 + index);
+          
+          // Small caught snowflake
+          ctx.fillStyle = flake.color;
+          ctx.shadowColor = flake.color;
+          ctx.shadowBlur = 5;
+          
+          const size = 8;
+          for (let i = 0; i < 6; i++) {
+            const angle2 = (i / 6) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle2) * size, Math.sin(angle2) * size);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(Math.cos(angle2) * size, Math.sin(angle2) * size, 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        });
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateSnowflakes();
+        
+        // Set initial mouse position to center
+        mouseX = canvas.width / 2;
+        mouseY = canvas.height / 2;
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        
+        // Update snowflakes
+        const radius = 10 + catcherSize * 3;
+        snowflakes.forEach(flake => {
+          flake.update();
+          
+          // Check if caught
+          if (!flake.caught && flake.isCaught(mouseX, mouseY, radius)) {
+            flake.caught = true;
+            caught.push(flake);
+            totalCaught++;
+            catchCount.textContent = totalCaught;
+            
+            catcherStatus.textContent = '❄️ Snowflake caught! ✨';
+            catcherStatus.style.color = '#fbbf24';
+            catcherMessage.textContent = '✨ Unique snowflake collected!';
+            catcherMessage.style.color = '#fbbf24';
+            
+            setTimeout(() => {
+              catcherStatus.textContent = '❄️ Move your cursor to catch unique snowflakes';
+              catcherStatus.style.color = '#94a3b8';
+              catcherMessage.textContent = 'Move your cursor to catch snowflakes';
+              catcherMessage.style.color = '#94a3b8';
+            }, 1500);
+          }
+        });
+        
+        // Remove caught snowflakes from falling list
+        snowflakes = snowflakes.filter(flake => !flake.caught);
+        
+        // Generate new snowflakes if needed
+        while (snowflakes.length < 20) {
+          const flake = new Snowflake();
+          flake.y = -10 - Math.random() * 30;
+          snowflakes.push(flake);
+        }
+        
+        // Draw everything
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        snowflakes.forEach(flake => {
+          flake.draw(ctx);
+        });
+        
+        drawCaught();
+        drawCatcher();
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set collection
+      function setCollection(collection) {
+        currentCollection = collection;
+        collectionBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.collection === collection);
+        });
+        const collectionData = collections[collection];
+        catcherStatus.textContent = `🎨 Collection: ${collectionData.name}`;
+        catcherStatus.style.color = collectionData.colors[0];
+        // Update existing snowflakes
+        snowflakes.forEach(flake => {
+          flake.color = flake.getColor();
+        });
+        caught.forEach(flake => {
+          flake.color = flake.getColor();
+        });
+        setTimeout(() => {
+          catcherStatus.textContent = '❄️ Move your cursor to catch unique snowflakes';
+          catcherStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetCatcher() {
+        caught = [];
+        totalCaught = 0;
+        catchCount.textContent = '0';
+        generateSnowflakes();
+        catcherStatus.textContent = '🔄 Reset complete';
+        catcherStatus.style.color = '#94a3b8';
+        catcherMessage.textContent = 'Move your cursor to catch snowflakes';
+        catcherMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          catcherStatus.textContent = '❄️ Move your cursor to catch unique snowflakes';
+          catcherStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      display.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        
+        // Clamp to canvas
+        mouseX = Math.max(0, Math.min(canvas.width, mouseX));
+        mouseY = Math.max(0, Math.min(canvas.height, mouseY));
+      });
+
+      display.addEventListener('mouseleave', function() {
+        // Keep catcher at last position
+      });
+
+      // Touch support
+      display.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        mouseX = touch.clientX - rect.left;
+        mouseY = touch.clientY - rect.top;
+        
+        mouseX = Math.max(0, Math.min(canvas.width, mouseX));
+        mouseY = Math.max(0, Math.min(canvas.height, mouseY));
+      }, { passive: false });
+
+      sizeSlider.addEventListener('input', function() {
+        sizeValue.textContent = this.value;
+        catcherSize = parseInt(this.value);
+      });
+
+      collectionBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setCollection(this.dataset.collection);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetCatcher();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetCatcher();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('❄️ Snowflake Catcher ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

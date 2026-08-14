@@ -1,0 +1,2 @@
+# Floating Dropdown (Pastel)
+A soft, CSS-only floating dropdown menu. It leverages `visibility` and `opacity` alongside a `transform: translateY` to create a smooth, floating entrance animation on hover.

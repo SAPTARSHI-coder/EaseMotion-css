@@ -1,41 +1,54 @@
-# ease-tada animation
+# ease-tada
 
-A celebratory scale-and-rotate wobble animation for success toasts, badge emphasis, and playful UI feedback.
+## What does this do?
 
-## Class reference
+Celebration **animation utility** combining scale and rotation for a "tada" effect. Uses `@keyframes ease-kf-tada` — scales down, then overshoots larger with alternating rotation, settling back to normal.
 
-| Class | Trigger | Loop | Use Case |
-|-------|---------|------|----------|
-| `.ease-tada` | On class add / page load | No | Success toast, one-shot confirmation |
-| `.ease-tada-hover` | `:hover` | No | Interactive badge or button emphasis |
-| `.ease-tada-loop` | Automatic | Yes | Notification count, live status badge |
+## How is it used?
 
-## CSS variables
+```html
+<div class="ease-tada">🎉</div>
+```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-tada-duration` | `0.8s` | Total duration of the tada keyframe animation |
+### Variants
 
-```css
-.success-toast {
-  --ease-tada-duration: 1s;
+| Class | Duration | Use Case |
+|-------|----------|----------|
+| `.ease-tada` | 1s | Default single play |
+| `.ease-tada.ease-tada-fast` | 0.6s | Quick pop |
+| `.ease-tada.ease-tada-slow` | 1.5s | Subtle celebration |
+| `.ease-tada.ease-tada-infinite` | 1s | Continuous loop |
+
+Customize with inline style: `style="--ease-tada-duration:2s;"`.
+
+### Keyframes
+
+```
+@keyframes ease-kf-tada {
+  0%              → scale(1)   rotate(0deg)
+  10%, 20%        → scale(0.9) rotate(-3deg)
+  30%, 50%, 70%, 90% → scale(1.1) rotate(3deg)
+  40%, 60%, 80%   → scale(1.1) rotate(-3deg)
+  100%            → scale(1)   rotate(0deg)
 }
 ```
 
-## Usage
+### CSS Custom Properties
 
-```html
-<div class="toast ease-tada" role="status">
-  <span aria-hidden="true">✓</span>
-  <span>Payment successful!</span>
-</div>
-```
+| Property | Default | Description |
+|----------|---------|-------------|
+| `--ease-tada-duration` | `1s` | Animation duration |
+| `--ease-animation-iterations` | `1` | Play count (set to `infinite` for loop) |
 
-```html
-<span class="badge ease-tada-loop">3</span>
-<button class="ease-tada-hover">Celebrate</button>
-```
+### Reduced Motion
 
-## Reduced motion
+`@media (prefers-reduced-motion: reduce)` disables the animation entirely.
 
-Inside `@media (prefers-reduced-motion: reduce)`, all tada animations are disabled and `transform` is reset. Users who enable Reduce Motion in their OS accessibility settings will see static elements with no celebratory motion.
+### Design Tokens Used
+
+| Token | Fallback | Purpose |
+|-------|----------|---------|
+| `--ease-ease` | cubic-bezier(...) | Animation timing |
+| `--ease-animation-iterations` | `infinite` | Iteration count |
+
+Fixes #25550

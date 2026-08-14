@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klein Bottle · Bottle Twists Through Itself</title>
+    <meta name="description" content="Interactive 3D Klein bottle with twisting, self-intersecting geometry and vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🧪 KLEIN BOTTLE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="kleinCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="twist-btn" id="twistBtn">🌀 TWIST</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Detail</label>
+                <input type="range" id="detailSlider" min="2" max="6" value="4">
+                <span id="detailLabel">4</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🧪 KLEIN BOTTLE</span>
+            <small>twist · self-intersect · 3D</small>
+        </div>
+        <div class="hint">
+            <span>🌀 click to twist the Klein bottle through itself</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('kleinCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const twistBtn = document.getElementById('twistBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const detailSlider = document.getElementById('detailSlider');
+            const detailLabel = document.getElementById('detailLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let detail = 4;
+            let time = 0;
+            let twistProgress = 0;
+            let isTwisting = false;
+            let isTwisted = false;
+
+            // ---- Klein Bottle Parameters ----
+            let points = [];
+            let targetPoints = [];
+            let colors = [];
+            
+            const U_SEGMENTS = 20;
+            const V_SEGMENTS = 12;
+
+            // ---- Generate Klein Bottle ----
+            function generateKlein(phase) {
+                const pts = [];
+                const cols = [];
+                const p = phase || 0;
+                
+                const uSteps = U_SEGMENTS * detail;
+                const vSteps = V_SEGMENTS * detail;
+                
+                for (let i = 0; i <= uSteps; i++) {
+                    const u = (i / uSteps) * Math.PI * 2;
+                    for (let j = 0; j <= vSteps; j++) {
+                        const v = (j / vSteps) * Math.PI * 2;
+                        
+                        // Klein bottle parametric equations
+                        const r = 2 + Math.sin(u) * 0.5;
+                        const x = r * Math.cos(v) * (1 + 0.2 * Math.sin(u + p));
+                        const y = r * Math.sin(v) * (1 + 0.2 * Math.cos(u + p));
+                        const z = Math.sin(u) * 0.8 + 0.3 * Math.sin(v + p);
+                        
+                        // Apply twist morph
+                        const twistFactor = 1 + 0.3 * Math.sin(u * 2 + p);
+                        const tx = x * twistFactor;
+                        const ty = y * twistFactor;
+                        const tz = z * twistFactor + 0.2 * Math.sin(u * 3 + p);
+                        
+                        pts.push({ x: tx, y: ty, z: tz });
+                        
+                        // Colors
+                        const hue = (i / uSteps) * 360 + p * 20;
+                        const sat = 70 + 20 * Math.sin(v + p);
+                        const light = 50 + 20 * Math.sin(u + v + p);
+                        cols.push({ hue: hue % 360, sat: sat, light: light });
+                    }
+                }
+                return { points: pts, colors: cols };
+            }
+
+            // ---- Initialize ----
+            function initKlein() {
+                const result = generateKlein(0);
+                points = result.points;
+                colors = result.colors;
+                const target = generateKlein(Math.PI * 0.5);
+                targetPoints = target.points;
+                twistProgress = 0;
+                isTwisting = false;
+                isTwisted = false;
+            }
+
+            // ---- Twist ----
+            function twistKlein() {
+                if (isTwisting) return;
+                const target = generateKlein(Math.PI * 0.5 + Math.random() * 0.5);
+                targetPoints = target.points;
+                isTwisting = true;
+                isTwisted = false;
+                twistProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetKlein() {
+                isTwisting = false;
+                isTwisted = false;
+                twistProgress = 0;
+                const result = generateKlein(0);
+                points = result.points;
+                colors = result.colors;
+                const target = generateKlein(Math.PI * 0.5);
+                targetPoints = target.points;
+            }
+
+            // ---- Update Twist ----
+            function updateTwist() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isTwisting && twistProgress < 1) {
+                    twistProgress += 0.004 * (speed / 5);
+                    if (twistProgress > 1) {
+                        twistProgress = 1;
+                        isTwisting = false;
+                        isTwisted = true;
+                        const target = generateKlein(Math.PI * 0.5 + Math.random() * 0.5);
+                        targetPoints = target.points;
+                    }
+                    
+                    // Interpolate points
+                    const ease = 1 - Math.pow(1 - twistProgress, 3);
+                    for (let i = 0; i < points.length; i++) {
+                        if (targetPoints[i]) {
+                            points[i].x += (targetPoints[i].x - points[i].x) * 0.06 * (speed / 5);
+                            points[i].y += (targetPoints[i].y - points[i].y) * 0.06 * (speed / 5);
+                            points[i].z += (targetPoints[i].z - points[i].z) * 0.06 * (speed / 5);
+                        }
+                    }
+                }
+            }
+
+            // ---- 3D Projection ----
+            function project3D(x, y, z) {
+                const scale = 100;
+                const distance = 4.5;
+                const rotX = time * 0.15;
+                const rotY = time * 0.2;
+                const rotZ = time * 0.05;
+                
+                // Rotation around X
+                let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
+                let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
+                
+                // Rotation around Y
+                let x1 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
+                let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
+                
+                // Rotation around Z
+                let x2 = x1 * Math.cos(rotZ) - y1 * Math.sin(rotZ);
+                let y2 = x1 * Math.sin(rotZ) + y1 * Math.cos(rotZ);
+                
+                // Perspective projection
+                const persp = distance / (distance + z2);
+                const px = W/2 + x2 * scale * persp;
+                const py = H/2 + y2 * scale * persp;
+                
+                return { x: px, y: py, z: z2, persp: persp };
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Project points
+                const projected = points.map((p, i) => {
+                    const proj = project3D(p.x, p.y, p.z);
+                    return { ...proj, color: colors[i] };
+                });
+                
+                // Sort by z for depth
+                projected.sort((a, b) => a.z - b.z);
+                
+                // Draw triangles (faces)
+                const uSteps = U_SEGMENTS * detail;
+                const vSteps = V_SEGMENTS * detail;
+                const stride = vSteps + 1;
+                
+                for (let i = 0; i < uSteps; i++) {
+                    for (let j = 0; j < vSteps; j++) {
+                        const idx = i * stride + j;
+                        const idx2 = idx + stride;
+                        
+                        const p1 = projected[idx];
+                        const p2 = projected[idx + 1];
+                        const p3 = projected[idx2];
+                        const p4 = projected[idx2 + 1];
+                        
+                        if (p1 && p2 && p3 && p4) {
+                            // First triangle
+                            const avgZ1 = (p1.z + p2.z + p3.z) / 3;
+                            const alpha1 = 0.2 + (1 - Math.min(1, (avgZ1 + 2) / 4)) * 0.4;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = alpha1;
+                            const hue1 = p1.color.hue;
+                            const sat1 = p1.color.sat;
+                            const light1 = p1.color.light;
+                            ctx.fillStyle = `hsla(${hue1}, ${sat1}%, ${light1}%, ${alpha1 * 0.3})`;
+                            ctx.shadowColor = `hsla(${hue1}, 100%, 70%, ${0.05 * (1 - avgZ1 / 4)})`;
+                            ctx.shadowBlur = 10;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.lineTo(p3.x, p3.y);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                            
+                            // Second triangle
+                            const avgZ2 = (p2.z + p3.z + p4.z) / 3;
+                            const alpha2 = 0.2 + (1 - Math.min(1, (avgZ2 + 2) / 4)) * 0.4;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = alpha2;
+                            const hue2 = p2.color.hue;
+                            const sat2 = p2.color.sat;
+                            const light2 = p2.color.light;
+                            ctx.fillStyle = `hsla(${hue2}, ${sat2}%, ${light2}%, ${alpha2 * 0.3})`;
+                            ctx.shadowColor = `hsla(${hue2}, 100%, 70%, ${0.05 * (1 - avgZ2 / 4)})`;
+                            ctx.shadowBlur = 10;
+                            ctx.beginPath();
+                            ctx.moveTo(p2.x, p2.y);
+                            ctx.lineTo(p3.x, p3.y);
+                            ctx.lineTo(p4.x, p4.y);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                            
+                            // Edges
+                            ctx.save();
+                            ctx.globalAlpha = 0.1 + (1 - Math.min(1, (avgZ1 + 2) / 4)) * 0.2;
+                            ctx.strokeStyle = `hsla(${hue1}, 80%, 70%, ${0.1 + (1 - avgZ1 / 4) * 0.2})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.shadowColor = `hsla(${hue1}, 100%, 70%, 0.05)`;
+                            ctx.shadowBlur = 5;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.lineTo(p3.x, p3.y);
+                            ctx.closePath();
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+                
+                // Draw glow nodes
+                for (let i = 0; i < projected.length; i += 5) {
+                    const p = projected[i];
+                    const alpha = 0.1 + (1 - Math.min(1, (p.z + 2) / 4)) * 0.3;
+                    const size = 1 + (1 - Math.min(1, (p.z + 2) / 4)) * 2;
+                    const hue = p.color.hue;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${0.15 * (1 - p.z / 4)})`;
+                    ctx.shadowBlur = 20 * (1 - Math.min(1, (p.z + 2) / 4));
+                    ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Faces: ${uSteps * vSteps * 2}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isTwisted ? '🌀 TWISTED' : 
+                              isTwisting ? '🔄 TWISTING...' : 
+                              '🧪 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateTwist();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            detailSlider.addEventListener('input', function() {
+                detail = parseInt(this.value);
+                detailLabel.textContent = detail;
+                initKlein();
+                render();
+            });
+
+            // ---- Event Listeners ----
+            twistBtn.addEventListener('click', twistKlein);
+            resetBtn.addEventListener('click', resetKlein);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    twistKlein();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetKlein();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initKlein();
+            render();
+            animate();
+
+            console.log('🧪 Klein Bottle · Click Twist or press Space to twist the bottle!');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snow Globe · snow swirls when shaken</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="snowglobe-container">
+      <div class="snowglobe-display" id="snowglobeDisplay">
+        <!-- Canvas for snow globe -->
+        <canvas id="snowglobeCanvas"></canvas>
+        
+        <!-- Snow Globe Info -->
+        <div class="snowglobe-info">
+          <span class="info-label">❄️ Snowflakes</span>
+          <span class="info-value" id="snowCount">0</span>
+        </div>
+
+        <!-- Snow Globe Controls -->
+        <div class="snowglobe-controls">
+          <div class="control-group">
+            <label class="control-label">🌨️ Shake</label>
+            <input type="range" class="control-slider" id="shakeSlider" min="0" max="100" value="0">
+            <span class="control-value" id="shakeValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Scene</label>
+            <div class="scene-options">
+              <button class="scene-btn active" data-scene="winter" title="Winter">❄️</button>
+              <button class="scene-btn" data-scene="magic" title="Magic">✨</button>
+              <button class="scene-btn" data-scene="aurora" title="Aurora">🌌</button>
+              <button class="scene-btn" data-scene="golden" title="Golden">🌟</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Snow Globe Text -->
+        <div class="snowglobe-text">
+          <span class="text-label">❄️ Snow Globe</span>
+          <span class="text-message" id="snowglobeMessage">Shake the globe to swirl the snow</span>
+        </div>
+      </div>
+      
+      <div class="snowglobe-status">
+        <span id="snowglobeStatus">❄️ Shake the snow globe to see the snow swirl</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-shake" id="shakeBtn">🌨️ Shake</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>❄️ snow globe · 4 scenes · swirling snow</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('snowglobeCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('snowglobeDisplay');
+      const snowCount = document.getElementById('snowCount');
+      const snowglobeStatus = document.getElementById('snowglobeStatus');
+      const snowglobeMessage = document.getElementById('snowglobeMessage');
+      const shakeBtn = document.getElementById('shakeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const shakeSlider = document.getElementById('shakeSlider');
+      const shakeValue = document.getElementById('shakeValue');
+      const sceneBtns = document.querySelectorAll('.scene-btn');
+
+      // State
+      let snowflakes = [];
+      let animationId = null;
+      let time = 0;
+      let currentScene = 'winter';
+      let shakeIntensity = 0;
+      let targetShake = 0;
+
+      // Scene configurations
+      const scenes = {
+        winter: { name: 'Winter', color: '#e2e8f0', glow: 'rgba(255,255,255,0.1)', ground: '#94a3b8', tree: '#2d5a3a' },
+        magic: { name: 'Magic', color: '#a78bfa', glow: 'rgba(167,139,250,0.15)', ground: '#7c3aed', tree: '#4c1d95' },
+        aurora: { name: 'Aurora', color: '#34d399', glow: 'rgba(52,211,153,0.15)', ground: '#0ea5e9', tree: '#0d9488' },
+        golden: { name: 'Golden', color: '#fbbf24', glow: 'rgba(251,191,36,0.15)', ground: '#f59e0b', tree: '#92400e' }
+      };
+
+      // Snowflake class
+      class Snowflake {
+        constructor() {
+          this.reset();
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+        }
+
+        reset() {
+          const w = canvas.width;
+          const h = canvas.height;
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = 1 + Math.random() * 3;
+          this.speed = 0.3 + Math.random() * 0.5;
+          this.angle = Math.random() * Math.PI * 2;
+          this.wobble = 0.2 + Math.random() * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.opacity = 0.5 + Math.random() * 0.5;
+          this.drift = 0.3 + Math.random() * 0.7;
+        }
+
+        update(shake, time) {
+          const intensity = shake / 100;
+          const speed = this.speed * (1 + intensity * 1.5);
+          const wobbleAmount = this.wobble * (1 + intensity * 1.5);
+          
+          // Swirl effect
+          this.phase += 0.01 * (1 + intensity);
+          const swirlX = Math.sin(this.phase * 0.7 + this.angle) * wobbleAmount * intensity * 2;
+          const swirlY = Math.cos(this.phase * 0.5 + this.angle) * wobbleAmount * intensity * 1.5;
+          
+          // Upward drift when shaken
+          const upward = intensity * 0.5;
+          
+          this.x += Math.cos(this.angle + swirlX) * speed * 0.1 + Math.sin(this.phase) * 0.1;
+          this.y += Math.sin(this.angle + swirlY) * speed * 0.1 - upward * 0.2;
+          this.y += Math.cos(this.phase * 0.3) * 0.05;
+          
+          // Reset if out of bounds
+          if (this.y < -20) {
+            this.y = canvas.height + 20;
+            this.x = Math.random() * canvas.width;
+          }
+          if (this.y > canvas.height + 20) {
+            this.y = -20;
+            this.x = Math.random() * canvas.width;
+          }
+          if (this.x < -20) this.x = canvas.width + 20;
+          if (this.x > canvas.width + 20) this.x = -20;
+        }
+
+        draw(ctx, scene) {
+          const sceneData = scenes[scene];
+          const alpha = this.opacity * 0.8;
+          const size = this.size * (0.7 + Math.sin(this.phase * 0.5) * 0.2 + 0.3);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          
+          // Glow
+          ctx.shadowColor = sceneData.color;
+          ctx.shadowBlur = 5;
+          
+          // Snowflake shape
+          ctx.fillStyle = sceneData.color;
+          ctx.beginPath();
+          
+          // Six-point star
+          const points = 6;
+          const outerRadius = size;
+          const innerRadius = size * 0.4;
+          for (let i = 0; i < points * 2; i++) {
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const angle = (i / (points * 2)) * Math.PI * 2 + this.phase * 0.1;
+            const px = this.x + Math.cos(angle) * radius;
+            const py = this.y + Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+          
+          // Center dot
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 0.2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate snowflakes
+      function generateSnowflakes() {
+        const count = 100 + Math.floor(Math.random() * 50);
+        snowflakes = [];
+        for (let i = 0; i < count; i++) {
+          snowflakes.push(new Snowflake());
+        }
+        snowCount.textContent = snowflakes.length;
+      }
+
+      // Draw globe
+      function drawGlobe() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.38;
+
+        // Glass gradient
+        const grad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, 0, cx, cy, radius);
+        grad.addColorStop(0, 'rgba(200, 220, 240, 0.05)');
+        grad.addColorStop(0.5, 'rgba(150, 180, 210, 0.03)');
+        grad.addColorStop(0.8, 'rgba(100, 130, 160, 0.04)');
+        grad.addColorStop(1, 'rgba(50, 80, 110, 0.06)');
+        ctx.fillStyle = grad;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Glass highlight
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        const highlightGrad = ctx.createRadialGradient(
+          cx - radius * 0.3, cy - radius * 0.3, 0,
+          cx - radius * 0.3, cy - radius * 0.3, radius * 0.5
+        );
+        highlightGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
+        highlightGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = highlightGrad;
+        ctx.beginPath();
+        ctx.arc(cx - radius * 0.3, cy - radius * 0.3, radius * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Glass edge
+        ctx.strokeStyle = 'rgba(200, 220, 240, 0.15)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Base
+        const baseY = cy + radius;
+        const baseGrad = ctx.createLinearGradient(cx - radius * 0.8, baseY, cx + radius * 0.8, baseY);
+        baseGrad.addColorStop(0, '#4a3a2a');
+        baseGrad.addColorStop(0.3, '#6b5a4a');
+        baseGrad.addColorStop(0.7, '#6b5a4a');
+        baseGrad.addColorStop(1, '#4a3a2a');
+        ctx.fillStyle = baseGrad;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(cx - radius * 0.8, baseY);
+        ctx.quadraticCurveTo(cx - radius * 0.9, baseY + radius * 0.15, cx - radius * 0.7, baseY + radius * 0.25);
+        ctx.quadraticCurveTo(cx, baseY + radius * 0.3, cx + radius * 0.7, baseY + radius * 0.25);
+        ctx.quadraticCurveTo(cx + radius * 0.9, baseY + radius * 0.15, cx + radius * 0.8, baseY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // Draw scene
+      function drawScene(scene) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.38;
+        const sceneData = scenes[scene];
+
+        // Ground
+        const groundY = cy + radius * 0.3;
+        const grad = ctx.createLinearGradient(0, groundY, 0, cy + radius);
+        grad.addColorStop(0, sceneData.ground + '33');
+        grad.addColorStop(0.5, sceneData.ground + '22');
+        grad.addColorStop(1, sceneData.ground + '11');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx - radius * 0.9, groundY);
+        ctx.quadraticCurveTo(cx - radius * 0.5, groundY + radius * 0.1, cx, groundY + radius * 0.05);
+        ctx.quadraticCurveTo(cx + radius * 0.5, groundY + radius * 0.1, cx + radius * 0.9, groundY);
+        ctx.lineTo(cx + radius * 0.9, cy + radius);
+        ctx.lineTo(cx - radius * 0.9, cy + radius);
+        ctx.closePath();
+        ctx.fill();
+
+        // Tree
+        drawTree(cx, cy + radius * 0.2, radius * 0.3, scene);
+
+        // Small house or cabin
+        drawHouse(cx + radius * 0.3, cy + radius * 0.25, radius * 0.15, scene);
+      }
+
+      // Draw tree
+      function drawTree(x, y, size, scene) {
+        const sceneData = scenes[scene];
+        ctx.save();
+        
+        // Tree trunk
+        ctx.fillStyle = '#4a3a2a';
+        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+        ctx.shadowBlur = 5;
+        ctx.fillRect(x - size * 0.05, y - size * 0.1, size * 0.1, size * 0.3);
+        
+        // Tree foliage
+        ctx.shadowBlur = 0;
+        for (let i = 0; i < 3; i++) {
+          const ty = y - size * 0.2 - i * size * 0.25;
+          const ts = size * (0.5 - i * 0.12);
+          const grad = ctx.createRadialGradient(x, ty - ts * 0.2, 0, x, ty, ts);
+          grad.addColorStop(0, sceneData.color + '66');
+          grad.addColorStop(0.5, sceneData.color + '44');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(x, ty, ts, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+
+      // Draw house
+      function drawHouse(x, y, size, scene) {
+        const sceneData = scenes[scene];
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+        ctx.shadowBlur = 5;
+        
+        // House body
+        ctx.fillStyle = '#6b5a4a';
+        ctx.fillRect(x - size * 0.4, y - size * 0.3, size * 0.8, size * 0.4);
+        
+        // Roof
+        ctx.fillStyle = '#5a4a3a';
+        ctx.beginPath();
+        ctx.moveTo(x - size * 0.5, y - size * 0.3);
+        ctx.lineTo(x, y - size * 0.6);
+        ctx.lineTo(x + size * 0.5, y - size * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Door
+        ctx.fillStyle = '#4a3a2a';
+        ctx.fillRect(x - size * 0.06, y - size * 0.1, size * 0.12, size * 0.2);
+        
+        // Window glow
+        ctx.shadowColor = sceneData.color;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = sceneData.glow;
+        ctx.fillRect(x - size * 0.2, y - size * 0.15, size * 0.12, size * 0.12);
+        ctx.fillRect(x + size * 0.08, y - size * 0.15, size * 0.12, size * 0.12);
+        
+        ctx.restore();
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateSnowflakes();
+      }
+
+      // Animation loop
+      function animate() {
+        const shake = parseInt(shakeSlider.value);
+        time += 0.02;
+        
+        // Smooth shake
+        shakeIntensity += (shake - shakeIntensity) * 0.05;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Update and draw snowflakes
+        snowflakes.forEach(flake => {
+          flake.update(shakeIntensity, time);
+        });
+        
+        // Draw scene first (behind snow)
+        drawScene(currentScene);
+        
+        // Draw snowflakes
+        snowflakes.forEach(flake => {
+          flake.draw(ctx, currentScene);
+        });
+        
+        // Draw globe on top
+        drawGlobe();
+        
+        // Update snow count
+        snowCount.textContent = snowflakes.length;
+        
+        // Update status
+        if (shake > 70) {
+          snowglobeStatus.textContent = '❄️ Snow swirling wildly! ✨';
+          snowglobeStatus.style.color = '#fbbf24';
+        } else if (shake > 30) {
+          snowglobeStatus.textContent = '❄️ Snowflakes dancing in the globe';
+          snowglobeStatus.style.color = '#818cf8';
+        } else {
+          snowglobeStatus.textContent = '❄️ Shake the snow globe to see the snow swirl';
+          snowglobeStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message
+        const sceneData = scenes[currentScene];
+        snowglobeMessage.textContent = `${sceneData.name} snow globe — shake to swirl`;
+        snowglobeMessage.style.color = sceneData.color;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set scene
+      function setScene(scene) {
+        currentScene = scene;
+        sceneBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.scene === scene);
+        });
+        const sceneData = scenes[scene];
+        snowglobeStatus.textContent = `🎨 Scene: ${sceneData.name}`;
+        snowglobeStatus.style.color = sceneData.color;
+        setTimeout(() => {
+          if (shakeIntensity < 10) {
+            snowglobeStatus.textContent = '❄️ Shake the snow globe to see the snow swirl';
+            snowglobeStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Shake action
+      function shakeGlobe() {
+        shakeSlider.value = 100;
+        shakeValue.textContent = '100%';
+        shakeIntensity = 100;
+        snowglobeStatus.textContent = '🌨️ Shaking!';
+        snowglobeStatus.style.color = '#fbbf24';
+        setTimeout(() => {
+          shakeSlider.value = 0;
+          shakeValue.textContent = '0%';
+          snowglobeStatus.textContent = '❄️ Snow settling...';
+          snowglobeStatus.style.color = '#818cf8';
+          setTimeout(() => {
+            snowglobeStatus.textContent = '❄️ Shake the snow globe to see the snow swirl';
+            snowglobeStatus.style.color = '#94a3b8';
+          }, 1500);
+        }, 800);
+      }
+
+      // Reset
+      function resetSnowglobe() {
+        shakeSlider.value = 0;
+        shakeValue.textContent = '0%';
+        shakeIntensity = 0;
+        snowglobeStatus.textContent = '🔄 Reset complete';
+        snowglobeStatus.style.color = '#94a3b8';
+        snowglobeMessage.textContent = 'Shake the globe to swirl the snow';
+        snowglobeMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          snowglobeStatus.textContent = '❄️ Shake the snow globe to see the snow swirl';
+          snowglobeStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      shakeSlider.addEventListener('input', function() {
+        shakeValue.textContent = this.value + '%';
+      });
+
+      sceneBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setScene(this.dataset.scene);
+        });
+      });
+
+      if (shakeBtn) {
+        shakeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          shakeGlobe();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetSnowglobe();
+        });
+      }
+
+      // Click on display to shake
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          shakeGlobe();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          shakeGlobe();
+        } else if (key === 's' || key === 'S') {
+          e.preventDefault();
+          shakeGlobe();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetSnowglobe();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('❄️ Snow Globe ready · shortcuts: [Space/S] Shake, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

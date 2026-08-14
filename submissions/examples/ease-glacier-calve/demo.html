@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glacier Calve · Ice Breaks into Water</title>
+    <meta name="description" content="Interactive glacier calving with ice breaking into water, splashing particles, and atmospheric polar effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🧊 GLACIER CALVE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="glacierCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="calve-btn" id="calveBtn">🧊 CALVE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Ice</label>
+                <input type="range" id="iceSlider" min="10" max="50" value="25">
+                <span id="iceLabel">25</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🧊 GLACIER CALVE</span>
+            <small>ice · break · splash</small>
+        </div>
+        <div class="hint">
+            <span>🧊 click to calve ice into the water</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('glacierCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const calveBtn = document.getElementById('calveBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const iceSlider = document.getElementById('iceSlider');
+            const iceLabel = document.getElementById('iceLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let iceCount = 25;
+            let time = 0;
+            let icePieces = [];
+            let splashes = [];
+            let totalCalves = 0;
+
+            // ---- Ice Piece Class ----
+            class IcePiece {
+                constructor(x, y) {
+                    this.x = x || 300 + (Math.random() - 0.5) * 40;
+                    this.y = y || 200 + Math.random() * 30;
+                    this.size = 15 + Math.random() * 25;
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = -3 - Math.random() * 4;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                    this.gravity = 0.08 + Math.random() * 0.04;
+                    this.friction = 0.99;
+                    this.life = 1;
+                    this.decay = 0.002 + Math.random() * 0.003;
+                    this.alpha = 0.7 + Math.random() * 0.3;
+                    
+                    // Ice color variations
+                    const hue = 190 + Math.random() * 30;
+                    const light = 60 + Math.random() * 30;
+                    this.color = `hsla(${hue}, 40%, ${light}%, `;
+                    this.glowColor = `hsla(${hue + 10}, 60%, ${light + 20}%, `;
+                    
+                    this.broken = false;
+                    this.breakTimer = 0;
+                }
+
+                update() {
+                    this.vy += this.gravity;
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vx *= this.friction;
+                    this.rotation += this.rotationSpeed;
+                    this.life -= this.decay;
+                    
+                    // Water splash when hitting water
+                    if (this.y > H - 80 && !this.broken) {
+                        this.broken = true;
+                        this.vy *= -0.2;
+                        createSplash(this.x, H - 80);
+                    }
+                    
+                    // Keep in bounds
+                    if (this.x < 0 || this.x > W) {
+                        this.vx *= -0.5;
+                    }
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life * this.alpha;
+                    
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.globalAlpha = alpha;
+                    
+                    // Glow
+                    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                    grad.addColorStop(0, this.glowColor + (alpha * 0.3) + ')');
+                    grad.addColorStop(0.5, this.color + (alpha * 0.6) + ')');
+                    grad.addColorStop(1, this.color + (alpha * 0.2) + ')');
+                    
+                    ctx.shadowColor = this.glowColor + (alpha * 0.1) + ')';
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = grad;
+                    
+                    // Iceberg shape (organic)
+                    ctx.beginPath();
+                    const segments = 6 + Math.floor(Math.random() * 4);
+                    for (let i = 0; i < segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const r = this.size * (0.6 + Math.sin(i * 2.5 + this.rotation) * 0.2 + 0.2);
+                        const x = Math.cos(angle) * r;
+                        const y = Math.sin(angle) * r * 0.7;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Facet highlights
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.05})`;
+                    ctx.beginPath();
+                    ctx.ellipse(-this.size * 0.2, -this.size * 0.2, this.size * 0.3, this.size * 0.15, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = `rgba(200, 230, 255, ${alpha * 0.05})`;
+                    ctx.beginPath();
+                    ctx.ellipse(this.size * 0.1, this.size * 0.1, this.size * 0.2, this.size * 0.1, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Splash Particle ----
+            class SplashParticle {
+                constructor(x, y) {
+                    this.x = x + (Math.random() - 0.5) * 20;
+                    this.y = y + (Math.random() - 0.5) * 10;
+                    this.size = 2 + Math.random() * 4;
+                    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+                    const speed = 2 + Math.random() * 4;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 2;
+                    this.gravity = 0.1 + Math.random() * 0.05;
+                    this.life = 1;
+                    this.decay = 0.015 + Math.random() * 0.02;
+                    this.alpha = 0.5 + Math.random() * 0.5;
+                    this.color = `rgba(200, 230, 255, `;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= 0.98;
+                    this.life -= this.decay;
+                    this.alpha = this.life * 0.6;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.fillStyle = this.color + this.alpha + ')';
+                    ctx.shadowColor = 'rgba(200, 230, 255, 0.05)';
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Splash ----
+            function createSplash(x, y) {
+                const numParticles = 15 + Math.floor(Math.random() * 15);
+                for (let i = 0; i < numParticles; i++) {
+                    splashes.push(new SplashParticle(x, y));
+                }
+            }
+
+            // ---- Calve Ice ----
+            function calveIce() {
+                const count = iceCount;
+                for (let i = 0; i < count; i++) {
+                    const x = 250 + Math.random() * 100;
+                    const y = 150 + Math.random() * 80;
+                    const piece = new IcePiece(x, y);
+                    piece.vx = (Math.random() - 0.5) * 5;
+                    piece.vy = -2 - Math.random() * 5;
+                    piece.size = 10 + Math.random() * 30;
+                    icePieces.push(piece);
+                    totalCalves++;
+                }
+                
+                // Initial splash
+                createSplash(300, H - 80);
+                
+                // Play sound
+                playCalveSound();
+            }
+
+            // ---- Play Calve Sound ----
+            function playCalveSound() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    // Low rumble
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                    
+                    // Crackle
+                    for (let i = 0; i < 5; i++) {
+                        const crackle = audioCtx.createBufferSource();
+                        const size = audioCtx.sampleRate * (0.005 + Math.random() * 0.01);
+                        const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+                        const d = buf.getChannelData(0);
+                        for (let j = 0; j < size; j++) {
+                            d[j] = (Math.random() * 2 - 1) * Math.exp(-j / (size * 0.3));
+                        }
+                        crackle.buffer = buf;
+                        const g = audioCtx.createGain();
+                        g.gain.setValueAtTime(0.03, now + i * 0.05);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.02);
+                        crackle.connect(g);
+                        g.connect(audioCtx.destination);
+                        crackle.start(now + i * 0.05);
+                        crackle.stop(now + i * 0.05 + 0.02);
+                    }
+                    
+                    // Splash noise
+                    const bufferSize = audioCtx.sampleRate * 0.15;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gainNoise = audioCtx.createGain();
+                    gainNoise.gain.setValueAtTime(0.06, now + 0.05);
+                    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    noise.connect(gainNoise);
+                    gainNoise.connect(audioCtx.destination);
+                    noise.start(now + 0.05);
+                    noise.stop(now + 0.2);
+                    
+                } catch (e) {}
+            }
+
+            // ---- Render ----
+            function render() {
+                // Sky
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                skyGrad.addColorStop(0, '#0a1a2a');
+                skyGrad.addColorStop(0.3, '#0d1a25');
+                skyGrad.addColorStop(0.5, '#1a2a3a');
+                skyGrad.addColorStop(0.7, '#0d1a25');
+                skyGrad.addColorStop(1, '#0a1520');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Mountains in background
+                ctx.fillStyle = 'rgba(30, 50, 70, 0.05)';
+                for (let i = 0; i < 3; i++) {
+                    const x = i * 250 + 50;
+                    const h = 80 + Math.sin(i * 1.5) * 40;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 100, H - 100);
+                    ctx.quadraticCurveTo(x, H - 100 - h, x + 100, H - 100);
+                    ctx.fill();
+                }
+                
+                // Water
+                const waterGrad = ctx.createLinearGradient(0, H - 80, 0, H);
+                waterGrad.addColorStop(0, 'rgba(20, 60, 80, 0.2)');
+                waterGrad.addColorStop(0.3, 'rgba(20, 60, 80, 0.4)');
+                waterGrad.addColorStop(0.7, 'rgba(20, 60, 80, 0.6)');
+                waterGrad.addColorStop(1, 'rgba(20, 60, 80, 0.8)');
+                ctx.fillStyle = waterGrad;
+                ctx.fillRect(0, H - 80, W, 80);
+                
+                // Water surface
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.05)';
+                ctx.lineWidth = 1;
+                for (let w = 0; w < 3; w++) {
+                    ctx.beginPath();
+                    for (let x = 0; x <= W; x += 2) {
+                        const y = H - 80 + Math.sin(x * 0.02 + time * 0.02 + w * 2) * 3 +
+                                 Math.sin(x * 0.03 + time * 0.015 + w * 1.5) * 2;
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+                
+                // Draw splashes
+                splashes = splashes.filter(s => s.life > 0);
+                for (let s of splashes) {
+                    s.update();
+                    s.draw(ctx);
+                }
+                
+                // Draw ice pieces
+                icePieces = icePieces.filter(p => p.life > 0);
+                for (let p of icePieces) {
+                    p.update();
+                    p.draw(ctx);
+                }
+                
+                // Glacier cliff
+                ctx.save();
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.02)';
+                ctx.shadowBlur = 10;
+                const cliffGrad = ctx.createLinearGradient(260, 0, 360, 0);
+                cliffGrad.addColorStop(0, 'rgba(150, 200, 230, 0.1)');
+                cliffGrad.addColorStop(0.3, 'rgba(180, 220, 240, 0.2)');
+                cliffGrad.addColorStop(0.7, 'rgba(180, 220, 240, 0.2)');
+                cliffGrad.addColorStop(1, 'rgba(150, 200, 230, 0.1)');
+                ctx.fillStyle = cliffGrad;
+                ctx.fillRect(250, 100, 100, H - 180);
+                
+                // Glacier top
+                ctx.fillStyle = 'rgba(200, 230, 250, 0.05)';
+                ctx.beginPath();
+                ctx.moveTo(240, 100);
+                ctx.quadraticCurveTo(300, 70, 360, 100);
+                ctx.lineTo(360, 120);
+                ctx.lineTo(240, 120);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Ice cracks
+                ctx.strokeStyle = 'rgba(200, 230, 255, 0.02)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const x = 260 + i * 30 + Math.sin(i * 2) * 10;
+                    const y = 120 + i * 30;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + 20, y + 20, x + 40, y + 10);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Ice: ${icePieces.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Calves: ${totalCalves}`, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetGlacier() {
+                icePieces = [];
+                splashes = [];
+                totalCalves = 0;
+                time = 0;
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            iceSlider.addEventListener('input', function() {
+                iceCount = parseInt(this.value);
+                iceLabel.textContent = iceCount;
+            });
+
+            // ---- Event Listeners ----
+            calveBtn.addEventListener('click', calveIce);
+            resetBtn.addEventListener('click', resetGlacier);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    calveIce();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetGlacier();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to calve ----
+            canvas.addEventListener('click', function(e) {
+                calveIce();
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🧊 Glacier Calve · Click Calve or press Space to break ice into the water!');
+        })();
+    </script>
+</body>
+</html>

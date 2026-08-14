@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prism Rain · rainbow drops fall like rain</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="prism-container">
+      <div class="prism-display" id="prismDisplay">
+        <!-- Canvas for prism rain -->
+        <canvas id="prismCanvas"></canvas>
+        
+        <!-- Prism Info -->
+        <div class="prism-info">
+          <span class="info-label">🌈 Drops</span>
+          <span class="info-value" id="dropCount">0</span>
+        </div>
+
+        <!-- Prism Controls -->
+        <div class="prism-controls">
+          <div class="control-group">
+            <label class="control-label">💧 Intensity</label>
+            <input type="range" class="control-slider" id="intensitySlider" min="0" max="100" value="50">
+            <span class="control-value" id="intensityValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌈 Palette</label>
+            <div class="palette-options">
+              <button class="palette-btn active" data-palette="rainbow" title="Rainbow">🌈</button>
+              <button class="palette-btn" data-palette="pastel" title="Pastel">🌸</button>
+              <button class="palette-btn" data-palette="neon" title="Neon">💡</button>
+              <button class="palette-btn" data-palette="sunset" title="Sunset">🌅</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prism Text -->
+        <div class="prism-text">
+          <span class="text-label">🌈 Prism Rain</span>
+          <span class="text-message" id="prismMessage">Rainbow drops fall like rain</span>
+        </div>
+      </div>
+      
+      <div class="prism-status">
+        <span id="prismStatus">🌈 Rainbow drops falling like prism rain</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌈 prism rain · 4 palettes · intensity control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('prismCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('prismDisplay');
+      const dropCount = document.getElementById('dropCount');
+      const prismStatus = document.getElementById('prismStatus');
+      const prismMessage = document.getElementById('prismMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const paletteBtns = document.querySelectorAll('.palette-btn');
+
+      // State
+      let drops = [];
+      let animationId = null;
+      let currentPalette = 'rainbow';
+      let totalDrops = 0;
+
+      // Color palettes
+      const palettes = {
+        rainbow: {
+          name: 'Rainbow',
+          colors: ['#ef4444', '#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899']
+        },
+        pastel: {
+          name: 'Pastel',
+          colors: ['#fca5a5', '#fdba74', '#fde68a', '#86efac', '#93c5fd', '#c4b5fd', '#f9a8d4']
+        },
+        neon: {
+          name: 'Neon',
+          colors: ['#ff0055', '#ff6600', '#ffdd00', '#00ff66', '#0066ff', '#cc00ff', '#ff00aa']
+        },
+        sunset: {
+          name: 'Sunset',
+          colors: ['#ef4444', '#f97316', '#fb923c', '#fbbf24', '#f472b6', '#8b5cf6', '#6366f1']
+        }
+      };
+
+      // Drop class
+      class Drop {
+        constructor() {
+          this.reset();
+          this.x = Math.random() * canvas.width;
+          this.y = -20 - Math.random() * 50;
+        }
+
+        reset() {
+          const w = canvas.width;
+          const h = canvas.height;
+          this.x = Math.random() * w;
+          this.y = -20 - Math.random() * 50;
+          this.size = 1.5 + Math.random() * 3.5;
+          this.speed = 1.5 + Math.random() * 2.5;
+          this.wobble = 0.2 + Math.random() * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.colorIndex = Math.floor(Math.random() * 7);
+          this.opacity = 0.3 + Math.random() * 0.5;
+          this.trail = [];
+          this.glow = 0.5 + Math.random() * 0.5;
+          this.rainbowOffset = Math.random() * 0.5;
+        }
+
+        update(intensity, time) {
+          const speedFactor = 0.5 + intensity * 0.5;
+          this.y += this.speed * speedFactor;
+          this.phase += 0.03;
+          this.x += Math.sin(this.phase) * this.wobble * 0.3;
+          
+          // Trail
+          this.trail.push({ x: this.x, y: this.y, life: 1 });
+          if (this.trail.length > 8) {
+            this.trail.shift();
+          }
+          this.trail.forEach(t => t.life -= 0.05);
+          
+          // Reset if off screen
+          if (this.y > canvas.height + 20) {
+            this.reset();
+            this.colorIndex = Math.floor(Math.random() * 7);
+            this.trail = [];
+            return true;
+          }
+          return true;
+        }
+
+        draw(ctx, colors) {
+          const color = colors[this.colorIndex % colors.length];
+          const alpha = this.opacity * (0.6 + Math.sin(this.phase * 2) * 0.2);
+          
+          // Trail
+          this.trail.forEach(t => {
+            if (t.life > 0) {
+              ctx.save();
+              ctx.globalAlpha = t.life * alpha * 0.3;
+              ctx.fillStyle = color;
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 5;
+              ctx.beginPath();
+              ctx.arc(t.x, t.y, this.size * 0.3 * t.life, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          });
+          
+          // Glow
+          ctx.save();
+          const glowSize = this.size * 4 * this.glow;
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+          grad.addColorStop(0, color + '66');
+          grad.addColorStop(0.3, color + '33');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 15;
+          ctx.globalAlpha = alpha * 0.5;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core drop
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = color;
+          ctx.globalAlpha = alpha * 0.8;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Prism sparkle
+          if (Math.random() > 0.8) {
+            ctx.globalAlpha = alpha * 0.15;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.5;
+            const sp = this.size * 1.5;
+            ctx.beginPath();
+            ctx.moveTo(this.x - sp, this.y);
+            ctx.lineTo(this.x + sp, this.y);
+            ctx.moveTo(this.x, this.y - sp);
+            ctx.lineTo(this.x, this.y + sp);
+            ctx.stroke();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate drops
+      function generateDrops() {
+        const intensity = intensitySlider.value / 100;
+        const count = Math.floor(20 + intensity * 60);
+        drops = [];
+        for (let i = 0; i < count; i++) {
+          drops.push(new Drop());
+        }
+        totalDrops = drops.length;
+        dropCount.textContent = totalDrops;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Dark gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 10, 20, 0.3)');
+        grad.addColorStop(0.5, 'rgba(5, 5, 15, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Rain streaks in background
+        ctx.save();
+        ctx.globalAlpha = 0.03;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + 5, y + 20);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateDrops();
+      }
+
+      // Animation loop
+      function animate() {
+        const intensity = intensitySlider.value / 100;
+        const time = Date.now() / 1000;
+        const palette = palettes[currentPalette];
+        const colors = palette.colors;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw drops
+        drops.forEach(d => {
+          d.update(intensity, time);
+          d.draw(ctx, colors);
+        });
+        
+        // Maintain drop count
+        while (drops.length < Math.floor(20 + intensity * 60)) {
+          drops.push(new Drop());
+        }
+        
+        // Update status
+        if (intensity > 0.7) {
+          prismStatus.textContent = '🌈 Prism rain pouring down! ✨';
+          prismStatus.style.color = '#fbbf24';
+        } else if (intensity > 0.3) {
+          prismStatus.textContent = '🌈 Rainbow drops falling gently';
+          prismStatus.style.color = '#818cf8';
+        } else {
+          prismStatus.textContent = '🌈 Prism rain falling softly';
+          prismStatus.style.color = '#94a3b8';
+        }
+        
+        dropCount.textContent = drops.length;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set palette
+      function setPalette(palette) {
+        currentPalette = palette;
+        paletteBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.palette === palette);
+        });
+        const paletteData = palettes[palette];
+        prismStatus.textContent = `🎨 Palette: ${paletteData.name}`;
+        prismStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          prismStatus.textContent = '🌈 Rainbow drops falling like prism rain';
+          prismStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetPrism() {
+        generateDrops();
+        prismStatus.textContent = '🔄 Reset complete';
+        prismStatus.style.color = '#94a3b8';
+        prismMessage.textContent = 'Rainbow drops fall like rain';
+        prismMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          prismStatus.textContent = '🌈 Rainbow drops falling like prism rain';
+          prismStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      intensitySlider.addEventListener('input', function() {
+        intensityValue.textContent = this.value + '%';
+        const count = Math.floor(20 + (this.value / 100) * 60);
+        while (drops.length < count) {
+          drops.push(new Drop());
+        }
+        while (drops.length > count) {
+          drops.pop();
+        }
+        dropCount.textContent = drops.length;
+      });
+
+      paletteBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setPalette(this.dataset.palette);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetPrism();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetPrism();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌈 Prism Rain ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

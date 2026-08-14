@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabbit Hop · Hops Away on Interaction</title>
+    <meta name="description" content="Interactive rabbit that hops away when approached, with realistic hopping animation, twitching nose, and fluffy tail.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🐰 RABBIT HOP</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="rabbitCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🐰 RABBIT HOP</span>
+            <small>hops away · twitchy nose · fluffy tail</small>
+        </div>
+        <div class="hint">
+            <span>🐇 move mouse near rabbit → it hops away!</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('rabbitCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Rabbit Class ----
+            class Rabbit {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H / 2;
+                    this.size = 30;
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    
+                    // Hop state
+                    this.isHopping = false;
+                    this.hopProgress = 0;
+                    this.hopStartX = this.x;
+                    this.hopStartY = this.y;
+                    this.hopTargetX = this.x;
+                    this.hopTargetY = this.y;
+                    this.hopDuration = 20;
+                    this.hopHeight = 30;
+                    this.hopTimer = 0;
+                    
+                    // Idle animation
+                    this.idlePhase = 0;
+                    this.idleSpeed = 0.03;
+                    
+                    // Nose twitch
+                    this.nosePhase = 0;
+                    this.noseSpeed = 0.12;
+                    
+                    // Ear wiggle
+                    this.earPhase = 0;
+                    this.earSpeed = 0.02;
+                    
+                    // Tail bob
+                    this.tailPhase = 0;
+                    this.tailSpeed = 0.04;
+                    
+                    // Movement
+                    this.moveSpeed = 2;
+                    this.fleeDistance = 80 + Math.random() * 60;
+                    this.fleeAngle = 0;
+                    this.state = 'idle'; // idle, fleeing, hopping
+                    this.thinkingTimer = 0;
+                    
+                    // Set initial random target
+                    this.setRandomTarget();
+                }
+
+                setRandomTarget() {
+                    const margin = 60;
+                    this.targetX = margin + Math.random() * (W - margin * 2);
+                    this.targetY = margin + Math.random() * (H - margin * 2);
+                    this.thinkingTimer = 60 + Math.random() * 120;
+                }
+
+                fleeFrom(x, y) {
+                    if (this.isHopping) return;
+                    
+                    // Calculate flee direction
+                    const dx = this.x - x;
+                    const dy = this.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 150 && dist > 5) {
+                        // Flee away from cursor
+                        const fleeDist = 80 + Math.random() * 60;
+                        this.fleeAngle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
+                        this.hopTargetX = this.x + Math.cos(this.fleeAngle) * fleeDist;
+                        this.hopTargetY = this.y + Math.sin(this.fleeAngle) * fleeDist;
+                        
+                        // Keep in bounds
+                        this.hopTargetX = Math.min(W - 30, Math.max(30, this.hopTargetX));
+                        this.hopTargetY = Math.min(H - 30, Math.max(30, this.hopTargetY));
+                        
+                        // Start hopping
+                        this.startHop();
+                    }
+                }
+
+                startHop() {
+                    if (this.isHopping) return;
+                    this.isHopping = true;
+                    this.hopProgress = 0;
+                    this.hopStartX = this.x;
+                    this.hopStartY = this.y;
+                    this.hopDuration = 15 + Math.random() * 15;
+                    this.hopHeight = 25 + Math.random() * 25;
+                    this.state = 'hopping';
+                    
+                    // Set angle toward target
+                    const dx = this.hopTargetX - this.x;
+                    const dy = this.hopTargetY - this.y;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        this.targetAngle = Math.atan2(dy, dx);
+                    }
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Idle animations
+                    this.idlePhase += this.idleSpeed * dt;
+                    this.nosePhase += this.noseSpeed * dt;
+                    this.earPhase += this.earSpeed * dt;
+                    this.tailPhase += this.tailSpeed * dt;
+                    
+                    if (this.isHopping) {
+                        // Hop animation
+                        this.hopProgress += 1;
+                        const t = Math.min(1, this.hopProgress / this.hopDuration);
+                        
+                        // Smooth hop curve
+                        const hopT = t;
+                        const height = Math.sin(hopT * Math.PI) * this.hopHeight;
+                        
+                        this.x = this.hopStartX + (this.hopTargetX - this.hopStartX) * hopT;
+                        this.y = this.hopStartY + (this.hopTargetY - this.hopStartY) * hopT - height * 0.5;
+                        
+                        // Angle toward target
+                        const dx = this.hopTargetX - this.hopStartX;
+                        const dy = this.hopTargetY - this.hopStartY;
+                        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                            this.targetAngle = Math.atan2(dy, dx);
+                        }
+                        
+                        if (t >= 1) {
+                            this.isHopping = false;
+                            this.x = this.hopTargetX;
+                            this.y = this.hopTargetY;
+                            this.state = 'idle';
+                            this.thinkingTimer = 30 + Math.random() * 60;
+                        }
+                    } else {
+                        // Idle wandering
+                        this.thinkingTimer -= dt;
+                        if (this.thinkingTimer <= 0) {
+                            this.setRandomTarget();
+                        }
+                        
+                        // Move toward target
+                        const dx = this.targetX - this.x;
+                        const dy = this.targetY - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist > 5) {
+                            const moveSpeed = this.moveSpeed * 0.3 * dt;
+                            this.x += (dx / dist) * moveSpeed;
+                            this.y += (dy / dist) * moveSpeed;
+                            this.targetAngle = Math.atan2(dy, dx);
+                        }
+                    }
+                    
+                    // Smooth angle
+                    let angleDiff = this.targetAngle - this.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    this.angle += angleDiff * 0.12 * dt;
+                    
+                    // Keep in bounds
+                    this.x = Math.min(W - 20, Math.max(20, this.x));
+                    this.y = Math.min(H - 20, Math.max(20, this.y));
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    const isHopping = this.isHopping;
+                    const hopProgress = isHopping ? Math.min(1, this.hopProgress / this.hopDuration) : 0;
+                    const hopHeight = Math.sin(hopProgress * Math.PI) * this.hopHeight * 0.5;
+                    
+                    ctx.save();
+                    ctx.translate(x, y + hopHeight * 0.3);
+                    ctx.rotate(angle);
+                    
+                    // ---- Shadow ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetY = 4;
+                    
+                    // ---- Body ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+                    ctx.shadowBlur = 5;
+                    
+                    const bodyWobble = Math.sin(this.idlePhase) * 2;
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.1, -size * 0.1, 0,
+                        0, 0, size
+                    );
+                    bodyGrad.addColorStop(0, '#e8d5c8');
+                    bodyGrad.addColorStop(0.5, '#d4bfb0');
+                    bodyGrad.addColorStop(0.8, '#c4a898');
+                    bodyGrad.addColorStop(1, '#b09080');
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, size * 0.1 + bodyWobble * 0.1, size * 0.65, size * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Tail (fluffy) ----
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    const tailBob = Math.sin(this.tailPhase) * 3;
+                    const tailGrad = ctx.createRadialGradient(
+                        -size * 0.5, -size * 0.1 + tailBob, 0,
+                        -size * 0.5, -size * 0.1 + tailBob, size * 0.25
+                    );
+                    tailGrad.addColorStop(0, '#f5ece5');
+                    tailGrad.addColorStop(0.5, '#e8ddd5');
+                    tailGrad.addColorStop(1, '#d4c8c0');
+                    ctx.fillStyle = tailGrad;
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.5, -size * 0.1 + tailBob, size * 0.22, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tail fluff
+                    for (let i = 0; i < 5; i++) {
+                        const a = (i / 5) * Math.PI * 2 + 0.3;
+                        const r = size * 0.18 + Math.sin(this.tailPhase + i) * 3;
+                        ctx.fillStyle = `rgba(245, 236, 229, ${0.1 + Math.sin(this.tailPhase + i) * 0.05})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            -size * 0.5 + Math.cos(a) * r,
+                            -size * 0.1 + tailBob + Math.sin(a) * r * 0.6,
+                            size * 0.08,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = '#e8d5c8';
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.45, -size * 0.05, size * 0.35, size * 0.3, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Ears ----
+                    ctx.shadowBlur = 5;
+                    const earWiggle = Math.sin(this.earPhase) * 5;
+                    const earLen = size * 0.6;
+                    
+                    for (let side = -1; side <= 1; side += 2) {
+                        const earAngle = side * 0.2 + earWiggle * 0.01;
+                        const earX = size * 0.4 + side * size * 0.05;
+                        const earY = -size * 0.15;
+                        
+                        ctx.fillStyle = '#e8d5c8';
+                        ctx.beginPath();
+                        ctx.moveTo(earX, earY);
+                        ctx.quadraticCurveTo(
+                            earX + side * size * 0.1,
+                            earY - earLen * 0.6 + earWiggle * 0.3,
+                            earX + side * size * 0.15,
+                            earY - earLen + earWiggle * 0.5
+                        );
+                        ctx.quadraticCurveTo(
+                            earX + side * size * 0.05,
+                            earY - earLen * 0.7 + earWiggle * 0.4,
+                            earX,
+                            earY - earLen * 0.3 + earWiggle * 0.2
+                        );
+                        ctx.fill();
+                        
+                        // Inner ear
+                        ctx.fillStyle = '#f0c8b8';
+                        ctx.beginPath();
+                        ctx.moveTo(earX + side * size * 0.02, earY - size * 0.05);
+                        ctx.quadraticCurveTo(
+                            earX + side * size * 0.06,
+                            earY - earLen * 0.4 + earWiggle * 0.3,
+                            earX + side * size * 0.08,
+                            earY - earLen * 0.7 + earWiggle * 0.4
+                        );
+                        ctx.quadraticCurveTo(
+                            earX + side * size * 0.02,
+                            earY - earLen * 0.5 + earWiggle * 0.3,
+                            earX + side * size * 0.02,
+                            earY - earLen * 0.2 + earWiggle * 0.1
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Eyes ----
+                    ctx.shadowBlur = 0;
+                    // Eye whites
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.55, -size * 0.1, size * 0.1, size * 0.08, 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.55, size * 0.05, size * 0.1, size * 0.08, -0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Pupils
+                    const eyeLook = Math.sin(this.idlePhase * 0.5) * 0.02;
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.58 + eyeLook, -size * 0.08, size * 0.05, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.58 + eyeLook, size * 0.07, size * 0.05, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eye highlights
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.6 + eyeLook, -size * 0.1, size * 0.02, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.6 + eyeLook, size * 0.05, size * 0.02, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Nose ----
+                    const noseTwitch = Math.sin(this.nosePhase) * 1.5;
+                    ctx.fillStyle = '#f0a0a0';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = 'rgba(240, 160, 160, 0.2)';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.72 + noseTwitch * 0.1, size * -0.01, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Whiskers ----
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(180, 160, 150, 0.3)';
+                    ctx.lineWidth = 0.5;
+                    for (let side = -1; side <= 1; side += 2) {
+                        for (let w = -1; w <= 1; w += 2) {
+                            const wx = size * 0.7 + w * size * 0.02;
+                            const wy = side * size * 0.05 + w * size * 0.02;
+                            ctx.beginPath();
+                            ctx.moveTo(wx, wy);
+                            ctx.lineTo(wx + side * size * 0.2, wy + side * size * 0.1 + w * size * 0.02);
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    // ---- Feet ----
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = '#d4bfb0';
+                    const hopSquish = isHopping ? 1 + hopProgress * 0.3 : 1;
+                    for (let side = -1; side <= 1; side += 2) {
+                        const fx = side * size * 0.3;
+                        const fy = size * 0.4 + Math.sin(this.idlePhase + side) * 2;
+                        ctx.beginPath();
+                        ctx.ellipse(fx, fy, size * 0.15, size * 0.08 * hopSquish, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Rabbit ----
+            let rabbit;
+
+            function createRabbit() {
+                rabbit = new Rabbit();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Meadow gradient
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#2a5a3a');
+                grad.addColorStop(0.3, '#1a4a2a');
+                grad.addColorStop(0.6, '#0d3a1a');
+                grad.addColorStop(0.8, '#0a2a12');
+                grad.addColorStop(1, '#050a08');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grass blades
+                for (let i = 0; i < 40; i++) {
+                    const x = (i * 47 + 10) % W;
+                    const y = (i * 73 + 20) % H;
+                    const height = 5 + (i % 8);
+                    const sway = Math.sin(time * 0.02 + i * 0.5) * 2;
+                    ctx.strokeStyle = `hsla(${120 + i * 5}, 50%, ${25 + i % 15}%, 0.15)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + sway, y - height * 0.5, x + sway * 1.5, y - height);
+                    ctx.stroke();
+                }
+                
+                // Light rays
+                for (let i = 0; i < 4; i++) {
+                    const x = 50 + i * 160 + Math.sin(time * 0.005 + i) * 20;
+                    const grad2 = ctx.createLinearGradient(x, 0, x + 20, H);
+                    grad2.addColorStop(0, `rgba(200, 255, 200, ${0.008 + Math.sin(time * 0.01 + i) * 0.006})`);
+                    grad2.addColorStop(0.5, `rgba(200, 255, 200, ${0.004})`);
+                    grad2.addColorStop(1, 'rgba(200, 255, 200, 0)');
+                    ctx.fillStyle = grad2;
+                    ctx.fillRect(x, 0, 20, H);
+                }
+                
+                // Flowers
+                for (let i = 0; i < 6; i++) {
+                    const x = 40 + i * 100 + Math.sin(i * 1.5) * 15;
+                    const y = 30 + i * 70 + Math.cos(i * 0.7) * 20;
+                    const size = 3 + (i % 4);
+                    const hue = (i * 30 + 300) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${0.1 + (i % 3) * 0.05})`;
+                    for (let p = 0; p < 5; p++) {
+                        const a = (p / 5) * Math.PI * 2 + time * 0.01;
+                        ctx.beginPath();
+                        ctx.arc(
+                            x + Math.cos(a) * size,
+                            y + Math.sin(a) * size,
+                            size * 0.5,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                if (rabbit) {
+                    rabbit.fleeFrom(x, y);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (rabbit) {
+                    rabbit.update();
+                    rabbit.draw(ctx);
+                }
+                
+                // Ambient particles
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 20) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 2) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const hue = (i * 30 + time * 5 + 60) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 60%, 80%, ${0.006 + Math.sin(time * 0.015 + i) * 0.004})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetRabbit() {
+                createRabbit();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetRabbit);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetRabbit();
+                }
+            });
+
+            // ---- Initialize ----
+            createRabbit();
+            animate();
+
+            console.log('🐰 Rabbit Hop · Move mouse near rabbit to make it hop away!');
+        })();
+    </script>
+</body>
+</html>

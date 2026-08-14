@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Wand · Bubbles Float from Wand</title>
+    <meta name="description" content="Interactive bubble wand that blows colorful floating bubbles with realistic physics and iridescent effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🫧 BUBBLE WAND</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="bubbleCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="blow-btn" id="blowBtn">💨 BLOW</button>
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Bubble Size</label>
+                <input type="range" id="sizeSlider" min="1" max="10" value="5">
+                <span id="sizeLabel">5</span>
+                <label>Wind</label>
+                <input type="range" id="windSlider" min="1" max="10" value="5">
+                <span id="windLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🫧 BUBBLE WAND</span>
+            <small>float · iridescent · pop</small>
+        </div>
+        <div class="hint">
+            <span>💨 click to blow bubbles from the wand</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('bubbleCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const blowBtn = document.getElementById('blowBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const windSlider = document.getElementById('windSlider');
+            const windLabel = document.getElementById('windLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let bubbles = [];
+            let isBlowing = false;
+            let blowTimer = 0;
+            let bubbleCount = 0;
+
+            // ---- Bubble Class ----
+            class Bubble {
+                constructor(x, y, size) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = size || 10 + Math.random() * 25;
+                    this.targetRadius = this.radius;
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = -0.5 - Math.random() * 1.5;
+                    this.life = 1;
+                    this.decay = 0.001 + Math.random() * 0.002;
+                    this.opacity = 0.7 + Math.random() * 0.3;
+                    this.hue = 180 + Math.random() * 60;
+                    this.sat = 60 + Math.random() * 40;
+                    this.light = 60 + Math.random() * 30;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobble = 0.02 + Math.random() * 0.03;
+                    this.windAffect = 0.5 + Math.random() * 0.5;
+                    this.pop = false;
+                    this.popProgress = 0;
+                }
+
+                update(wind) {
+                    const dt = 0.02;
+                    
+                    // Wind effect
+                    this.vx += wind * this.windAffect * 0.01;
+                    
+                    // Float up with slight wobble
+                    this.vy -= 0.002;
+                    this.vx += Math.sin(this.phase + time * 0.02) * this.wobble * 0.1;
+                    
+                    // Apply velocity with damping
+                    this.x += this.vx * dt * 3;
+                    this.y += this.vy * dt * 3;
+                    
+                    // Gentle drift
+                    this.vx *= 0.999;
+                    this.vy *= 0.999;
+                    
+                    // Life decay
+                    this.life -= this.decay * dt;
+                    
+                    // Pop if life is low or at edges
+                    if (this.life < 0.1 || this.y < -50 || this.x < -50 || this.x > W + 50) {
+                        this.pop = true;
+                    }
+                }
+
+                draw(ctx) {
+                    if (this.pop) return;
+                    
+                    const r = this.radius * (0.5 + this.life * 0.5);
+                    const alpha = this.opacity * this.life;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Glow
+                    const glowGrad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, r * 2
+                    );
+                    glowGrad.addColorStop(0, `hsla(${this.hue + 20}, 80%, 80%, ${alpha * 0.1})`);
+                    glowGrad.addColorStop(0.5, `hsla(${this.hue + 40}, 70%, 70%, ${alpha * 0.05})`);
+                    glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Bubble body - iridescent gradient
+                    const grad = ctx.createRadialGradient(
+                        this.x - r * 0.3, this.y - r * 0.3, 0,
+                        this.x, this.y, r
+                    );
+                    const hue1 = (this.hue + time * 10) % 360;
+                    const hue2 = (this.hue + 40 + time * 15) % 360;
+                    const hue3 = (this.hue + 80 + time * 20) % 360;
+                    grad.addColorStop(0, `hsla(${hue1}, ${this.sat + 20}%, ${this.light + 20}%, ${alpha * 0.4})`);
+                    grad.addColorStop(0.3, `hsla(${hue2}, ${this.sat}%, ${this.light}%, ${alpha * 0.3})`);
+                    grad.addColorStop(0.7, `hsla(${hue3}, ${this.sat - 20}%, ${this.light - 10}%, ${alpha * 0.2})`);
+                    grad.addColorStop(1, `hsla(${hue1 + 60}, ${this.sat - 30}%, ${this.light - 20}%, ${alpha * 0.1})`);
+                    
+                    ctx.shadowColor = `hsla(${this.hue}, 80%, 80%, ${alpha * 0.1})`;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Iridescent highlights
+                    ctx.shadowBlur = 0;
+                    
+                    // Main highlight
+                    ctx.fillStyle = `hsla(0, 0%, 100%, ${alpha * 0.25})`;
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        this.x - r * 0.25,
+                        this.y - r * 0.3,
+                        r * 0.3,
+                        r * 0.15,
+                        -0.5,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // Secondary highlight
+                    ctx.fillStyle = `hsla(200, 80%, 90%, ${alpha * 0.1})`;
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        this.x + r * 0.15,
+                        this.y - r * 0.1,
+                        r * 0.15,
+                        r * 0.08,
+                        0.3,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // Rainbow shimmer
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i / 3) * Math.PI * 2 + time * 0.02;
+                        const dist = r * (0.4 + Math.sin(time * 0.03 + i + this.phase) * 0.15);
+                        const sx = this.x + Math.cos(angle) * dist;
+                        const sy = this.y + Math.sin(angle) * dist * 0.6;
+                        const size = r * 0.06;
+                        const hue = (this.hue + i * 30 + time * 20) % 360;
+                        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha * 0.1})`;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Blow Bubbles ----
+            function blowBubbles() {
+                const size = parseInt(sizeSlider.value);
+                const wind = parseInt(windSlider.value) / 5;
+                
+                // Wand position
+                const wandX = W / 2;
+                const wandY = H - 100;
+                
+                const numBubbles = 3 + Math.floor(Math.random() * 4);
+                for (let i = 0; i < numBubbles; i++) {
+                    const angle = (Math.random() - 0.5) * 0.8;
+                    const spread = 20 + Math.random() * 20;
+                    const x = wandX + Math.sin(angle) * spread;
+                    const y = wandY - 10 - Math.random() * 20;
+                    const bubbleSize = 8 + size * 3 + Math.random() * 15;
+                    const bubble = new Bubble(x, y, bubbleSize);
+                    bubble.vx = Math.sin(angle) * 0.5 + (Math.random() - 0.5) * 0.5 + wind * 0.3;
+                    bubble.vy = -1 - Math.random() * 1.5 - wind * 0.2;
+                    bubble.hue = 180 + Math.random() * 80;
+                    bubbles.push(bubble);
+                    bubbleCount++;
+                }
+                
+                // Limit bubbles
+                if (bubbles.length > 150) {
+                    bubbles.splice(0, bubbles.length - 150);
+                }
+            }
+
+            // ---- Clear Bubbles ----
+            function clearBubbles() {
+                bubbles = [];
+            }
+
+            // ---- Reset ----
+            function resetBubbles() {
+                bubbles = [];
+                bubbleCount = 0;
+                time = 0;
+            }
+
+            // ---- Draw Wand ----
+            function drawWand(ctx) {
+                const x = W / 2;
+                const y = H - 100;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Wand glow
+                const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 40);
+                glowGrad.addColorStop(0, 'rgba(100, 200, 255, 0.05)');
+                glowGrad.addColorStop(0.5, 'rgba(100, 200, 255, 0.02)');
+                glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glowGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 40, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Wand stick
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                ctx.shadowBlur = 10;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.3)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 40);
+                ctx.stroke();
+                
+                // Wand ring
+                ctx.shadowBlur = 15;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, 20, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Wand tip glow
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = 'rgba(100, 200, 255, 0.05)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw wand
+                drawWand(ctx);
+                
+                // Draw bubbles
+                for (let b of bubbles) {
+                    b.draw(ctx);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Bubbles: ${bubbles.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Total: ${bubbleCount}`, 20, H - 10);
+                
+                if (isBlowing) {
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+                    ctx.font = '16px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('💨 BLOWING', W/2, 20);
+                }
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                const wind = parseInt(windSlider.value) / 5;
+                
+                // Update bubbles
+                for (let b of bubbles) {
+                    b.update(wind);
+                }
+                bubbles = bubbles.filter(b => !b.pop);
+                
+                // Blow continuously if blowing
+                if (isBlowing) {
+                    blowTimer -= 1;
+                    if (blowTimer <= 0) {
+                        blowBubbles();
+                        blowTimer = 8 + Math.random() * 5;
+                    }
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Blow ----
+            function toggleBlow() {
+                isBlowing = !isBlowing;
+                blowBtn.textContent = isBlowing ? '⏹️ STOP' : '💨 BLOW';
+                if (isBlowing) {
+                    blowTimer = 0;
+                    blowBubbles();
+                }
+            }
+
+            // ---- Clear ----
+            function clearBubbles() {
+                bubbles = [];
+            }
+
+            // ---- Reset ----
+            function resetBubbles() {
+                if (isBlowing) toggleBlow();
+                bubbles = [];
+                bubbleCount = 0;
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            sizeSlider.addEventListener('input', function() {
+                sizeLabel.textContent = this.value;
+            });
+            windSlider.addEventListener('input', function() {
+                windLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            blowBtn.addEventListener('click', toggleBlow);
+            clearBtn.addEventListener('click', clearBubbles);
+            resetBtn.addEventListener('click', resetBubbles);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleBlow();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearBubbles();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBubbles();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🫧 Bubble Wand · Click Blow or press Space to blow bubbles!');
+        })();
+    </script>
+</body>
+</html>

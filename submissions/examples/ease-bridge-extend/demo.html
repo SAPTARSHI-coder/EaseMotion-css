@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Extend · Drawbridge Extends and Retracts</title>
+    <meta name="description" content="Interactive drawbridge that extends and retracts with realistic mechanics, chains, and castle details.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌉 BRIDGE EXTEND</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="bridgeCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="extend-btn" id="extendBtn">⬇️ EXTEND</button>
+                <button class="retract-btn" id="retractBtn">⬆️ RETRACT</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Length</label>
+                <input type="range" id="lengthSlider" min="1" max="10" value="5">
+                <span id="lengthLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌉 BRIDGE EXTEND</span>
+            <small>drawbridge · extend · retract</small>
+        </div>
+        <div class="hint">
+            <span>🔗 click to extend or retract the drawbridge</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('bridgeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const extendBtn = document.getElementById('extendBtn');
+            const retractBtn = document.getElementById('retractBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const lengthSlider = document.getElementById('lengthSlider');
+            const lengthLabel = document.getElementById('lengthLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let maxLength = 5;
+            let time = 0;
+            let bridgeAngle = 0;
+            let targetAngle = 0;
+            let angleVelocity = 0;
+            let isExtended = false;
+            let isRetracted = true;
+            let extendCount = 0;
+
+            // ---- Bridge Physics ----
+            const bridgeBase = {
+                x: 150,
+                y: 300,
+                width: 20,
+                height: 100
+            };
+
+            const bridgeLength = 180;
+
+            // ---- Extend ----
+            function extendBridge() {
+                if (isExtended) return;
+                targetAngle = -Math.PI / 2.2;
+                isExtended = true;
+                isRetracted = false;
+                extendCount++;
+            }
+
+            // ---- Retract ----
+            function retractBridge() {
+                if (isRetracted) return;
+                targetAngle = 0;
+                isExtended = false;
+                isRetracted = true;
+            }
+
+            // ---- Reset ----
+            function resetBridge() {
+                bridgeAngle = 0;
+                targetAngle = 0;
+                angleVelocity = 0;
+                isExtended = false;
+                isRetracted = true;
+                extendCount = 0;
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02 * (speed / 5);
+                const maxAngle = -Math.PI / 2.2 * (lengthSlider.value / 10);
+                
+                // Calculate target based on extended state
+                const actualTarget = isExtended ? maxAngle : 0;
+                
+                // Smooth interpolation
+                const diff = actualTarget - bridgeAngle;
+                const speedFactor = 0.04 * (speed / 5);
+                bridgeAngle += diff * speedFactor * dt * 5;
+                
+                // Prevent overshoot
+                if (Math.abs(diff) < 0.001) {
+                    bridgeAngle = actualTarget;
+                }
+            }
+
+            // ---- Draw Castle ----
+            function drawCastle(ctx) {
+                const x = 50;
+                const y = 250;
+                const w = 200;
+                const h = 200;
+                
+                ctx.save();
+                
+                // Castle shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                
+                // Main wall
+                const wallGrad = ctx.createLinearGradient(x, y, x + w, y);
+                wallGrad.addColorStop(0, '#4a5a6a');
+                wallGrad.addColorStop(0.3, '#5a6a7a');
+                wallGrad.addColorStop(0.7, '#5a6a7a');
+                wallGrad.addColorStop(1, '#4a5a6a');
+                ctx.fillStyle = wallGrad;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(x, y, w, h);
+                
+                // Battlements
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#4a5a6a';
+                for (let i = 0; i < 8; i++) {
+                    const bx = x + i * 25;
+                    ctx.fillRect(bx, y - 20, 15, 20);
+                    ctx.fillRect(bx + 15, y - 10, 10, 10);
+                }
+                
+                // Gate
+                ctx.fillStyle = '#2a3a4a';
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(x + 100, y + 140, 40, 0, Math.PI);
+                ctx.fill();
+                ctx.fillRect(x + 60, y + 140, 80, 60);
+                
+                // Gate details
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(100, 120, 140, 0.2)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 4; i++) {
+                    const gx = x + 70 + i * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, y + 140);
+                    ctx.lineTo(gx, y + 200);
+                    ctx.stroke();
+                }
+                
+                // Windows
+                ctx.fillStyle = 'rgba(255, 220, 150, 0.1)';
+                ctx.shadowColor = 'rgba(255, 200, 100, 0.05)';
+                ctx.shadowBlur = 8;
+                for (let i = 0; i < 3; i++) {
+                    const wx = x + 30 + i * 55;
+                    ctx.fillRect(wx, y + 30, 20, 30);
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.05)';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(wx, y + 30, 20, 30);
+                }
+                
+                // Tower tops
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#3a4a5a';
+                for (let side = -1; side <= 1; side += 2) {
+                    const tx = side === -1 ? x - 20 : x + w;
+                    ctx.fillRect(tx, y - 10, 40, 10);
+                    ctx.fillStyle = '#4a5a6a';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillRect(tx + i * 13, y - 25, 10, 15);
+                    }
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Bridge ----
+            function drawBridge(ctx) {
+                const angle = bridgeAngle;
+                const length = bridgeLength;
+                const baseX = 250;
+                const baseY = 300;
+                
+                ctx.save();
+                ctx.translate(baseX, baseY);
+                ctx.rotate(angle);
+                
+                // Bridge shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                
+                // Bridge body
+                const bridgeGrad = ctx.createLinearGradient(0, -12, length, -12);
+                bridgeGrad.addColorStop(0, '#6a7a8a');
+                bridgeGrad.addColorStop(0.3, '#7a8a9a');
+                bridgeGrad.addColorStop(0.7, '#7a8a9a');
+                bridgeGrad.addColorStop(1, '#6a7a8a');
+                ctx.fillStyle = bridgeGrad;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(0, -15, length, 30);
+                
+                // Bridge planks
+                ctx.shadowBlur = 0;
+                for (let i = 0; i < 12; i++) {
+                    const px = i * 15 + 5;
+                    ctx.fillStyle = i % 2 === 0 ? '#6a7a8a' : '#5a6a7a';
+                    ctx.fillRect(px, -12, 10, 24);
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.03)';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(px, -12, 10, 24);
+                }
+                
+                // Bridge rails
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.1)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, -15);
+                ctx.lineTo(length, -15);
+                ctx.moveTo(0, 15);
+                ctx.lineTo(length, 15);
+                ctx.stroke();
+                
+                // Rail posts
+                for (let i = 0; i < 8; i++) {
+                    const px = i * 25 + 5;
+                    ctx.fillStyle = 'rgba(200, 220, 240, 0.05)';
+                    ctx.fillRect(px, -18, 2, 36);
+                }
+                
+                // Chain connection points
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+                ctx.arc(0, -15, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(length, -15, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Draw chains
+                if (Math.abs(angle) > 0.05) {
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.03)';
+                    ctx.shadowBlur = 5;
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.15)';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([4, 6]);
+                    
+                    const endX = baseX + Math.cos(angle) * length;
+                    const endY = baseY + Math.sin(angle) * length;
+                    
+                    // Chain from top of bridge to castle
+                    ctx.beginPath();
+                    ctx.moveTo(baseX, baseY - 15);
+                    ctx.lineTo(endX, endY - 15);
+                    ctx.stroke();
+                    
+                    // Chain from bottom of bridge
+                    ctx.beginPath();
+                    ctx.moveTo(baseX, baseY + 15);
+                    ctx.lineTo(endX, endY + 15);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+            }
+
+            // ---- Draw Water ----
+            function drawWater(ctx) {
+                const grad = ctx.createLinearGradient(0, H - 50, 0, H);
+                grad.addColorStop(0, 'rgba(20, 40, 60, 0)');
+                grad.addColorStop(0.3, 'rgba(20, 40, 60, 0.2)');
+                grad.addColorStop(0.7, 'rgba(20, 40, 60, 0.4)');
+                grad.addColorStop(1, 'rgba(20, 40, 60, 0.6)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, H - 50, W, 50);
+                
+                // Water waves
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.03)';
+                ctx.lineWidth = 1;
+                for (let w = 0; w < 3; w++) {
+                    ctx.beginPath();
+                    for (let x = 0; x <= W; x += 2) {
+                        const y = H - 20 + Math.sin(x * 0.02 + time * 0.02 + w * 2) * 3 +
+                                 Math.sin(x * 0.03 + time * 0.015 + w * 1.5) * 2;
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+            }
+
+            // ---- Draw Sky ----
+            function drawSky() {
+                const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H);
+                grad.addColorStop(0, '#0a1a2a');
+                grad.addColorStop(0.3, '#0d1a25');
+                grad.addColorStop(0.6, '#0a1520');
+                grad.addColorStop(0.8, '#080e18');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Draw Stars ----
+            function drawStars() {
+                for (let i = 0; i < 25; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.6);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                drawSky();
+                drawStars();
+                drawCastle(ctx);
+                drawBridge(ctx);
+                drawWater(ctx);
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const angleDeg = ((bridgeAngle / Math.PI) * 180).toFixed(1);
+                ctx.fillText(`Angle: ${angleDeg}°`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Extensions: ${extendCount}`, 20, H - 10);
+                
+                const status = isExtended ? '⬇️ EXTENDED' : 
+                              isRetracted ? '⬆️ RETRACTED' : 
+                              '🔄 MOVING';
+                ctx.fillText(status, 20, H - 30);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            lengthSlider.addEventListener('input', function() {
+                lengthLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            extendBtn.addEventListener('click', extendBridge);
+            retractBtn.addEventListener('click', retractBridge);
+            resetBtn.addEventListener('click', resetBridge);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'e' || e.key === 'E') {
+                    extendBridge();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    retractBridge();
+                }
+                if (e.key === 'x' || e.key === 'X') {
+                    resetBridge();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🌉 Bridge Extend · Click Extend or press E to lower the drawbridge!');
+        })();
+    </script>
+</body>
+</html>

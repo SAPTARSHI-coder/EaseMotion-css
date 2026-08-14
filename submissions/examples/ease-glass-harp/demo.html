@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🍷 Glass Harp – Glasses Vibrate With Different Tones</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🍷 Glass Harp</h1>
+            <div class="controls">
+                <button class="control-btn" id="playBtn" title="Play all glasses">🎵 Play</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="autoBtn" title="Auto-play">▶️ Auto</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="harpCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="glassCount">🍷 7 glasses</span>
+                <span id="noteDisplay">🎵 C5</span>
+                <span id="vibrationStatus">💫 Ready</span>
+            </div>
+            <div class="hint" id="hint">🍷 Click a glass to play its tone</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>💫 Vibration</label>
+                <input type="range" id="vibrationSlider" min="10" max="100" value="60" step="1" />
+                <span id="vibrationLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Sustain</label>
+                <input type="range" id="sustainSlider" min="10" max="100" value="50" step="1" />
+                <span id="sustainLabel">50%</span>
+            </div>
+            <div class="slider-group">
+                <label>🎵 Pitch</label>
+                <input type="range" id="pitchSlider" min="-50" max="50" value="0" step="5" />
+                <span id="pitchLabel">0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Glass Harp – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('harpCanvas');
+            const ctx = canvas.getContext('2d');
+            const glassCount = document.getElementById('glassCount');
+            const noteDisplay = document.getElementById('noteDisplay');
+            const vibrationStatus = document.getElementById('vibrationStatus');
+            const hint = document.getElementById('hint');
+            const playBtn = document.getElementById('playBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const vibrationSlider = document.getElementById('vibrationSlider');
+            const vibrationLabel = document.getElementById('vibrationLabel');
+            const sustainSlider = document.getElementById('sustainSlider');
+            const sustainLabel = document.getElementById('sustainLabel');
+            const pitchSlider = document.getElementById('pitchSlider');
+            const pitchLabel = document.getElementById('pitchLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isAuto = false;
+            let autoTimer = 0;
+            let time = 0;
+            let animationId = null;
+            let activeNotes = [];
+
+            // --- Parameters ---
+            let vibrationIntensity = 60; // 10-100
+            let sustain = 50; // 10-100
+            let pitchOffset = 0; // -50 to 50
+
+            // --- Notes (C major scale) ---
+            const notes = [
+                { name: 'C5', freq: 523.25, color: '#ff6b6b' },
+                { name: 'D5', freq: 587.33, color: '#ff9f43' },
+                { name: 'E5', freq: 659.25, color: '#feca57' },
+                { name: 'F5', freq: 698.46, color: '#54a0ff' },
+                { name: 'G5', freq: 783.99, color: '#5f27cd' },
+                { name: 'A5', freq: 880.00, color: '#ff6bff' },
+                { name: 'B5', freq: 987.77, color: '#1dd1a1' },
+            ];
+
+            // --- Glasses ---
+            let glasses = [];
+            let ripples = [];
+            let particles = [];
+
+            // --- Glass class ---
+            class Glass {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    this.note = notes[index % notes.length];
+                    this.x = 100 + (index / (total - 1)) * (W - 200);
+                    this.y = H / 2 + 50;
+                    this.width = 30 + Math.random() * 10;
+                    this.height = 60 + Math.random() * 20;
+                    this.baseWidth = this.width;
+                    this.baseHeight = this.height;
+                    this.rotation = 0;
+                    this.isVibrating = false;
+                    this.vibrationAmplitude = 0;
+                    this.vibrationPhase = 0;
+                    this.glowIntensity = 0;
+                    this.targetGlow = 0;
+                    this.waterLevel = 0.3 + (index / total) * 0.5;
+                    this.opacity = 0.8 + Math.random() * 0.2;
+                    this.hue = 40 + index * 8;
+                }
+
+                update() {
+                    // Vibration decay
+                    if (this.vibrationAmplitude > 0.01) {
+                        this.vibrationAmplitude *= 0.96;
+                        this.vibrationPhase += 0.1 + this.vibrationAmplitude * 0.05;
+                        this.glowIntensity += (this.targetGlow - this.glowIntensity) * 0.05;
+                    } else {
+                        this.vibrationAmplitude = 0;
+                        this.glowIntensity *= 0.95;
+                        if (this.glowIntensity < 0.01) this.glowIntensity = 0;
+                    }
+
+                    // Width/height oscillation
+                    const vibFactor = this.vibrationAmplitude * (vibrationIntensity / 100);
+                    const wave = Math.sin(this.vibrationPhase) * vibFactor * 0.3;
+                    this.width = this.baseWidth * (1 + wave * 0.15);
+                    this.height = this.baseHeight * (1 + wave * 0.1);
+
+                    // Rotation oscillation
+                    this.rotation = Math.sin(this.vibrationPhase * 0.7) * vibFactor * 0.02;
+
+                    // Water ripple
+                    if (this.vibrationAmplitude > 0.1) {
+                        // Create water ripples
+                        if (Math.random() < this.vibrationAmplitude * 0.1) {
+                            const ripple = new WaterRipple(
+                                this.x + (Math.random() - 0.5) * this.width * 0.5,
+                                this.y + this.height * 0.2 + Math.random() * this.height * 0.3,
+                                this.vibrationAmplitude * 2
+                            );
+                            ripples.push(ripple);
+                        }
+                    }
+
+                    return this.vibrationAmplitude > 0.01 || this.glowIntensity > 0.01;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const w = this.width;
+                    const h = this.height;
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(this.rotation);
+
+                    // Glow
+                    if (this.glowIntensity > 0.01) {
+                        const glowGrad = ctx.createRadialGradient(0, 0, w * 0.2, 0, 0, w * 2);
+                        const glowAlpha = this.glowIntensity * 0.15;
+                        const color = this.note.color;
+                        const r = parseInt(color.slice(1, 3), 16);
+                        const g = parseInt(color.slice(3, 5), 16);
+                        const b = parseInt(color.slice(5, 7), 16);
+                        glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.5})`);
+                        glowGrad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.2})`);
+                        glowGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+                        ctx.fillStyle = glowGrad;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, w * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Glass shadow
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowOffsetY = 5;
+
+                    // Glass body - outer
+                    const glassGrad = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
+                    const baseBright = 180 + this.vibrationAmplitude * 50;
+                    const baseDark = 120 + this.vibrationAmplitude * 30;
+
+                    glassGrad.addColorStop(0, `rgba(${baseBright + 20}, ${baseBright + 30}, ${baseBright + 40}, ${this.opacity * 0.8})`);
+                    glassGrad.addColorStop(0.2, `rgba(${baseBright + 10}, ${baseBright + 20}, ${baseBright + 30}, ${this.opacity * 0.9})`);
+                    glassGrad.addColorStop(0.5, `rgba(${baseBright}, ${baseBright + 10}, ${baseBright + 20}, ${this.opacity})`);
+                    glassGrad.addColorStop(0.8, `rgba(${baseDark + 10}, ${baseDark + 20}, ${baseDark + 30}, ${this.opacity * 0.8})`);
+                    glassGrad.addColorStop(1, `rgba(${baseDark}, ${baseDark + 10}, ${baseDark + 20}, ${this.opacity * 0.6})`);
+
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowOffsetY = 3;
+
+                    // Glass shape (wine glass)
+                    ctx.beginPath();
+
+                    // Stem
+                    ctx.moveTo(-4, h * 0.3);
+                    ctx.quadraticCurveTo(-6, h * 0.5, -4, h * 0.7);
+                    ctx.quadraticCurveTo(-3, h * 0.85, -2, h * 0.95);
+
+                    // Base
+                    ctx.quadraticCurveTo(-w * 0.3, h * 0.98, -w * 0.5, h * 0.95);
+                    ctx.quadraticCurveTo(-w * 0.55, h * 0.93, -w * 0.5, h * 0.9);
+                    ctx.quadraticCurveTo(-w * 0.3, h * 0.88, -2, h * 0.85);
+
+                    // Stem up
+                    ctx.quadraticCurveTo(-3, h * 0.7, -4, h * 0.5);
+                    ctx.quadraticCurveTo(-4, h * 0.35, -3, h * 0.25);
+
+                    // Bowl (left side)
+                    ctx.quadraticCurveTo(-w * 0.6, h * 0.1, -w * 0.7, -h * 0.1);
+                    ctx.quadraticCurveTo(-w * 0.75, -h * 0.3, -w * 0.6, -h * 0.5);
+
+                    // Rim (top)
+                    ctx.quadraticCurveTo(-w * 0.5, -h * 0.55, -w * 0.3, -h * 0.58);
+                    ctx.quadraticCurveTo(0, -h * 0.6, w * 0.3, -h * 0.58);
+
+                    // Bowl (right side)
+                    ctx.quadraticCurveTo(w * 0.5, -h * 0.55, w * 0.6, -h * 0.5);
+                    ctx.quadraticCurveTo(w * 0.75, -h * 0.3, w * 0.7, -h * 0.1);
+                    ctx.quadraticCurveTo(w * 0.6, h * 0.1, w * 0.3, h * 0.25);
+
+                    // Stem down (right)
+                    ctx.quadraticCurveTo(w * 0.4, h * 0.35, w * 0.4, h * 0.5);
+                    ctx.quadraticCurveTo(w * 0.4, h * 0.7, w * 0.3, h * 0.85);
+
+                    // Base (right)
+                    ctx.quadraticCurveTo(w * 0.5, h * 0.88, w * 0.7, h * 0.9);
+                    ctx.quadraticCurveTo(w * 0.75, h * 0.93, w * 0.7, h * 0.95);
+                    ctx.quadraticCurveTo(w * 0.5, h * 0.98, w * 0.3, h * 0.95);
+                    ctx.quadraticCurveTo(w * 0.2, h * 0.92, w * 0.15, h * 0.9);
+
+                    ctx.closePath();
+                    ctx.fillStyle = glassGrad;
+                    ctx.fill();
+
+                    // Glass outline
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `rgba(255,255,255,${0.05 + this.vibrationAmplitude * 0.05})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+
+                    // Water inside
+                    if (this.waterLevel > 0.1) {
+                        const waterY = h * 0.15 + (1 - this.waterLevel) * h * 0.35;
+                        const waterWidth = w * 0.5 * (0.4 + this.waterLevel * 0.3);
+
+                        ctx.save();
+                        ctx.beginPath();
+                        // Water surface (curved)
+                        ctx.ellipse(0, waterY, waterWidth, 3 + this.vibrationAmplitude * 3, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(100, 180, 255, ${0.1 + this.waterLevel * 0.2 + this.vibrationAmplitude * 0.1})`;
+                        ctx.fill();
+
+                        // Water body
+                        const waterGrad = ctx.createLinearGradient(0, waterY, 0, h * 0.85);
+                        waterGrad.addColorStop(0, `rgba(100, 180, 255, ${0.05 + this.waterLevel * 0.1})`);
+                        waterGrad.addColorStop(1, `rgba(80, 160, 230, ${0.02 + this.waterLevel * 0.05})`);
+                        ctx.fillStyle = waterGrad;
+                        ctx.beginPath();
+                        ctx.rect(-waterWidth * 0.8, waterY + 2, waterWidth * 1.6, h * 0.7);
+                        ctx.fill();
+                        ctx.restore();
+
+                        // Water ripples
+                        if (this.vibrationAmplitude > 0.1) {
+                            ctx.save();
+                            for (let i = 0; i < 3; i++) {
+                                const rippleY = waterY + 10 + i * 15;
+                                const rippleW = waterWidth * (0.5 + i * 0.15);
+                                const alpha = 0.05 * (1 - i / 3) * this.vibrationAmplitude;
+                                ctx.globalAlpha = alpha;
+                                ctx.strokeStyle = `rgba(150, 220, 255, 0.5)`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.ellipse(0, rippleY, rippleW, 1 + this.vibrationAmplitude * 2, 0, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            ctx.restore();
+                        }
+                    }
+
+                    // Highlight (glass reflection)
+                    ctx.shadowBlur = 0;
+                    const highlightAlpha = 0.1 + this.vibrationAmplitude * 0.1;
+                    ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
+                    ctx.beginPath();
+                    ctx.ellipse(-w * 0.25, -h * 0.2, w * 0.08, h * 0.15, -0.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Second highlight
+                    ctx.fillStyle = `rgba(255,255,255,${highlightAlpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.ellipse(-w * 0.15, h * 0.05, w * 0.04, h * 0.08, -0.1, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Note name
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255,255,255,${0.2 + this.vibrationAmplitude * 0.3})`;
+                    ctx.font = '12px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(this.note.name, 0, -h * 0.65);
+
+                    // Vibration indicator (ripple rings around glass)
+                    if (this.vibrationAmplitude > 0.1) {
+                        for (let i = 0; i < 3; i++) {
+                            const ringRadius = w * 0.5 + i * 15 * this.vibrationAmplitude;
+                            const ringAlpha = 0.1 * (1 - i / 3) * this.vibrationAmplitude;
+                            ctx.globalAlpha = ringAlpha;
+                            ctx.strokeStyle = this.note.color;
+                            ctx.lineWidth = 1;
+                            ctx.shadowBlur = 10;
+                            ctx.shadowColor = this.note.color;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+
+                    ctx.restore();
+                }
+
+                play(vibrationStrength) {
+                    const strength = (vibrationStrength || 1) * (vibrationIntensity / 100);
+                    this.vibrationAmplitude = Math.max(0.3, strength * 1.5);
+                    this.targetGlow = 0.8 + strength * 1.2;
+                    this.isVibrating = true;
+                    this.vibrationPhase = 0;
+
+                    // Create initial ripples
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            const ripple = new WaterRipple(
+                                this.x + (Math.random() - 0.5) * this.width * 0.3,
+                                this.y + this.height * 0.2 + Math.random() * this.height * 0.3,
+                                this.vibrationAmplitude * 1.5
+                            );
+                            ripples.push(ripple);
+                        }, i * 50);
+                    }
+
+                    // Create particles
+                    const particleCount = 5 + Math.floor(strength * 10);
+                    for (let i = 0; i < particleCount; i++) {
+                        const p = new Particle(
+                            this.x + (Math.random() - 0.5) * this.width,
+                            this.y - this.height * 0.4 + (Math.random() - 0.5) * this.height * 0.3,
+                            this.note.color,
+                            strength
+                        );
+                        particles.push(p);
+                    }
+
+                    // Update status
+                    noteDisplay.textContent = `🎵 ${this.note.name}`;
+                    vibrationStatus.textContent = `💫 Vibrating!`;
+                    setTimeout(() => {
+                        vibrationStatus.textContent = '💫 Ready';
+                    }, 800);
+                }
+            }
+
+            // --- Water Ripple class ---
+            class WaterRipple {
+                constructor(x, y, strength) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = 2;
+                    this.maxRadius = 20 + strength * 20;
+                    this.speed = 0.5 + strength * 1.5;
+                    this.opacity = 0.3 + strength * 0.3;
+                    this.life = 1;
+                    this.decay = 0.01 + strength * 0.02;
+                    this.width = 1 + strength * 2;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.opacity *= 0.98;
+                    this.life -= this.decay;
+                    this.width *= 0.99;
+                    return this.life > 0 && this.opacity > 0.01 && this.radius < this.maxRadius;
+                }
+
+                draw(ctx) {
+                    if (this.opacity < 0.01) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity * 0.5;
+                    ctx.strokeStyle = `rgba(150, 220, 255, 0.6)`;
+                    ctx.lineWidth = this.width * (1 - this.radius / this.maxRadius);
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(150, 220, 255, ${this.opacity * 0.1})`;
+                    ctx.beginPath();
+                    ctx.ellipse(this.x, this.y, this.radius * 0.8, this.radius * 0.3, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Inner glow
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(150, 220, 255, ${this.opacity * 0.05})`;
+                    ctx.beginPath();
+                    ctx.ellipse(this.x, this.y, this.radius * 0.5, this.radius * 0.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Particle class ---
+            class Particle {
+                constructor(x, y, color, strength) {
+                    this.x = x + (Math.random() - 0.5) * 10;
+                    this.y = y + (Math.random() - 0.5) * 10;
+                    const angle = (Math.random() - 0.5) * Math.PI * 0.8;
+                    const speed = 0.5 + Math.random() * 1.5 * strength;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 1;
+                    this.size = 1 + Math.random() * 3;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.color = color;
+                    this.gravity = 0.02;
+                    this.decay = 0.005 + Math.random() * 0.01;
+                    this.glowSize = this.size * 3;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.life -= this.decay;
+                    this.size *= 0.995;
+                    this.glowSize *= 0.995;
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    const alpha = (this.life / this.maxLife) * 0.8;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Glow
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.glowSize
+                    );
+                    const r = parseInt(this.color.slice(1, 3), 16);
+                    const g = parseInt(this.color.slice(3, 5), 16);
+                    const b = parseInt(this.color.slice(5, 7), 16);
+                    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`);
+                    grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${alpha * 0.2})`);
+                    grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                    ctx.shadowBlur = this.glowSize;
+                    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.2})`;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f18');
+                grad.addColorStop(0.3, '#080c14');
+                grad.addColorStop(0.6, '#060a10');
+                grad.addColorStop(0.8, '#04060c');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle stage
+                ctx.save();
+                const stageGrad = ctx.createLinearGradient(0, H - 40, 0, H);
+                stageGrad.addColorStop(0, 'rgba(20, 30, 50, 0)');
+                stageGrad.addColorStop(0.5, 'rgba(20, 30, 50, 0.2)');
+                stageGrad.addColorStop(1, 'rgba(20, 30, 50, 0.4)');
+                ctx.fillStyle = stageGrad;
+                ctx.fillRect(0, H - 40, W, 40);
+
+                // Stage line
+                ctx.strokeStyle = 'rgba(40, 60, 80, 0.1)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, H - 40);
+                for (let x = 0; x <= W; x += 2) {
+                    const bump = Math.sin(x * 0.02) * 2 + Math.sin(x * 0.05 + 0.5) * 1;
+                    ctx.lineTo(x, H - 40 + bump);
+                }
+                ctx.stroke();
+                ctx.restore();
+
+                // Glass count
+                glassCount.textContent = `🍷 ${glasses.length} glasses`;
+            }
+
+            // --- Initialize glasses ---
+            function initGlasses() {
+                glasses = [];
+                const count = notes.length;
+                for (let i = 0; i < count; i++) {
+                    const glass = new Glass(i, count);
+                    // Adjust water level for different pitches
+                    glass.waterLevel = 0.2 + (i / count) * 0.6;
+                    glasses.push(glass);
+                }
+            }
+
+            // --- Play glass by index ---
+            function playGlass(index, strength) {
+                if (index >= 0 && index < glasses.length) {
+                    const glass = glasses[index];
+                    glass.play(strength || 1);
+                    activeNotes.push({
+                        glass: glass,
+                        time: time,
+                        duration: 30 + sustain * 0.5
+                    });
+                    // Remove old notes
+                    activeNotes = activeNotes.filter(n => time - n.time < n.duration);
+                }
+            }
+
+            // --- Play all glasses ---
+            function playAllGlasses() {
+                for (let i = 0; i < glasses.length; i++) {
+                    const delay = i * 150;
+                    setTimeout(() => {
+                        playGlass(i, 0.7 + Math.random() * 0.3);
+                    }, delay);
+                }
+                hint.textContent = '🎵 Playing all glasses!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Reset ---
+            function resetAll() {
+                ripples = [];
+                particles = [];
+                activeNotes = [];
+                for (const glass of glasses) {
+                    glass.vibrationAmplitude = 0;
+                    glass.glowIntensity = 0;
+                    glass.isVibrating = false;
+                }
+                noteDisplay.textContent = '🎵 -';
+                vibrationStatus.textContent = '💫 Ready';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Toggle auto ---
+            function toggleAuto() {
+                isAuto = !isAuto;
+                autoBtn.textContent = isAuto ? '⏹️ Stop' : '▶️ Auto';
+                if (isAuto) {
+                    autoTimer = 0;
+                    hint.textContent = '▶️ Auto-play started';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                } else {
+                    hint.textContent = '⏹️ Auto-play stopped';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Auto-play
+                if (isAuto) {
+                    autoTimer++;
+                    const interval = Math.max(30, 200 - vibrationIntensity);
+                    if (autoTimer >= interval) {
+                        autoTimer = 0;
+                        const index = Math.floor(Math.random() * glasses.length);
+                        const strength = 0.5 + Math.random() * 0.5;
+                        playGlass(index, strength);
+                    }
+                }
+
+                // Update glasses
+                for (const glass of glasses) {
+                    glass.update();
+                }
+
+                // Update ripples
+                ripples = ripples.filter(r => r.update());
+
+                // Update particles
+                particles = particles.filter(p => p.update());
+
+                // Limit particles
+                if (particles.length > 100) {
+                    particles = particles.slice(0, 100);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw ripples (behind glasses)
+                for (const ripple of ripples) {
+                    ripple.draw(ctx);
+                }
+
+                // Draw glasses
+                for (const glass of glasses) {
+                    glass.draw(ctx);
+                }
+
+                // Draw particles (on top)
+                for (const particle of particles) {
+                    particle.draw(ctx);
+                }
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function isInsideGlass(pos) {
+                for (let i = 0; i < glasses.length; i++) {
+                    const glass = glasses[i];
+                    const dx = pos.x - glass.x;
+                    const dy = pos.y - glass.y;
+                    if (Math.abs(dx) < glass.width * 0.6 && Math.abs(dy) < glass.height * 0.6) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            function handleClick(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const index = isInsideGlass(pos);
+                if (index >= 0) {
+                    playGlass(index, 0.8 + Math.random() * 0.4);
+                    hint.classList.add('hidden');
+                }
+            }
+
+            // --- Slider handlers ---
+            vibrationSlider.addEventListener('input', function() {
+                vibrationIntensity = parseFloat(this.value);
+                vibrationLabel.textContent = `${Math.round(vibrationIntensity)}%`;
+            });
+
+            sustainSlider.addEventListener('input', function() {
+                sustain = parseFloat(this.value);
+                sustainLabel.textContent = `${Math.round(sustain)}%`;
+            });
+
+            pitchSlider.addEventListener('input', function() {
+                pitchOffset = parseFloat(this.value);
+                pitchLabel.textContent = Math.round(pitchOffset);
+                // Update note names with pitch offset
+                for (let i = 0; i < glasses.length; i++) {
+                    const baseIndex = i % notes.length;
+                    const newIndex = (baseIndex + Math.round(pitchOffset / 10) + notes.length) % notes.length;
+                    glasses[i].note = notes[newIndex];
+                }
+            });
+
+            // --- Button events ---
+            playBtn.addEventListener('click', playAllGlasses);
+            resetBtn.addEventListener('click', resetAll);
+            autoBtn.addEventListener('click', toggleAuto);
+
+            // --- Mouse events ---
+            canvas.addEventListener('click', handleClick);
+            canvas.addEventListener('mousedown', (e) => {
+                const pos = getPos(e);
+                const index = isInsideGlass(pos);
+                if (index >= 0) {
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    canvas.style.cursor = 'default';
+                }
+            });
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', handleClick, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    playAllGlasses();
+                }
+                if (e.key === 'a' || e.key === 'A') toggleAuto();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Number keys for individual glasses
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= glasses.length) {
+                    playGlass(num - 1, 0.8 + Math.random() * 0.4);
+                }
+
+                // Arrow keys for vibration
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    vibrationIntensity = Math.min(100, vibrationIntensity + 5);
+                    vibrationSlider.value = vibrationIntensity;
+                    vibrationLabel.textContent = `${Math.round(vibrationIntensity)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    vibrationIntensity = Math.max(10, vibrationIntensity - 5);
+                    vibrationSlider.value = vibrationIntensity;
+                    vibrationLabel.textContent = `${Math.round(vibrationIntensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            initGlasses();
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🍷 Glass Harp ready!');
+            console.log('Controls: Click a glass, Space (play all), A (auto), R (reset)');
+            console.log('          1-7 (individual glasses), ↑/↓ (vibration)');
+
+        })();
+    </script>
+</body>
+</html>

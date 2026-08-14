@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Psychedelic Kaleidoscope</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Psychedelic Kaleidoscope</h1>
+        <p class="subtitle">Rotating geometric patterns with infinite reflections</p>
+
+        <div class="kaleidoscope-wrapper">
+            <canvas id="kaleidoscopeCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="segmentsBtn">Segments: 8</button>
+                <button id="colorBtn">Change Colors</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Spinning</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('kaleidoscopeCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const segmentsBtn = document.getElementById('segmentsBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            const size = Math.min(wrapper.clientWidth, 500, window.innerWidth - 80);
+            canvas.width = size;
+            canvas.height = size;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let angle = 0;
+        let speed = 0.02;
+        let segments = 8;
+        let speedLevel = 0; // 0: Normal, 1: Fast, 2: Slow
+        let colorPalette = 0;
+        let rotationDirection = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            // Palette 1: Rainbow
+            ['#ff6b6b', '#ffa94d', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6', '#ff6b6b'],
+            // Palette 2: Ocean
+            ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8'],
+            // Palette 3: Sunset
+            ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#f8e4a0', '#ff6b35'],
+            // Palette 4: Neon
+            ['#ff00ff', '#00ffff', '#ff0080', '#00ff00', '#ffff00', '#ff6600', '#ff00ff'],
+            // Palette 5: Earth
+            ['#8d5524', '#c68642', '#e0ac69', '#f1c27d', '#ffd9b3', '#c68642', '#8d5524'],
+            // Palette 6: Pastel
+            ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#ffb3ba'],
+            // Palette 7: Cyberpunk
+            ['#ff0055', '#ff00ff', '#00ffff', '#ff6600', '#00ff00', '#ff00aa', '#ff0055'],
+            // Palette 8: Monochrome
+            ['#ffffff', '#dddddd', '#bbbbbb', '#999999', '#777777', '#555555', '#333333'],
+        ];
+
+        // ===== SHAPE GENERATORS =====
+        function getShapePoints(radius, segments, offset) {
+            const points = [];
+            const count = 6 + Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < count; i++) {
+                const angleStep = (Math.PI * 2) / count;
+                const randomRadius = radius * (0.3 + Math.random() * 0.7);
+                const x = Math.cos(angleStep * i + offset) * randomRadius;
+                const y = Math.sin(angleStep * i + offset) * randomRadius;
+                points.push({ x, y });
+            }
+            return points;
+        }
+
+        function drawKaleidoscope() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) * 0.4;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Background
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 1.2);
+            const bgColors = colorPalettes[colorPalette % colorPalettes.length];
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(0.7, 'rgba(0,0,0,0.1)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw each segment
+            const angleStep = (Math.PI * 2) / segments;
+            
+            for (let i = 0; i < segments; i++) {
+                const currentAngle = angle + angleStep * i;
+                const nextAngle = angle + angleStep * (i + 1);
+                
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(currentAngle);
+                
+                // Draw the segment content
+                drawSegment(radius, currentAngle, i);
+                
+                ctx.restore();
+            }
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.03, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255,255,255,0.5)';
+        }
+
+        function drawSegment(radius, angle, index) {
+            const colors = colorPalettes[colorPalette % colorPalettes.length];
+            const colorIndex = index % colors.length;
+            const color = colors[colorIndex];
+            const nextColor = colors[(colorIndex + 1) % colors.length];
+
+            // Random shape generation
+            const shapeCount = 4 + Math.floor(Math.random() * 3);
+            const time = Date.now() / 1000;
+            
+            // Draw multiple shapes in the segment
+            for (let s = 0; s < shapeCount; s++) {
+                const shapeRadius = radius * (0.2 + (s / shapeCount) * 0.6);
+                const offset = angle + time * 0.1 * (s + 1);
+                const points = getShapePoints(shapeRadius, 6 + s, offset);
+                
+                // Draw shape
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let p = 1; p < points.length; p++) {
+                    const px = points[p].x;
+                    const py = points[p].y;
+                    const cp1x = (points[p - 1].x + px) / 2;
+                    const cp1y = (points[p - 1].y + py) / 2;
+                    ctx.quadraticCurveTo(cp1x, cp1y, px, py);
+                }
+                ctx.closePath();
+                
+                // Fill with gradient
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, shapeRadius);
+                const opacity = 0.3 + (s / shapeCount) * 0.4;
+                grad.addColorStop(0, color + Math.round(opacity * 255).toString(16).padStart(2, '0'));
+                grad.addColorStop(1, nextColor + '40');
+                ctx.fillStyle = grad;
+                ctx.fill();
+                
+                // Stroke
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1 + Math.sin(time + s) * 0.5;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.stroke();
+                
+                // Inner shape - smaller mirrored
+                ctx.save();
+                ctx.scale(0.5, 0.5);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = nextColor + '40';
+                ctx.strokeStyle = nextColor;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Draw radiating lines
+            ctx.save();
+            ctx.rotate(angle);
+            for (let i = 0; i < 8; i++) {
+                const lineAngle = (Math.PI * 2 / 8) * i;
+                const lineRadius = radius * (0.1 + Math.sin(time + i) * 0.1);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                const endX = Math.cos(lineAngle) * radius * 0.7;
+                const endY = Math.sin(lineAngle) * radius * 0.7;
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = color + '30';
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = color + '20';
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Draw decorative circles
+            for (let i = 0; i < 3; i++) {
+                const circleRadius = radius * (0.15 + i * 0.15);
+                ctx.beginPath();
+                ctx.arc(0, 0, circleRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = colors[(colorIndex + i) % colors.length] + '30';
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = colors[(colorIndex + i) % colors.length] + '20';
+                ctx.stroke();
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        function animate(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            // Update angle
+            angle += speed * rotationDirection;
+            if (angle > Math.PI * 2) angle -= Math.PI * 2;
+            if (angle < 0) angle += Math.PI * 2;
+
+            drawKaleidoscope();
+            requestAnimationFrame(animate);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed toggle
+        function toggleSpeed() {
+            speedLevel = (speedLevel + 1) % 3;
+            const speeds = ['Normal', 'Fast', 'Slow'];
+            const speedValues = [0.02, 0.06, 0.008];
+            
+            speedBtn.textContent = `Speed: ${speeds[speedLevel]}`;
+            speed = speedValues[speedLevel];
+            
+            statusText.textContent = `⏱️ Speed: ${speeds[speedLevel]}`;
+            statusText.style.color = '#4ecdc4';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spinning';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        }
+
+        // Segments toggle
+        function toggleSegments() {
+            const segmentOptions = [6, 8, 10, 12, 16, 20];
+            const currentIndex = segmentOptions.indexOf(segments);
+            const nextIndex = (currentIndex + 1) % segmentOptions.length;
+            segments = segmentOptions[nextIndex];
+            segmentsBtn.textContent = `Segments: ${segments}`;
+            
+            statusText.textContent = `🔮 Segments: ${segments}`;
+            statusText.style.color = '#ffd93d';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spinning';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        }
+
+        // Color toggle
+        function changeColors() {
+            colorPalette = (colorPalette + 1) % colorPalettes.length;
+            const paletteNames = ['Rainbow', 'Ocean', 'Sunset', 'Neon', 'Earth', 'Pastel', 'Cyberpunk', 'Monochrome'];
+            colorBtn.textContent = `Colors: ${paletteNames[colorPalette]}`;
+            
+            statusText.textContent = `🎨 ${paletteNames[colorPalette]}`;
+            statusText.style.color = '#f6d365';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spinning';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        }
+
+        // Reset
+        function resetKaleidoscope() {
+            angle = 0;
+            speed = 0.02;
+            speedLevel = 0;
+            segments = 8;
+            colorPalette = 0;
+            rotationDirection = 1;
+            
+            speedBtn.textContent = 'Speed: Normal';
+            segmentsBtn.textContent = 'Segments: 8';
+            colorBtn.textContent = 'Change Colors';
+            
+            statusText.textContent = '↩️ Reset';
+            statusText.style.color = '#ff6b6b';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spinning';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        }
+
+        // ===== EVENT LISTENERS =====
+        speedBtn.addEventListener('click', toggleSpeed);
+        segmentsBtn.addEventListener('click', toggleSegments);
+        colorBtn.addEventListener('click', changeColors);
+        resetBtn.addEventListener('click', resetKaleidoscope);
+
+        // Click canvas to reverse direction
+        canvas.addEventListener('click', () => {
+            rotationDirection *= -1;
+            statusText.textContent = rotationDirection === 1 ? '🔄 Clockwise' : '🔄 Counter-clockwise';
+            statusText.style.color = '#4facfe';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spinning';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                toggleSpeed();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                toggleSegments();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                changeColors();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetKaleidoscope();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        // ===== FULLSCREEN =====
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // ===== INIT =====
+        colorBtn.textContent = 'Colors: Rainbow';
+        statusText.textContent = '🌀 Spinning';
+        lastFpsUpdate = performance.now();
+        animate(lastFpsUpdate);
+
+        console.log('🌀 Psychedelic Kaleidoscope loaded!');
+        console.log('💡 Click canvas to reverse direction');
+        console.log('💡 SPACE - Toggle speed');
+        console.log('💡 S - Change segments');
+        console.log('💡 C - Change colors');
+        console.log('💡 R - Reset');
+        console.log('💡 F - Fullscreen');
+    </script>
+</body>
+</html>
