@@ -1,0 +1,159 @@
+# CSS Bookmark Toggle Button
+
+A pure CSS bookmark toggle button with a smooth save animation.
+
+## Features
+
+- Pure HTML and CSS
+- No JavaScript required
+- Bookmark icon fill animation
+- Interactive hover and active states
+- Keyboard accessible
+- Responsive layout
+- Reduced-motion support
+- Forced-colors support
+
+## Usage
+
+Copy the bookmark toggle markup and include `style.css`.
+
+The checkbox controls the bookmark state, allowing the component
+to work without JavaScript.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

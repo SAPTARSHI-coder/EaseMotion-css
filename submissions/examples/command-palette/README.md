@@ -1,29 +1,13 @@
-# Animation: Command Palette
+# Glassmorphic Omnibox Command Palette Overlay
 
-A command palette component inspired by modern developer tools such as VS Code, Cursor, and Linear. Commands appear with a staggered entrance animation inside a modal-style panel.
+An advanced dashboard component utilizing pure CSS sibling checkbox selectors (`:checked`), hardware-accelerated frosted background blurring, and item-selection micro-interactions.
 
-## Features
+## Primary Architectural Selectors
+- `.ease-palette-trigger` : Hidden input checkbox element holding layout toggle states.
+- `.ease-palette-overlay` : Master viewport mask framing backdrop blur filters.
+- `.ease-palette-modal` : Centralized glass panel container utilizing spring scale translations.
+- `.ease-palette-close-zone` : Functional safety mask allowing effortless modal dismissal.
 
-- Pure CSS animation
-- Modal-style command palette
-- Staggered command reveal
-- Keyboard shortcut badges
-- Hover interactions
-- Responsive layout
-- Reduced motion support
-- No JavaScript required
-
-## Usage
-
-```html
-<div class="command-item">
-    <span>Open File</span>
-    <kbd>⌘P</kbd>
-</div>
-```
-
-Commands animate into view and respond to hover interactions.
-
-## Why is it useful?
-
-Command palettes are widely used in developer tools, dashboards, and productivity applications. This component provides a visually engaging way to showcase actions and shortcuts while maintaining a clean interface.
+## Structural Data Labels
+- `.ease-palette-item` : Target action link rows within the results channel.
+- `.ease-palette-kbd` : Formatted indicator wrapping keyboard shortcut indicators.

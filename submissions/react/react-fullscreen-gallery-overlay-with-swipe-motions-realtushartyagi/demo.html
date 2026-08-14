@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Fullscreen Gallery Overlay with Swipe Motions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Load React and Babel for standalone demo -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    /* Demo page styling */
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .demo-btn {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .demo-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+    }
+    .demo-info { margin-top: 24px; color: #4b5563; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <!-- Load the Component -->
+  <script type="text/babel" src="./FullscreenGallery.jsx"></script>
+  
+  <script type="text/babel">
+    const { useState } = React;
+    
+    // Fallback if import fails in standalone mode
+    const Gallery = window.FullscreenGallery || (function() {
+      // Inline the component for the demo environment since standard imports don't work in babel-standalone without a bundler
+      return ({ images, initialIndex = 0, isOpen, onClose }) => {
+        const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
+        const [isAnimating, setIsAnimating] = React.useState(false);
+        const [direction, setDirection] = React.useState('next');
+        const touchStartX = React.useRef(null);
+        const touchEndX = React.useRef(null);
+        
+        React.useEffect(() => {
+          const handleKeyDown = (e) => {
+            if (!isOpen) return;
+            if (e.key === 'Escape') onClose();
+            if (e.key === 'ArrowRight') handleNext();
+            if (e.key === 'ArrowLeft') handlePrev();
+          };
+          window.addEventListener('keydown', handleKeyDown);
+          return () => window.removeEventListener('keydown', handleKeyDown);
+        }, [isOpen, currentIndex, isAnimating]);
+
+        React.useEffect(() => {
+          if (isOpen) {
+            setCurrentIndex(initialIndex);
+            document.body.style.overflow = 'hidden';
+          } else {
+            document.body.style.overflow = 'auto';
+          }
+          return () => { document.body.style.overflow = 'auto'; };
+        }, [isOpen, initialIndex]);
+
+        const handleNext = () => {
+          if (isAnimating || images.length <= 1) return;
+          setDirection('next');
+          setIsAnimating(true);
+          setTimeout(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+            setIsAnimating(false);
+          }, 300);
+        };
+
+        const handlePrev = () => {
+          if (isAnimating || images.length <= 1) return;
+          setDirection('prev');
+          setIsAnimating(true);
+          setTimeout(() => {
+            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+            setIsAnimating(false);
+          }, 300);
+        };
+
+        const onTouchStart = (e) => { touchEndX.current = null; touchStartX.current = e.targetTouches[0].clientX; };
+        const onTouchMove = (e) => { touchEndX.current = e.targetTouches[0].clientX; };
+        const onTouchEnd = () => {
+          if (!touchStartX.current || !touchEndX.current) return;
+          const distance = touchStartX.current - touchEndX.current;
+          if (distance > 50) handleNext();
+          if (distance < -50) handlePrev();
+        };
+
+        if (!isOpen) return null;
+
+        return (
+          <div className="ease-gallery-overlay">
+            <div className="ease-gallery-backdrop" onClick={onClose}></div>
+            <button className="ease-gallery-close" onClick={onClose}>&times;</button>
+            <div className="ease-gallery-container ease-scale-up-entrance" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+              <button className="ease-gallery-nav ease-nav-prev" onClick={handlePrev}>&#10094;</button>
+              <div className="ease-gallery-viewport">
+                <div className={`ease-gallery-track ${isAnimating ? `animating-${direction}` : ''}`}>
+                  <img src={images[currentIndex].url} alt={images[currentIndex].caption} className="ease-gallery-image" draggable="false" />
+                </div>
+                <div className="ease-gallery-caption">{images[currentIndex].caption || `${currentIndex + 1} / ${images.length}`}</div>
+              </div>
+              <button className="ease-gallery-nav ease-nav-next" onClick={handleNext}>&#10095;</button>
+            </div>
+            <div className="ease-gallery-thumbnails ease-slide-up-thumbnails">
+              {images.map((img, idx) => (
+                <button key={idx} className={`ease-thumbnail-btn ${idx === currentIndex ? 'active' : ''}`}
+                  onClick={() => {
+                    setDirection(idx > currentIndex ? 'next' : 'prev');
+                    setIsAnimating(true);
+                    setTimeout(() => { setCurrentIndex(idx); setIsAnimating(false); }, 300);
+                  }}>
+                  <img src={img.url} alt={`Thumb ${idx}`} />
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      };
+    })();
+
+    const App = () => {
+      const [isOpen, setIsOpen] = useState(false);
+      
+      const sampleImages = [
+        { url: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', caption: 'Mountain Landscape' },
+        { url: 'https://images.unsplash.com/photo-1682687982501-1e58f81048a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', caption: 'Desert Dunes' },
+        { url: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', caption: 'Ocean Sunset' },
+        { url: 'https://images.unsplash.com/photo-1682695794920-aaf18eee25f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80', caption: 'Forest Path' }
+      ];
+
+      return (
+        <div>
+          <button className="demo-btn" onClick={() => setIsOpen(true)}>
+            Open Fullscreen Gallery
+          </button>
+          <div className="demo-info">
+            Supports Swipe (Touch), Keyboard (Arrows/Esc), and Click Navigation.<br/>
+            Features a backdrop blur and EaseMotion spring scale-up.
+          </div>
+          
+          <Gallery 
+            images={sampleImages} 
+            isOpen={isOpen} 
+            onClose={() => setIsOpen(false)} 
+          />
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

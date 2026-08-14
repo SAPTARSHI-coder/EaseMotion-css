@@ -1,79 +1,65 @@
-# ease-divider — Animated Section Divider
+# ease-divider
 
-A highly customizable, lightweight, and accessible CSS section divider component. It includes four distinct responsive layouts and smooth drawing animations for section transitions.
+## What does this do?
 
-## Overview
-The `ease-divider` component helps break up pages, articles, dashboards, or card modules with elegant horizontal lines, custom labels, custom gradient drops, and smooth drawing entrance transitions. It is completely native CSS, requiring zero dependencies.
+Provides a **divider/separator** component for visually separating content sections with horizontal or vertical rules, supporting solid, dashed, and dotted line styles with optional centered labels.
 
----
+## How is it used?
 
-## Features
-
-- **Simple Divider**: A minimal, clean 1px section break with a subtle entrance fade animation.
-- **Labeled Divider**: A centered label (supports text, icons, or badges) built using a highly responsive flex layout.
-- **Gradient Divider**: Modern fades that taper off towards the edges, plus high-fidelity neon gradients.
-- **Animated Divider**: A premium draw-out entrance effect that sweeps outward from the center, featuring subtle micro-interactions on hover.
-- **Accessible & Semantic**: Uses native `<hr>` tags or a `<div>` with `role="separator"` and customizable `aria-label` attributes to ensure complete screen reader compatibility.
-- **Theme-Ready**: Includes CSS custom variables (`--divider-color-default`, `--divider-glow-start`, etc.) and built-in hooks for both light and dark backgrounds.
-
----
-
-## Usage Instructions
-
-### 1. Include the Stylesheet
-Link `style.css` in your project's `<head>`:
 ```html
-<link rel="stylesheet" href="style.css">
+<!-- Horizontal divider -->
+<hr class="ease-divider" />
+
+<!-- With line style -->
+<hr class="ease-divider ease-divider-dashed" />
+
+<!-- With centered label -->
+<div class="ease-divider-label ease-divider-label-solid">Section Label</div>
+
+<!-- Vertical divider -->
+<span class="ease-divider-vertical ease-divider-solid"></span>
 ```
 
-### 2. Basic Markup Snippets
+### Available Classes
 
-#### Simple Divider
-```html
-<hr class="ease-divider ease-divider-simple">
-```
+| Class | Purpose |
+|-------|---------|
+| `.ease-divider` | Horizontal divider (`<hr>`) |
+| `.ease-divider-solid` | Solid line (default, explicit) |
+| `.ease-divider-dashed` | Dashed line |
+| `.ease-divider-dotted` | Dotted line |
+| `.ease-divider-label` | Horizontal divider with centered text (uses `::before`/`::after`) |
+| `.ease-divider-label-solid` | Label divider with solid lines |
+| `.ease-divider-label-dashed` | Label divider with dashed lines |
+| `.ease-divider-label-dotted` | Label divider with dotted lines |
+| `.ease-divider-vertical` | Vertical divider (`inline-block`) |
 
-#### Labeled Divider (Accessible)
-```html
-<div role="separator" aria-label="Section breakpoint" class="ease-divider-labeled">
-  CONTINUE READING
-</div>
-```
+### Line Styles
 
-#### Gradient Divider
-```html
-<!-- Fades out at the edges -->
-<hr class="ease-divider ease-divider-gradient">
+| Class | Line |
+|-------|------|
+| `ease-divider-solid` / `ease-divider-label-solid` | ─── |
+| `ease-divider-dashed` / `ease-divider-label-dashed` | ─ ─ ─ |
+| `ease-divider-dotted` / `ease-divider-label-dotted` | · · · |
 
-<!-- Neon glow gradient -->
-<hr class="ease-divider ease-divider-gradient-neon">
-```
+### Use Cases
 
-#### Animated Divider (Draw Outward)
-```html
-<hr class="ease-divider ease-divider-animated ease-divider-interactive">
-```
+| Component | Applied to | Example |
+|-----------|------------|---------|
+| Horizontal divider | `<hr>` | Section breaks in articles |
+| Label divider | `<div>` | "More Details", form section labels |
+| Vertical divider | `<span>` | Between nav links, toolbar items, breadcrumbs |
 
----
+### Design Tokens Used
 
-## Technical Details & Customization
-You can override design tokens at the `:root` level or directly on a divider class to match your brand style:
+| Token | Fallback | Purpose |
+|-------|----------|---------|
+| `--ease-color-neutral-200` | `#e2e8f0` | Divider line color |
+| `--ease-color-neutral-400` | `#94a3b8` | Label text color |
+| `--ease-color-neutral-500` | `#64748b` | Dark mode label text |
+| `--ease-color-neutral-700` | `#334155` | Dark mode line color |
+| `--ease-space-4` | `1rem` | Label gap, vertical margin |
+| `--ease-space-6` | `1.5rem` | Divider margin |
+| `--ease-text-sm` | `0.875rem` | Label font size |
 
-```css
-:root {
-  --divider-color-default: rgba(255, 255, 255, 0.12);
-  --divider-glow-start: #3b82f6;
-  --divider-glow-mid: #8b5cf6;
-  --divider-glow-end: #ec4899;
-}
-```
-
----
-
-## Preview & Screenshots
-
-### Screenshots Section
-<!-- [Screenshots Placeholder: Add your screenshot links here] -->
-![Section Divider Preview Screenshot](https://raw.githubusercontent.com/tejasch2006-ux/EaseMotion-css/main/submissions/examples/ease-divider/screenshot-placeholder.png)
-
-Open `demo.html` in your web browser to play with all interactive variants and the dark/light mode switcher.
+Fixes #25565

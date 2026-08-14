@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stardust · sparkly stardust follows interaction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="stardust-container">
+      <div class="stardust-display" id="stardustDisplay">
+        <!-- Canvas for stardust -->
+        <canvas id="stardustCanvas"></canvas>
+        
+        <!-- Stardust Info -->
+        <div class="stardust-info">
+          <span class="info-label">✨ Particles</span>
+          <span class="info-value" id="particleCount">0</span>
+        </div>
+
+        <!-- Stardust Controls -->
+        <div class="stardust-controls">
+          <div class="control-group">
+            <label class="control-label">✨ Sparkle</label>
+            <input type="range" class="control-slider" id="sparkleSlider" min="0" max="100" value="50">
+            <span class="control-value" id="sparkleValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">⭐ Density</label>
+            <input type="range" class="control-slider" id="densitySlider" min="1" max="10" value="5">
+            <span class="control-value" id="densityValue">5</span>
+          </div>
+        </div>
+
+        <!-- Stardust Text -->
+        <div class="stardust-text">
+          <span class="text-label">✨ Stardust</span>
+          <span class="text-message" id="stardustMessage">Move your cursor through the stardust</span>
+        </div>
+      </div>
+      
+      <div class="stardust-status">
+        <span id="stardustStatus">✨ Move your cursor to scatter stardust</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>✨ stardust particles · 4 colors · sparkle control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('stardustCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('stardustDisplay');
+      const particleCount = document.getElementById('particleCount');
+      const stardustStatus = document.getElementById('stardustStatus');
+      const stardustMessage = document.getElementById('stardustMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const sparkleSlider = document.getElementById('sparkleSlider');
+      const sparkleValue = document.getElementById('sparkleValue');
+      const densitySlider = document.getElementById('densitySlider');
+      const densityValue = document.getElementById('densityValue');
+
+      // State
+      let particles = [];
+      let animationId = null;
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let time = 0;
+
+      // Stardust colors
+      const stardustColors = [
+        '#fbbf24', '#fcd34d', '#fde68a', '#f59e0b', // Golds
+        '#f472b6', '#f9a8d4', '#fbcfe8', '#ec4899', // Pinks
+        '#60a5fa', '#93c5fd', '#bae6fd', '#3b82f6', // Blues
+        '#a78bfa', '#c4b5fd', '#ddd6fe', '#8b5cf6', // Purples
+        '#34d399', '#6ee7b7', '#a7f3d0', '#10b981'  // Greens
+      ];
+
+      // Stardust particle class
+      class StardustParticle {
+        constructor(x, y) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.size = 1 + Math.random() * 3;
+          this.baseSize = this.size;
+          this.color = stardustColors[Math.floor(Math.random() * stardustColors.length)];
+          this.angle = Math.random() * Math.PI * 2;
+          this.distance = 20 + Math.random() * 100;
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.02 + Math.random() * 0.03;
+          this.twinkleSpeed = 0.01 + Math.random() * 0.02;
+          this.twinklePhase = Math.random() * Math.PI * 2;
+          this.opacity = 0.3 + Math.random() * 0.7;
+          this.trail = [];
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.alive = true;
+          this.followSpeed = 0.02 + Math.random() * 0.03;
+        }
+
+        update(cx, cy, sparkle, time) {
+          const sparkleFactor = sparkle / 100;
+          
+          // Follow cursor with smooth interpolation
+          const dx = cx - this.x;
+          const dy = cy - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 1) {
+            this.x += dx * this.followSpeed * (0.5 + sparkleFactor * 0.5);
+            this.y += dy * this.followSpeed * (0.5 + sparkleFactor * 0.5);
+          }
+          
+          // Twinkle
+          this.twinklePhase += this.twinkleSpeed;
+          const twinkle = 0.5 + Math.sin(this.twinklePhase) * 0.5;
+          
+          // Size pulse
+          this.size = this.baseSize * (0.5 + twinkle * 0.5) * (0.5 + sparkleFactor * 0.5);
+          
+          // Opacity pulse
+          this.opacity = 0.3 + twinkle * 0.5;
+          
+          // Trail
+          if (sparkleFactor > 0.1) {
+            this.trail.push({ x: this.x, y: this.y, life: 1 });
+            if (this.trail.length > 10) {
+              this.trail.shift();
+            }
+            this.trail.forEach(t => t.life -= 0.05);
+          }
+          
+          // Life cycle
+          this.life -= 0.001;
+          if (this.life <= 0) {
+            this.alive = false;
+          }
+          
+          // Keep within bounds
+          if (this.x < -10) this.x = canvas.width + 10;
+          if (this.x > canvas.width + 10) this.x = -10;
+          if (this.y < -10) this.y = canvas.height + 10;
+          if (this.y > canvas.height + 10) this.y = -10;
+        }
+
+        draw(ctx) {
+          if (!this.alive) return;
+          
+          const alpha = this.opacity * 0.8;
+          
+          // Trail
+          this.trail.forEach(t => {
+            if (t.life > 0) {
+              ctx.save();
+              ctx.globalAlpha = t.life * alpha * 0.2;
+              ctx.fillStyle = this.color;
+              ctx.shadowColor = this.color;
+              ctx.shadowBlur = 5;
+              ctx.beginPath();
+              ctx.arc(t.x, t.y, this.size * 0.3 * t.life, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          });
+          
+          // Glow
+          ctx.save();
+          const glowSize = this.size * 4;
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+          grad.addColorStop(0, this.color + '88');
+          grad.addColorStop(0.3, this.color + '44');
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 20;
+          ctx.globalAlpha = alpha * 0.6;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core particle
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = this.color;
+          ctx.globalAlpha = alpha * 0.9;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Star shape highlight
+          if (this.size > 1.5) {
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = alpha * 0.4;
+            ctx.fillStyle = '#ffffff';
+            const starSize = this.size * 0.4;
+            // 4-point star
+            ctx.beginPath();
+            ctx.moveTo(this.x - starSize, this.y);
+            ctx.lineTo(this.x, this.y - starSize);
+            ctx.lineTo(this.x + starSize, this.y);
+            ctx.lineTo(this.x, this.y + starSize);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Cross star
+            ctx.globalAlpha = alpha * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(this.x - starSize * 1.8, this.y);
+            ctx.lineTo(this.x, this.y - starSize * 1.8);
+            ctx.lineTo(this.x + starSize * 1.8, this.y);
+            ctx.lineTo(this.x, this.y + starSize * 1.8);
+            ctx.closePath();
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate particles
+      function generateParticles() {
+        const density = densitySlider.value;
+        const count = density * 20 + 10;
+        
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const particle = new StardustParticle(x, y);
+          particle.life = 0.5 + Math.random() * 0.5;
+          particle.maxLife = particle.life;
+          particles.push(particle);
+        }
+        particleCount.textContent = particles.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Deep space gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 5, 20, 0.4)');
+        grad.addColorStop(0.5, 'rgba(5, 2, 15, 0.5)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Background stars
+        for (let i = 0; i < 60; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.3 + Math.random() * 1;
+          const alpha = 0.1 + Math.random() * 0.2;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 1;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateParticles();
+        
+        // Center cursor
+        mouseX = canvas.width / 2;
+        mouseY = canvas.height / 2;
+        currentX = mouseX;
+        currentY = mouseY;
+        targetX = mouseX;
+        targetY = mouseY;
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const sparkle = parseInt(sparkleSlider.value);
+        
+        // Smooth cursor follow
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+        
+        // Clear and draw background
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw particles
+        particles = particles.filter(p => {
+          p.update(currentX, currentY, sparkle, time);
+          return p.alive;
+        });
+        
+        // Draw particles
+        particles.forEach(p => p.draw(ctx));
+        
+        // Respawn dead particles
+        const targetCount = densitySlider.value * 20 + 10;
+        while (particles.length < targetCount) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const particle = new StardustParticle(x, y);
+          particle.life = 0.5 + Math.random() * 0.5;
+          particle.maxLife = particle.life;
+          particles.push(particle);
+        }
+        
+        // Update particle count
+        particleCount.textContent = particles.length;
+        
+        // Update status
+        const dist = Math.sqrt(Math.pow(targetX - currentX, 2) + Math.pow(targetY - currentY, 2));
+        if (dist > 50) {
+          stardustStatus.textContent = '✨ Stardust sparkles in your wake! ✨';
+          stardustStatus.style.color = '#fbbf24';
+        } else if (dist > 10) {
+          stardustStatus.textContent = '✨ Stardust dances with your movement';
+          stardustStatus.style.color = '#f472b6';
+        } else {
+          stardustStatus.textContent = '✨ Move your cursor to scatter stardust';
+          stardustStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetStardust() {
+        generateParticles();
+        stardustStatus.textContent = '🔄 Reset complete';
+        stardustStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          stardustStatus.textContent = '✨ Move your cursor to scatter stardust';
+          stardustStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      display.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        targetX = e.clientX - rect.left;
+        targetY = e.clientY - rect.top;
+      });
+
+      display.addEventListener('mouseleave', function() {
+        targetX = canvas.width / 2;
+        targetY = canvas.height / 2;
+      });
+
+      // Touch support
+      display.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        targetX = touch.clientX - rect.left;
+        targetY = touch.clientY - rect.top;
+      }, { passive: false });
+
+      display.addEventListener('touchend', function() {
+        targetX = canvas.width / 2;
+        targetY = canvas.height / 2;
+      });
+
+      sparkleSlider.addEventListener('input', function() {
+        sparkleValue.textContent = this.value + '%';
+      });
+
+      densitySlider.addEventListener('input', function() {
+        densityValue.textContent = this.value;
+        generateParticles();
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetStardust();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetStardust();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('✨ Stardust ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

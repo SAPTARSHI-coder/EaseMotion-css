@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EaseMotion CSS — npm Package Validation CI Workflow Proposal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>npm Package Validation CI Workflow</h1>
+  <p class="subtitle">Proposal for issue #63661 — not a runtime HTML/CSS feature, no end-user markup involved.</p>
+
+  <div class="panel">
+    <h2>What it does</h2>
+    <p>A GitHub Actions workflow runs <code>npm pack --dry-run</code> on every pull request, push to <code>main</code>, and version tag, catching packaging issues before a broken release ships.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Proposed workflow file</h2>
+    <p class="filepath">.github/workflows/package-validation.yml</p>
+    <pre><code>name: Package Validation
+on:
+  pull_request:
+  push:
+    branches: [main]
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  validate-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Dry-run package
+        run: npm pack --dry-run
+      - name: Generate package tarball for inspection
+        run: npm pack
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package-preview
+          path: '*.tgz'</code></pre>
+  </div>
+
+  <div class="panel">
+    <h2>Mockup: successful CI run output</h2>
+    <div class="terminal">
+      <div class="term-line term-success">✓ npm pack --dry-run completed</div>
+      <div class="term-line">npm notice 📦  easemotion-css@2.1.0</div>
+      <div class="term-line">npm notice === Tarball Contents ===</div>
+      <div class="term-line term-file">4.2kB   README.md</div>
+      <div class="term-line term-file">1.1kB   LICENSE</div>
+      <div class="term-line term-file">178.2kB easemotion.min.css</div>
+      <div class="term-line term-file">2.9kB   easemotion.css</div>
+      <div class="term-line">npm notice === Tarball Details ===</div>
+      <div class="term-line">npm notice total files: 4</div>
+      <div class="term-line term-success">✓ Artifact uploaded: npm-package-preview</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Mockup: failed CI run (e.g. missing compiled CSS)</h2>
+    <div class="terminal">
+      <div class="term-line term-error">✗ npm pack --dry-run failed</div>
+      <div class="term-line term-error">npm error Missing required file: easemotion.min.css</div>
+      <div class="term-line term-error">Workflow failed — packaging issue caught before publish.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Why this matters</h2>
+    <p>A package may accidentally publish unnecessary files (tests, screenshots, <code>.github</code>) or miss important assets like the compiled CSS, README, or license. Catching this in CI — rather than after a broken release — saves maintenance effort and protects release confidence.</p>
+  </div>
+</body>
+</html>

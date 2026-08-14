@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎰 Slot Machine</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎰 Slot Machine</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">💰 Balance</span>
+        <span class="stat-value" id="balanceDisplay">100</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🎯 Bet</span>
+        <span class="stat-value" id="betDisplay">5</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Win</span>
+        <span class="stat-value" id="winDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🎰 Spins</span>
+        <span class="stat-value" id="spinsDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="500" height="400"></canvas>
+      <div class="reel-overlay" id="reelOverlay">
+        <div class="paylines-indicator">
+          <span id="paylinesText">3 Paylines</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="spinBtn">🎰 Spin</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="betUpBtn">⬆️ Bet +</button>
+      <button class="control-btn" id="betDownBtn">⬇️ Bet -</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>🖱️ Click Spin or press <kbd>Space</kbd></span>
+      <span>·</span>
+      <span>🎯 Match symbols to win!</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">🎰 Press Spin to start playing!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const balanceDisplay = document.getElementById('balanceDisplay');
+      const betDisplay = document.getElementById('betDisplay');
+      const winDisplay = document.getElementById('winDisplay');
+      const spinsDisplay = document.getElementById('spinsDisplay');
+      const spinBtn = document.getElementById('spinBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const betUpBtn = document.getElementById('betUpBtn');
+      const betDownBtn = document.getElementById('betDownBtn');
+      const paylinesText = document.getElementById('paylinesText');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 500;
+      const HEIGHT = 400;
+      const REEL_WIDTH = 80;
+      const REEL_HEIGHT = 300;
+      const REEL_Y = 50;
+      const REEL_X_START = 70;
+      const SYMBOL_SIZE = 60;
+      const NUM_SYMBOLS = 8;
+
+      // ---------- Symbols ----------
+      const SYMBOLS = [
+        { id: '🍒', value: 1, color: '#f44336' },
+        { id: '🍋', value: 2, color: '#ffeb3b' },
+        { id: '🍊', value: 3, color: '#ff9800' },
+        { id: '🍉', value: 4, color: '#4caf50' },
+        { id: '⭐', value: 5, color: '#ffd54f' },
+        { id: '🔔', value: 6, color: '#ffc107' },
+        { id: '💎', value: 10, color: '#4fc3f7' },
+        { id: '🎰', value: 20, color: '#f44336' }
+      ];
+
+      // ---------- Paylines ----------
+      const PAYLINES = [
+        { name: 'Top', positions: [[0,0], [1,0], [2,0]], active: true },
+        { name: 'Middle', positions: [[0,1], [1,1], [2,1]], active: true },
+        { name: 'Bottom', positions: [[0,2], [1,2], [2,2]], active: true },
+        { name: 'V', positions: [[0,0], [1,1], [2,2]], active: false },
+        { name: 'Λ', positions: [[0,2], [1,1], [2,0]], active: false }
+      ];
+
+      // ---------- Game State ----------
+      let balance = 100;
+      let bet = 5;
+      let win = 0;
+      let spins = 0;
+      let reels = [];
+      let spinning = false;
+      let spinCount = 0;
+      let gameLoop = null;
+      let audioCtx = null;
+
+      // ---------- Audio ----------
+      function initAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      function playTone(frequency, duration = 0.1, volume = 0.2) {
+        try {
+          if (!audioCtx) return;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      function playWinSound() {
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+          setTimeout(() => playTone(freq, 0.15, 0.15), i * 100);
+        });
+      }
+
+      function playSpinSound() {
+        playTone(440, 0.05, 0.1);
+        setTimeout(() => playTone(554, 0.05, 0.1), 50);
+        setTimeout(() => playTone(659, 0.05, 0.1), 100);
+      }
+
+      function playLoseSound() {
+        playTone(300, 0.2, 0.15);
+        setTimeout(() => playTone(200, 0.3, 0.15), 150);
+      }
+
+      // ---------- Reel Functions ----------
+      function initReels() {
+        reels = [];
+        for (let i = 0; i < 3; i++) {
+          const reel = [];
+          for (let j = 0; j < 5; j++) {
+            reel.push(Math.floor(Math.random() * NUM_SYMBOLS));
+          }
+          reels.push(reel);
+        }
+      }
+
+      function spinReels() {
+        if (spinning) return;
+        if (balance < bet) {
+          setGameStatus('⚠️ Not enough balance! Reset or lower bet.', false);
+          return;
+        }
+
+        initAudio();
+        spinning = true;
+        spinBtn.disabled = true;
+        balance -= bet;
+        spinCount = 0;
+        win = 0;
+        updateUI();
+
+        // Randomize each reel with different speeds
+        const spinDurations = [10, 12, 14];
+        const spinSpeeds = [4, 3, 2];
+
+        for (let i = 0; i < 3; i++) {
+          const reel = reels[i];
+          const duration = spinDurations[i];
+          const speed = spinSpeeds[i];
+          let count = 0;
+          
+          const interval = setInterval(() => {
+            // Shift reel
+            const newSymbol = Math.floor(Math.random() * NUM_SYMBOLS);
+            reel.shift();
+            reel.push(newSymbol);
+            count++;
+            draw();
+            
+            if (count >= duration) {
+              clearInterval(interval);
+              spinCount++;
+              if (spinCount === 3) {
+                spinning = false;
+                spinBtn.disabled = false;
+                checkWin();
+                playSpinSound();
+              }
+            }
+          }, 100 / speed);
+        }
+      }
+
+      // ---------- Win Checking ----------
+      function checkWin() {
+        let totalWin = 0;
+        let winLines = [];
+
+        for (const payline of PAYLINES) {
+          if (!payline.active) continue;
+          
+          const symbols = payline.positions.map(pos => reels[pos[0]][pos[1]]);
+          const firstSymbol = symbols[0];
+          const allMatch = symbols.every(s => s === firstSymbol);
+          
+          if (allMatch) {
+            const value = SYMBOLS[firstSymbol].value;
+            const lineWin = value * bet;
+            totalWin += lineWin;
+            winLines.push({ payline: payline.name, symbols: symbols, win: lineWin });
+          }
+        }
+
+        if (totalWin > 0) {
+          win = totalWin;
+          balance += win;
+          playWinSound();
+          setGameStatus(`🎉 You won $${win}! ${winLines.map(w => `${w.payline}: $${w.win}`).join(' · ')}`, true);
+          // Celebration particles
+          createCelebration();
+        } else {
+          win = 0;
+          playLoseSound();
+          setGameStatus('😔 No win this time. Try again!', false);
+        }
+
+        spins++;
+        updateUI();
+        draw();
+      }
+
+      // ---------- Particle System ----------
+      let particles = [];
+
+      function createCelebration() {
+        const colors = ['#ffd54f', '#4fc3f7', '#81c784', '#ff8a65', '#ce93d8', '#ff6b6b'];
+        for (let i = 0; i < 50; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * 4;
+          const x = WIDTH / 2 + (Math.random() - 0.5) * 100;
+          const y = HEIGHT / 2 + (Math.random() - 0.5) * 100;
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            life: 30 + Math.random() * 30,
+            maxLife: 60,
+            radius: 2 + Math.random() * 4,
+            color: colors[Math.floor(Math.random() * colors.length)]
+          });
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background
+        const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        grad.addColorStop(0, '#1a0a2a');
+        grad.addColorStop(0.5, '#0a1a2a');
+        grad.addColorStop(1, '#0a0a1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Machine border
+        ctx.strokeStyle = 'rgba(255,215,0,0.2)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(20, 20, WIDTH - 40, HEIGHT - 40);
+
+        // Reel background
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 20;
+        ctx.fillRect(REEL_X_START - 10, REEL_Y - 10, REEL_WIDTH * 3 + 20, REEL_HEIGHT + 20);
+        ctx.shadowBlur = 0;
+
+        // Reel borders
+        for (let i = 0; i < 3; i++) {
+          const x = REEL_X_START + i * REEL_WIDTH;
+          ctx.strokeStyle = 'rgba(255,215,0,0.15)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, REEL_Y, REEL_WIDTH, REEL_HEIGHT);
+        }
+
+        // Draw symbols on reels
+        for (let reelIdx = 0; reelIdx < 3; reelIdx++) {
+          const reel = reels[reelIdx];
+          for (let rowIdx = 0; rowIdx < 5; rowIdx++) {
+            const symbolIdx = reel[rowIdx];
+            const symbol = SYMBOLS[symbolIdx];
+            const x = REEL_X_START + reelIdx * REEL_WIDTH + REEL_WIDTH / 2;
+            const y = REEL_Y + rowIdx * (REEL_HEIGHT / 5) + REEL_HEIGHT / 10;
+            
+            // Symbol background glow
+            ctx.shadowColor = symbol.color;
+            ctx.shadowBlur = 10;
+            
+            // Symbol
+            ctx.font = `${SYMBOL_SIZE}px "Segoe UI", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = symbol.color;
+            ctx.fillText(symbol.id, x, y);
+            ctx.shadowBlur = 0;
+          }
+        }
+
+        // Payline indicators
+        const activeLines = PAYLINES.filter(p => p.active);
+        paylinesText.textContent = `${activeLines.length} Paylines`;
+
+        // Draw active paylines
+        for (const payline of PAYLINES) {
+          if (!payline.active) continue;
+          ctx.strokeStyle = 'rgba(255,215,0,0.2)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          const positions = payline.positions.map(pos => ({
+            x: REEL_X_START + pos[0] * REEL_WIDTH + REEL_WIDTH / 2,
+            y: REEL_Y + pos[1] * (REEL_HEIGHT / 5) + REEL_HEIGHT / 10
+          }));
+          ctx.moveTo(positions[0].x, positions[0].y);
+          for (let i = 1; i < positions.length; i++) {
+            ctx.lineTo(positions[i].x, positions[i].y);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Win line highlight (temporary)
+        if (win > 0 && !spinning) {
+          ctx.fillStyle = 'rgba(255,215,0,0.05)';
+          ctx.fillRect(0, HEIGHT - 40, WIDTH, 40);
+          ctx.fillStyle = 'rgba(255,215,0,0.8)';
+          ctx.font = '18px "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`🎉 WIN $${win}! 🎉`, WIDTH/2, HEIGHT - 20);
+        }
+
+        // Draw particles
+        for (const p of particles) {
+          const alpha = p.life / p.maxLife;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Update particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.05;
+          p.life--;
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+      }
+
+      // ---------- UI Updates ----------
+      function updateUI() {
+        balanceDisplay.textContent = Math.floor(balance);
+        betDisplay.textContent = bet;
+        winDisplay.textContent = win;
+        spinsDisplay.textContent = spins;
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Control ----------
+      function resetGame() {
+        if (spinning) return;
+        balance = 100;
+        bet = 5;
+        win = 0;
+        spins = 0;
+        particles = [];
+        initReels();
+        updateUI();
+        setGameStatus('🔄 Game reset. Press Spin to play!', true);
+        draw();
+      }
+
+      function changeBet(delta) {
+        if (spinning) return;
+        const newBet = bet + delta;
+        if (newBet >= 1 && newBet <= Math.min(50, balance)) {
+          bet = newBet;
+          betDisplay.textContent = bet;
+        }
+      }
+
+      // ---------- Animation Loop ----------
+      function gameLoopFunction() {
+        draw();
+        requestAnimationFrame(gameLoopFunction);
+      }
+
+      // ---------- Event Listeners ----------
+      spinBtn.addEventListener('click', spinReels);
+      resetBtn.addEventListener('click', resetGame);
+      betUpBtn.addEventListener('click', () => changeBet(1));
+      betDownBtn.addEventListener('click', () => changeBet(-1));
+
+      // Keyboard
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          spinReels();
+        }
+        if (e.key === 'r' || e.key === 'R') resetGame();
+        if (e.key === 'ArrowUp') changeBet(1);
+        if (e.key === 'ArrowDown') changeBet(-1);
+      });
+
+      // ---------- Init ----------
+      function init() {
+        initReels();
+        updateUI();
+        setGameStatus('🎰 Press Spin to start playing!', true);
+        // Start animation loop
+        gameLoopFunction();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gravity Button Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Gravity Button</h1>
+        <p class="subtitle">Button that falls and bounces when clicked</p>
+
+        <!-- GRAVITY BUTTON COMPONENT -->
+        <div class="gravity-container">
+            <div class="gravity-wrapper">
+                <!-- Gravity Button -->
+                <div class="gravity-stage" id="gravityStage">
+                    <button class="gravity-btn" id="gravityBtn">
+                        <span class="btn-content">
+                            <span class="btn-icon">🚀</span>
+                            <span class="btn-text">Click Me</span>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Physics Controls -->
+                <div class="gravity-controls">
+                    <div class="control-group">
+                        <label for="gravitySlider">Gravity:</label>
+                        <input type="range" id="gravitySlider" min="0.1" max="2" step="0.1" value="0.8" />
+                        <span id="gravityValue">0.8</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="bounceSlider">Bounce:</label>
+                        <input type="range" id="bounceSlider" min="0.1" max="1" step="0.05" value="0.6" />
+                        <span id="bounceValue">0.6</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="frictionSlider">Friction:</label>
+                        <input type="range" id="frictionSlider" min="0.8" max="1" step="0.01" value="0.95" />
+                        <span id="frictionValue">0.95</span>
+                    </div>
+                </div>
+
+                <div class="gravity-actions">
+                    <button class="gravity-ctrl-btn" id="launchBtn">🚀 Launch</button>
+                    <button class="gravity-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="gravity-ctrl-btn" id="togglePhysicsBtn">⏸ Toggle Physics</button>
+                    <button class="gravity-ctrl-btn" id="randomizeBtn">🎲 Randomize</button>
+                </div>
+
+                <div class="gravity-status">
+                    <span class="status-label">State:</span>
+                    <span class="status-value" id="stateDisplay">Idle</span>
+                    <span class="status-label">Velocity:</span>
+                    <span class="status-value" id="velocityDisplay">0.0</span>
+                    <span class="status-label">Bounces:</span>
+                    <span class="status-value" id="bounceCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-stage">
+                        <button class="gravity-btn small">
+                            <span class="btn-icon">🎯</span>
+                        </button>
+                    </div>
+                    <span class="variant-label">Small</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-stage">
+                        <button class="gravity-btn large">
+                            <span class="btn-icon">🎯</span>
+                        </button>
+                    </div>
+                    <span class="variant-label">Large</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-stage">
+                        <button class="gravity-btn bounce">
+                            <span class="btn-icon">🎯</span>
+                        </button>
+                    </div>
+                    <span class="variant-label">Bouncy</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-stage">
+                        <button class="gravity-btn heavy">
+                            <span class="btn-icon">🎯</span>
+                        </button>
+                    </div>
+                    <span class="variant-label">Heavy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const stage = document.getElementById('gravityStage');
+            const button = document.getElementById('gravityBtn');
+            const stateDisplay = document.getElementById('stateDisplay');
+            const velocityDisplay = document.getElementById('velocityDisplay');
+            const bounceCount = document.getElementById('bounceCount');
+            const gravitySlider = document.getElementById('gravitySlider');
+            const bounceSlider = document.getElementById('bounceSlider');
+            const frictionSlider = document.getElementById('frictionSlider');
+            const gravityValue = document.getElementById('gravityValue');
+            const bounceValue = document.getElementById('bounceValue');
+            const frictionValue = document.getElementById('frictionValue');
+            const launchBtn = document.getElementById('launchBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const togglePhysicsBtn = document.getElementById('togglePhysicsBtn');
+            const randomizeBtn = document.getElementById('randomizeBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                gravity: 0.8,
+                bounce: 0.6,
+                friction: 0.95,
+                maxHeight: 300,
+                minHeight: 20,
+                physicsEnabled: true,
+                onBounce: function(count) {
+                    console.log(`🔄 Bounce #${count}`);
+                },
+                onLand: function() {
+                    console.log('🛬 Button landed');
+                },
+                onLaunch: function() {
+                    console.log('🚀 Button launched!');
+                },
+                onReset: function() {
+                    console.log('⟳ Button reset');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let y = 0;
+            let velocity = 0;
+            let isFalling = false;
+            let isBouncing = false;
+            let isLaunched = false;
+            let bounceCounter = 0;
+            let animationId = null;
+            let isPhysicsEnabled = CONFIG.physicsEnabled;
+
+            // ============================================
+            // PHYSICS ENGINE
+            // ============================================
+            function updatePhysics() {
+                if (!isPhysicsEnabled) return;
+
+                // Apply gravity
+                velocity += CONFIG.gravity;
+
+                // Apply friction (air resistance)
+                velocity *= CONFIG.friction;
+
+                // Update position
+                y += velocity;
+
+                // Check floor collision
+                if (y >= CONFIG.maxHeight) {
+                    y = CONFIG.maxHeight;
+                    velocity = -velocity * CONFIG.bounce;
+                    bounceCounter++;
+                    CONFIG.onBounce(bounceCounter);
+                    
+                    // Update bounce count display
+                    bounceCount.textContent = bounceCounter;
+
+                    // Stop bouncing if velocity is too low
+                    if (Math.abs(velocity) < 0.5) {
+                        velocity = 0;
+                        isFalling = false;
+                        isBouncing = false;
+                        stateDisplay.textContent = 'Idle';
+                        CONFIG.onLand();
+                        if (animationId) {
+                            cancelAnimationFrame(animationId);
+                            animationId = null;
+                        }
+                    } else {
+                        isBouncing = true;
+                        stateDisplay.textContent = 'Bouncing';
+                    }
+                }
+
+                // Apply button position
+                button.style.transform = `translateY(${y}px)`;
+
+                // Update velocity display
+                velocityDisplay.textContent = velocity.toFixed(1);
+
+                // Continue animation
+                if (isFalling || isBouncing || Math.abs(velocity) > 0.5) {
+                    animationId = requestAnimationFrame(updatePhysics);
+                } else {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+            }
+
+            function launchButton() {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+
+                // Reset to top if already at bottom
+                if (y >= CONFIG.maxHeight - 5) {
+                    y = 0;
+                    button.style.transform = `translateY(${y}px)`;
+                }
+
+                velocity = -(CONFIG.gravity * 15);
+                y = 0;
+                isFalling = true;
+                isBouncing = false;
+                isLaunched = true;
+                bounceCounter = 0;
+                bounceCount.textContent = '0';
+                stateDisplay.textContent = 'Falling';
+                CONFIG.onLaunch();
+
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                animationId = requestAnimationFrame(updatePhysics);
+            }
+
+            function resetButton() {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                y = 0;
+                velocity = 0;
+                isFalling = false;
+                isBouncing = false;
+                isLaunched = false;
+                bounceCounter = 0;
+                bounceCount.textContent = '0';
+                button.style.transform = `translateY(${y}px)`;
+                stateDisplay.textContent = 'Idle';
+                velocityDisplay.textContent = '0.0';
+                CONFIG.onReset();
+            }
+
+            function togglePhysics() {
+                isPhysicsEnabled = !isPhysicsEnabled;
+                togglePhysicsBtn.textContent = isPhysicsEnabled ? '⏸ Toggle Physics' : '▶ Toggle Physics';
+                if (!isPhysicsEnabled) {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                    stateDisplay.textContent = 'Paused';
+                } else {
+                    stateDisplay.textContent = 'Idle';
+                    if (isLaunched || isFalling || isBouncing) {
+                        animationId = requestAnimationFrame(updatePhysics);
+                    }
+                }
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function updateConfig() {
+                CONFIG.gravity = parseFloat(gravitySlider.value);
+                CONFIG.bounce = parseFloat(bounceSlider.value);
+                CONFIG.friction = parseFloat(frictionSlider.value);
+                gravityValue.textContent = CONFIG.gravity.toFixed(1);
+                bounceValue.textContent = CONFIG.bounce.toFixed(2);
+                frictionValue.textContent = CONFIG.friction.toFixed(2);
+            }
+
+            function randomizePhysics() {
+                gravitySlider.value = (Math.random() * 1.9 + 0.1).toFixed(1);
+                bounceSlider.value = (Math.random() * 0.9 + 0.1).toFixed(2);
+                frictionSlider.value = (Math.random() * 0.19 + 0.8).toFixed(2);
+                updateConfig();
+                resetButton();
+                setTimeout(() => launchButton(), 300);
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Button click - launch
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                launchButton();
+            });
+
+            // Stage click - also launch
+            stage.addEventListener('click', function(e) {
+                if (e.target === button) return;
+                launchButton();
+            });
+
+            // Slider controls
+            gravitySlider.addEventListener('input', updateConfig);
+            bounceSlider.addEventListener('input', updateConfig);
+            frictionSlider.addEventListener('input', updateConfig);
+
+            // Control buttons
+            launchBtn.addEventListener('click', launchButton);
+            resetBtn.addEventListener('click', resetButton);
+            togglePhysicsBtn.addEventListener('click', togglePhysics);
+            randomizeBtn.addEventListener('click', randomizePhysics);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    launchButton();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetButton();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    togglePhysics();
+                }
+                if (e.key === 'l' || e.key === 'L') {
+                    launchButton();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const stage = card.querySelector('.variant-stage');
+                const btn = card.querySelector('.gravity-btn');
+                let y = 0;
+                let velocity = 0;
+                let animId = null;
+                let bounceCount = 0;
+                
+                // Different physics for variants
+                const variantConfigs = {
+                    'Small': { gravity: 1.0, bounce: 0.7, maxHeight: 150 },
+                    'Large': { gravity: 0.6, bounce: 0.5, maxHeight: 200 },
+                    'Bouncy': { gravity: 0.7, bounce: 0.9, maxHeight: 250 },
+                    'Heavy': { gravity: 1.5, bounce: 0.3, maxHeight: 180 }
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const config = variantConfigs[label] || variantConfigs['Small'];
+                
+                function updateVariant() {
+                    velocity += config.gravity;
+                    y += velocity;
+                    
+                    if (y >= config.maxHeight) {
+                        y = config.maxHeight;
+                        velocity = -velocity * config.bounce;
+                        bounceCount++;
+                        if (Math.abs(velocity) < 0.5) {
+                            velocity = 0;
+                            if (animId) {
+                                cancelAnimationFrame(animId);
+                                animId = null;
+                            }
+                            return;
+                        }
+                    }
+                    
+                    btn.style.transform = `translateY(${y}px)`;
+                    animId = requestAnimationFrame(updateVariant);
+                }
+                
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (animId) {
+                        cancelAnimationFrame(animId);
+                        animId = null;
+                    }
+                    y = 0;
+                    velocity = -(config.gravity * 12);
+                    bounceCount = 0;
+                    btn.style.transform = `translateY(${y}px)`;
+                    animId = requestAnimationFrame(updateVariant);
+                    
+                    // Scale feedback
+                    this.style.transform = 'scale(0.9) translateY(0)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+                
+                // Initial animation
+                setTimeout(() => {
+                    y = 0;
+                    velocity = -(config.gravity * 8);
+                    animId = requestAnimationFrame(updateVariant);
+                }, 300);
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.GravityButton = {
+                launch: launchButton,
+                reset: resetButton,
+                toggle: togglePhysics,
+                randomize: randomizePhysics,
+                setGravity: (value) => {
+                    gravitySlider.value = value;
+                    updateConfig();
+                },
+                setBounce: (value) => {
+                    bounceSlider.value = value;
+                    updateConfig();
+                },
+                setFriction: (value) => {
+                    frictionSlider.value = value;
+                    updateConfig();
+                },
+                isFalling: () => isFalling,
+                isBouncing: () => isBouncing,
+                getState: () => ({
+                    y,
+                    velocity,
+                    isFalling,
+                    isBouncing,
+                    bounceCounter,
+                    isPhysicsEnabled
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.gravity) gravitySlider.value = config.gravity;
+                    if (config.bounce) bounceSlider.value = config.bounce;
+                    if (config.friction) frictionSlider.value = config.friction;
+                    updateConfig();
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            updateConfig();
+            resetButton();
+
+            console.log('✅ Gravity Button initialized!');
+            console.log('📖 API: window.GravityButton');
+            console.log('📖 Usage:');
+            console.log('  - Click the button to launch it');
+            console.log('  - Keyboard shortcuts: Space (launch), R (reset), P (toggle physics)');
+            console.log('  - Adjust gravity, bounce, and friction sliders');
+
+        })();
+    </script>
+</body>
+</html>

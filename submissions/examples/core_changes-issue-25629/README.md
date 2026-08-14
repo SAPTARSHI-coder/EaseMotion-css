@@ -1,0 +1,3 @@
+1. What does this do? Creates a CSS columns-based masonry grid with scroll-triggered staggered fade-in animations on items, responsive column counts, and gradient card examples.
+2. How is it used? Use `.masonry-grid` (3 columns default) with `.masonry-grid-item` children. Modifier classes `--2`, `--4` change column count. The JS adds `--visible` class when items scroll into view.
+3. Why is it useful? A masonry grid with staggered scroll-reveal animations enhances gallery and portfolio pages — this uses CSS columns for the layout (no JS layout calculation) with IntersectionObserver-free scroll detection for a lightweight implementation.

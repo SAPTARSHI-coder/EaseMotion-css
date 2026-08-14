@@ -1,22 +1,13 @@
-# Animated Toggle Switch
+# ease-toggle-switch
 
-A responsive animated toggle switch component built using pure HTML and CSS.
+## Description
 
-## Features
-
-- Animated switch transitions
-- Active and inactive states
-- Hover interactions
-- Responsive layouts
-- Smooth motion effects
-- Pure CSS implementation
+A smooth animated toggle switch for binary settings and preferences.
 
 ## Usage
 
-Open `demo.html` in a browser to view the animated toggle switch component.
-
-## Files
-
-- `demo.html` → Toggle switch structure
-- `style.css` → Toggle styles and animations
-- `README.md` → Documentation
+```html
+<label class="toggle">
+  <input type="checkbox">
+  <span></span>
+</label>
