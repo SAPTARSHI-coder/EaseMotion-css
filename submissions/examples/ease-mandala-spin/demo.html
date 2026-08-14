@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandala Spin · Mandala Spins and Pulses</title>
+    <meta name="description" content="Interactive mandala with spinning and pulsing animation, intricate geometric patterns, and vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪷 MANDALA SPIN</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="mandalaCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="spin-btn" id="spinBtn">🌀 SPIN</button>
+                <button class="stop-btn" id="stopBtn">⏹️ STOP</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Layers</label>
+                <input type="range" id="layersSlider" min="3" max="8" value="5">
+                <span id="layersLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🪷 MANDALA SPIN</span>
+            <small>spin · pulse · geometric</small>
+        </div>
+        <div class="hint">
+            <span>🌀 click to spin the mandala and watch it pulse</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('mandalaCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const spinBtn = document.getElementById('spinBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const layersSlider = document.getElementById('layersSlider');
+            const layersLabel = document.getElementById('layersLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numLayers = 5;
+            let time = 0;
+            let angle = 0;
+            let angularVelocity = 0;
+            let isSpinning = false;
+            let pulsePhase = 0;
+            let spinCount = 0;
+
+            // ---- Mandala Colors ----
+            const colors = [
+                '#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1',
+                '#b026ff', '#ff6bcd', '#00d4ff', '#ff9f43',
+                '#2ecc71', '#e74c3c', '#3498db', '#f1c40f'
+            ];
+
+            // ---- Generate Mandala ----
+            function drawMandala(ctx, angle, pulse, layers) {
+                const cx = W / 2;
+                const cy = H / 2;
+                const maxRadius = 220;
+                const pulseFactor = 1 + pulse * 0.05;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                
+                // Glow
+                ctx.shadowColor = 'rgba(200, 180, 220, 0.05)';
+                ctx.shadowBlur = 30;
+                
+                // Draw layers
+                for (let l = 0; l < layers; l++) {
+                    const layerProgress = l / layers;
+                    const radius = maxRadius * (0.3 + layerProgress * 0.7) * pulseFactor;
+                    const segments = 6 + l * 2;
+                    const color = colors[l % colors.length];
+                    const alpha = 0.15 + layerProgress * 0.3;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Layer ring
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1 + layerProgress * 1.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Petals/segments
+                    const petalCount = segments * 2;
+                    for (let i = 0; i < petalCount; i++) {
+                        const a = (i / petalCount) * Math.PI * 2;
+                        const innerRadius = radius * (0.5 + Math.sin(i * 1.5 + l * 0.5) * 0.2);
+                        const outerRadius = radius * (0.9 + Math.sin(i * 2 + l * 0.7) * 0.1);
+                        
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 5 + layerProgress * 5;
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = alpha * (0.3 + Math.sin(i + l) * 0.1 + 0.1);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        const a1 = a - Math.PI / petalCount;
+                        const a2 = a + Math.PI / petalCount;
+                        const r1 = innerRadius;
+                        const r2 = outerRadius;
+                        ctx.lineTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
+                        ctx.quadraticCurveTo(
+                            Math.cos(a) * r2,
+                            Math.sin(a) * r2,
+                            Math.cos(a2) * r1,
+                            Math.sin(a2) * r1
+                        );
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    // Inner decorative dots
+                    for (let i = 0; i < petalCount * 0.5; i++) {
+                        const a = (i / (petalCount * 0.5)) * Math.PI * 2 + l * 0.2;
+                        const r = radius * (0.6 + Math.sin(i * 3 + l) * 0.15);
+                        const size = 2 + layerProgress * 3;
+                        ctx.shadowBlur = 10;
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = alpha * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(a) * r, Math.sin(a) * r, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+                
+                // Center
+                ctx.shadowBlur = 0;
+                const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 30 * pulseFactor);
+                centerGrad.addColorStop(0, 'rgba(255, 220, 150, 0.2)');
+                centerGrad.addColorStop(0.5, 'rgba(200, 180, 150, 0.1)');
+                centerGrad.addColorStop(1, 'rgba(200, 180, 150, 0)');
+                ctx.fillStyle = centerGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 30 * pulseFactor, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Center dot
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.2)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 5 * pulseFactor, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Render ----
+            function render() {
+                drawBackground();
+                
+                const pulse = Math.sin(pulsePhase) * 0.5 + 0.5;
+                drawMandala(ctx, angle, pulse, numLayers);
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Spins: ${spinCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isSpinning ? '🌀 SPINNING' : '⏸️ STOPPED';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Spin
+                if (isSpinning) {
+                    angle += angularVelocity * 0.02 * (speed / 5);
+                    // Track rotations
+                    if (angle > Math.PI * 2) {
+                        angle -= Math.PI * 2;
+                        spinCount++;
+                    }
+                }
+                
+                // Pulse
+                pulsePhase += 0.02 * (speed / 5);
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Spin ----
+            function spinMandala() {
+                if (isSpinning) return;
+                isSpinning = true;
+                angularVelocity = 0.5 + speed * 0.1;
+                spinCount = 0;
+            }
+
+            // ---- Stop ----
+            function stopMandala() {
+                isSpinning = false;
+                angularVelocity = 0;
+            }
+
+            // ---- Reset ----
+            function resetMandala() {
+                isSpinning = false;
+                angularVelocity = 0;
+                angle = 0;
+                spinCount = 0;
+                pulsePhase = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+                if (isSpinning) {
+                    angularVelocity = 0.5 + speed * 0.1;
+                }
+            });
+            layersSlider.addEventListener('input', function() {
+                numLayers = parseInt(this.value);
+                layersLabel.textContent = numLayers;
+            });
+
+            // ---- Event Listeners ----
+            spinBtn.addEventListener('click', spinMandala);
+            stopBtn.addEventListener('click', stopMandala);
+            resetBtn.addEventListener('click', resetMandala);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isSpinning) {
+                        spinMandala();
+                    } else {
+                        stopMandala();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMandala();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🪷 Mandala Spin · Click Spin or press Space to start the mandala!');
+        })();
+    </script>
+</body>
+</html>

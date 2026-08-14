@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Specificity Safety Check</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">CSS SAFETY CHECK</span>
+      <h1>Specificity Calculator</h1>
+      <p>
+        Test CSS selector specificity against common, edge-case, and
+        invalid inputs.
+      </p>
+    </header>
+
+    <section class="calculator">
+      <div class="input-area">
+        <label for="selector">CSS Selector</label>
+
+        <div class="input-row">
+          <input
+            id="selector"
+            type="text"
+            value=".card #title:hover"
+            placeholder="Enter a CSS selector"
+            autocomplete="off"
+          >
+
+          <button id="calculate">Calculate</button>
+        </div>
+
+        <div class="examples">
+          <button data-selector="p">p</button>
+          <button data-selector=".card">.card</button>
+          <button data-selector="#hero">#hero</button>
+          <button data-selector=".card #title:hover">
+            .card #title:hover
+          </button>
+          <button data-selector="article.card[data-active]">
+            article.card[data-active]
+          </button>
+        </div>
+      </div>
+
+      <div class="result" id="result">
+        <span>Specificity</span>
+        <strong id="specificity">0, 0, 0, 0</strong>
+        <small id="message">Enter a selector to begin.</small>
+      </div>
+    </section>
+
+    <section class="tests">
+      <div class="section-heading">
+        <span>EDGE CASES</span>
+        <h2>Safety Test Matrix</h2>
+      </div>
+
+      <div class="test-grid" id="testGrid"></div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Happy Path</h2>
+        <p>
+          Valid element, class, ID, attribute, and pseudo-class
+          selectors are evaluated.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Edge Cases</h2>
+        <p>
+          Empty selectors, whitespace, universal selectors, and complex
+          selector combinations are checked.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Invalid Input</h2>
+        <p>
+          Invalid or unsupported selector input is handled without
+          crashing the interface.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const selectorInput =
+      document.getElementById("selector");
+
+    const calculateButton =
+      document.getElementById("calculate");
+
+    const specificityOutput =
+      document.getElementById("specificity");
+
+    const messageOutput =
+      document.getElementById("message");
+
+    const testGrid =
+      document.getElementById("testGrid");
+
+    /*
+     * Specificity format:
+     * A = inline styles
+     * B = IDs
+     * C = classes, attributes, pseudo-classes
+     * D = elements and pseudo-elements
+     */
+    function calculateSpecificity(selector) {
+      if (
+        typeof selector !== "string" ||
+        selector.trim() === ""
+      ) {
+        return null;
+      }
+
+      const cleaned =
+        selector
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .trim();
+
+      if (!cleaned) {
+        return null;
+      }
+
+      let ids = 0;
+      let classes = 0;
+      let elements = 0;
+
+      const idMatches =
+        cleaned.match(/#[a-zA-Z0-9_-]+/g);
+
+      const classMatches =
+        cleaned.match(/\.[a-zA-Z0-9_-]+/g);
+
+      const attributeMatches =
+        cleaned.match(/\[[^\]]+\]/g);
+
+      const pseudoClassMatches =
+        cleaned.match(/:(?!:)[a-zA-Z-]+(?:\([^)]*\))?/g);
+
+      ids =
+        idMatches ? idMatches.length : 0;
+
+      classes =
+        (classMatches ? classMatches.length : 0) +
+        (attributeMatches ? attributeMatches.length : 0) +
+        (pseudoClassMatches ? pseudoClassMatches.length : 0);
+
+      const withoutSpecialSelectors =
+        cleaned
+          .replace(/#[a-zA-Z0-9_-]+/g, "")
+          .replace(/\.[a-zA-Z0-9_-]+/g, "")
+          .replace(/\[[^\]]+\]/g, "")
+          .replace(/::?[a-zA-Z-]+(?:\([^)]*\))?/g, "")
+          .replace(/[*\s>+~(),]/g, " ");
+
+      const elementMatches =
+        withoutSpecialSelectors
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+      elements = elementMatches.length;
+
+      return [0, ids, classes, elements];
+    }
+
+    function formatSpecificity(value) {
+      return value
+        ? value.join(", ")
+        : "Invalid";
+    }
+
+    function calculate() {
+      const selector =
+        selectorInput.value;
+
+      const result =
+        calculateSpecificity(selector);
+
+      if (!result) {
+        specificityOutput.textContent =
+          "Invalid";
+
+        messageOutput.textContent =
+          "Empty or invalid selector input.";
+
+        return;
+      }
+
+      specificityOutput.textContent =
+        formatSpecificity(result);
+
+      messageOutput.textContent =
+        "Specificity calculated successfully.";
+    }
+
+    calculateButton.addEventListener(
+      "click",
+      calculate
+    );
+
+    selectorInput.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Enter") {
+          calculate();
+        }
+      }
+    );
+
+    document
+      .querySelectorAll("[data-selector]")
+      .forEach((button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            selectorInput.value =
+              button.dataset.selector;
+
+            calculate();
+          }
+        );
+      });
+
+    const testCases = [
+      {
+        selector: "p",
+        expected: "0, 0, 0, 1"
+      },
+      {
+        selector: ".card",
+        expected: "0, 0, 1, 0"
+      },
+      {
+        selector: "#header",
+        expected: "0, 1, 0, 0"
+      },
+      {
+        selector: "div.card",
+        expected: "0, 0, 1, 1"
+      },
+      {
+        selector: "#app .card",
+        expected: "0, 1, 1, 0"
+      },
+      {
+        selector: "input[type='text']",
+        expected: "0, 0, 1, 1"
+      },
+      {
+        selector: "button:hover",
+        expected: "0, 0, 1, 1"
+      },
+      {
+        selector: "::before",
+        expected: "0, 0, 0, 1"
+      },
+      {
+        selector: "*",
+        expected: "0, 0, 0, 0"
+      },
+      {
+        selector: "",
+        expected: "Invalid"
+      },
+      {
+        selector: "   ",
+        expected: "Invalid"
+      }
+    ];
+
+    testCases.forEach((test) => {
+      const result =
+        calculateSpecificity(test.selector);
+
+      const actual =
+        result
+          ? formatSpecificity(result)
+          : "Invalid";
+
+      const passed =
+        actual === test.expected;
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        `test-card ${passed ? "passed" : "failed"}`;
+
+      card.innerHTML = `
+        <div class="test-top">
+          <code>${test.selector || "(empty)"}</code>
+          <span>${passed ? "PASS" : "FAIL"}</span>
+        </div>
+
+        <div class="test-values">
+          <div>
+            <small>Expected</small>
+            <strong>${test.expected}</strong>
+          </div>
+
+          <div>
+            <small>Actual</small>
+            <strong>${actual}</strong>
+          </div>
+        </div>
+      `;
+
+      testGrid.appendChild(card);
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
