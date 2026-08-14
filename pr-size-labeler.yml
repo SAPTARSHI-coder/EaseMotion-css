@@ -1,0 +1,77 @@
+name: PR Size Labeler
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label:
+    name: Auto Label PR Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure jq is available
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+      - name: Calculate PR Size via GitHub API
+        id: size
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Paginate through pull files and sum additions+deletions excluding package-lock.json and Mock
+          PAGE=1
+          TOTAL=0
+          while : ; do
+            RESP=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/files?per_page=100&page=$PAGE")
+            COUNT=$(echo "$RESP" | jq 'length')
+            if [ "$COUNT" -eq 0 ]; then
+              break
+            fi
+            # Sum additions+deletions for this page, excluding unwanted files
+            PAGE_SUM=$(echo "$RESP" | jq '[.[] | select(.filename != "package-lock.json" and (.filename | test("Mock") | not)) | (.additions + .deletions)] | add // 0')
+            PAGE_SUM=${PAGE_SUM:-0}
+            TOTAL=$((TOTAL + PAGE_SUM))
+            PAGE=$((PAGE + 1))
+          done
+
+          echo "Total line changes: $TOTAL"
+          echo "changes=$TOTAL" >> $GITHUB_OUTPUT
+
+      - name: Apply Label based on Size
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGES: ${{ steps.size.outputs.changes }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          LABEL="size/XS"
+          if [ "$CHANGES" -gt 500 ]; then
+            LABEL="size/XL"
+          elif [ "$CHANGES" -gt 200 ]; then
+            LABEL="size/L"
+          elif [ "$CHANGES" -gt 50 ]; then
+            LABEL="size/M"
+          elif [ "$CHANGES" -gt 10 ]; then
+            LABEL="size/S"
+          fi
+          
+          echo "Assigning label: $LABEL"
+          
+          # First, clean up any old size labels to prevent duplicates on update
+          ALL_LABELS=("size/XS" "size/S" "size/M" "size/L" "size/XL")
+          for L in "${ALL_LABELS[@]}"; do
+            if [ "$L" != "$LABEL" ]; then
+              gh pr edit "$PR_URL" --remove-label "$L" || true
+            fi
+          done
+          
+          # Add the correct size label
+          gh pr edit "$PR_URL" --add-label "$LABEL"
