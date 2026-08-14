@@ -1,0 +1,2 @@
+# Floating Timeline (Minimalist)
+A highly refined, stark vertical history tracker. The component eschews heavy colors for thin 1px borders and subtle shadow elevations. On hover, the content card physically floats upward while the subtle tracking dot turns solid black.
