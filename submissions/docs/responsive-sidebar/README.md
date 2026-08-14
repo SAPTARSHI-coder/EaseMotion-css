@@ -1,20 +1,19 @@
-# Responsive Sidebar
+# Responsive Sidebar Component (#79930)
 
-A simple and responsive sidebar component built using only HTML and CSS.
+A collapsible, accessibility-compliant responsive navigation sidebar designed for dashboard layouts.
 
-## Features
+## Usage
 
-- Fully responsive design
-- Works on desktop, tablet, and mobile
-- Mobile-friendly bottom navigation
-- Hover effects
-- Active navigation state
-- No JavaScript required
+Include the structure below in your layout. The sidebar collapses seamlessly on mobile viewports using pure CSS media queries.
 
-## Files
-
-```text
-responsive-sidebar/
-├── index.html
-├── style.css
-└── README.md
+```html
+<div class="sidebar-wrapper">
+  <aside class="responsive-sidebar" id="appSidebar">
+    <div class="sidebar-brand">Dashboard</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="sidebar-link active">Home</a>
+      <a href="#" class="sidebar-link">Analytics</a>
+      <a href="#" class="sidebar-link">Settings</a>
+    </nav>
+  </aside>
+</div>
