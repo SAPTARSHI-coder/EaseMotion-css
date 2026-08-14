@@ -1,4 +1,1 @@
-# Reduced Motion Overrides
-Overrides animation duration and transitions when `prefers-reduced-motion` is enabled, respecting user accessibility preferences.
-
-Resolves #327.
+# Feature: Add prefers-reduced-motion Media Query Support\n\nThis is a placeholder for the implementation of Feature: Add prefers-reduced-motion Media Query Support.
