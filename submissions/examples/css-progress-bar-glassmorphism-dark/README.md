@@ -1,0 +1,2 @@
+# Glassmorphism Progress Bar (Dark Mode)
+A deep dark mode frosted glass panel featuring a progress bar filled with a vibrant gradient. It includes an infinite shimmering reflection animation across the fill area.

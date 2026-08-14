@@ -1,0 +1,2 @@
+# 3D Carousel (Neon)
+A rotating 3D hexagon carousel built using `perspective` and `transform-style: preserve-3d`. Each card panel features intense cyan neon glows and rotates around a central Z-axis point.

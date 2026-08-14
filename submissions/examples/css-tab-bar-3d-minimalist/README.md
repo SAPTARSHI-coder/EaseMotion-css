@@ -1,0 +1,2 @@
+# 3D Tab Bar (Minimalist)
+A clean, structural tab bar. Inactive tabs are physically rotated backwards along the X-axis `rotateX(30deg)`, while the active tab springs upright and scales to full size on selection.
