@@ -1,29 +1,22 @@
-# Zero-Dependency Accordion Motion Component
+# Accordion
 
-A smooth, JavaScript-free accordion component built for EaseMotion CSS. 
+A smooth accordion where the active panel expands and its caret rotates.
 
 ## Features
-- **Zero JavaScript:** Utilizes native HTML `<details>` and `<summary>` tags for state management and built-in accessibility.
-- **Smooth Height Transition:** Uses the modern CSS Grid interpolation trick (`grid-template-rows: 0fr` -> `1fr`) to smoothly animate element height without hacky fixed `max-height` limits.
-- **Icon Animation:** Clean CSS-only plus/minus icon toggle that transitions smoothly.
+- Grid-template-rows animation for buttery height changes
+- Caret spins 180&deg; on the open panel
+- First panel open by default
 
 ## Usage
-
 ```html
-<div class="ease-accordion"> 
-  <details class="ease-accordion-item" open> 
-    <summary class="ease-accordion-trigger"> 
-      What is EaseMotion CSS? 
-      <span class="ease-accordion-icon"></span> 
-    </summary> 
-    <div class="ease-accordion-content"> 
-      <div class="ease-accordion-body"> 
-        EaseMotion CSS is a human-readable, animation-first CSS framework. 
-      </div> 
-    </div> 
-  </details> 
+<div class="ac-item ac-open">
+  <div class="ac-header" onclick="this.parentElement.classList.toggle('ac-open')"><span class="ac-title">Title</span><span class="ac-caret">&#9662;</span></div>
+  <div class="ac-body"><div class="ac-body-inner"><p>Body...</p></div></div>
 </div>
 ```
 
-## Why it's useful
-It provides a high-quality accordion interface that avoids JavaScript bloat while taking advantage of modern CSS layout engines, perfectly aligning with EaseMotion's "motion-first" philosophy.
+## Browser Support
+- Chrome, Firefox, Safari, Edge (evergreen)
+
+## Tech Stack
+- Pure HTML + CSS, zero JavaScript dependencies
