@@ -1,0 +1,2 @@
+# Floating Datepicker (Minimalist)
+A highly refined, pure CSS calendar dropdown. It relies on a hidden checkbox to trigger the dropdown state (`.md-toggle-input:checked ~ .md-calendar`) and utilizes native radio buttons to handle date selection logic, replacing standard browser defaults with a stark monochrome UI.
