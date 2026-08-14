@@ -1,0 +1,2 @@
+# Responsive Navbar (Cyberpunk)
+A fully responsive navigation bar styled with harsh, contrasting Cyberpunk colors. It features a CSS-only hamburger menu that uses `clip-path` to animate the mobile dropdown shutter.
