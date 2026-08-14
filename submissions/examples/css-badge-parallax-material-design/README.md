@@ -1,0 +1,2 @@
+# Parallax Badge (Material Design)
+A 3D-elevated Material badge. Leveraging `preserve-3d`, the badge sits inside a perspective container. Hovering tilts the badge along the X and Y axes while deepening the standard Material shadow map. The internal icon and text independently pop outward along the Z-axis.
