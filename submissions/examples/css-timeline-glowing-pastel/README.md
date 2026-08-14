@@ -1,0 +1,2 @@
+# Glowing Timeline (Pastel)
+A warm, inviting vertical stepper. Each timeline node casts a soft pastel-colored glow, and hovering over an item expands the glow radius while illuminating the card's border in the corresponding color.
