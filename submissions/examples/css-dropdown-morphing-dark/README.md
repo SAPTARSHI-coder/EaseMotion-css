@@ -1,0 +1,2 @@
+# Morphing Dropdown (Dark Mode)
+A compact floating action button that morphs its container bounds out to a full rectangular dropdown menu on hover, while smoothly spinning the icon to act as a close button.
