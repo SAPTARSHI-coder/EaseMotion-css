@@ -1,3 +1,3 @@
-# feat(examples): Add pure CSS animated skeleton loader v3
+# feat(examples): Add CSS animated skeleton loader v3
 
-Documentation for css-animated-skeleton-loader-v3-harrshita.
+Documentation for `css-animated-skeleton-loader-v3-harrshita`.
