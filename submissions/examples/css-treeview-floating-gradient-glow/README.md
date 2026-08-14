@@ -1,0 +1,2 @@
+# Floating Treeview (Gradient Glow)
+A dark mode hierarchy navigator encased in a floating panel with a vibrant glowing gradient border. Node expansion is completely CSS-driven utilizing hidden checkboxes to toggle max-height and opacity on nested sub-lists.
