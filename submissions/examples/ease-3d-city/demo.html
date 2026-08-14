@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D City · City Buildings Rise and Glow</title>
+    <meta name="description" content="Interactive 3D city with buildings rising and glowing, creating a dynamic urban skyline.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🏙️ 3D CITY</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="cityCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="rise-btn" id="riseBtn">🌆 RISE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Buildings</label>
+                <input type="range" id="buildingsSlider" min="15" max="40" value="28">
+                <span id="buildingsLabel">28</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🏙️ 3D CITY</span>
+            <small>rise · glow · skyline</small>
+        </div>
+        <div class="hint">
+            <span>🌆 click to watch the city rise and glow</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('cityCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const riseBtn = document.getElementById('riseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const buildingsSlider = document.getElementById('buildingsSlider');
+            const buildingsLabel = document.getElementById('buildingsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numBuildings = 28;
+            let time = 0;
+            let riseProgress = 0;
+            let isRising = false;
+            let isRisen = false;
+
+            // ---- Building Class ----
+            class Building {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    
+                    // Position across the city
+                    const spacing = W / total;
+                    this.x = spacing * index + spacing * 0.15;
+                    this.width = spacing * 0.5 + Math.random() * spacing * 0.3;
+                    
+                    // Height variation
+                    this.maxHeight = 30 + Math.random() * 120;
+                    this.height = 5 + Math.random() * 10;
+                    this.targetHeight = this.maxHeight;
+                    
+                    // Color
+                    const hue = 200 + Math.random() * 40;
+                    const light = 30 + Math.random() * 30;
+                    this.color = `hsl(${hue}, 60%, ${light}%)`;
+                    this.windowColor = `hsl(${hue + 20}, 80%, ${light + 30}%)`;
+                    
+                    // Random offset for organic feel
+                    this.offsetX = (Math.random() - 0.5) * 3;
+                    
+                    // Glow
+                    this.glowIntensity = 0;
+                    this.glowTarget = 0.3 + Math.random() * 0.4;
+                    
+                    // Windows
+                    this.windows = [];
+                    const numWindows = 2 + Math.floor(Math.random() * 4);
+                    for (let i = 0; i < numWindows; i++) {
+                        this.windows.push({
+                            x: 0.15 + Math.random() * 0.5,
+                            y: 0.1 + Math.random() * 0.4,
+                            w: 0.05 + Math.random() * 0.06,
+                            h: 0.05 + Math.random() * 0.06,
+                            lit: Math.random() < 0.6,
+                            brightness: 0.2 + Math.random() * 0.5
+                        });
+                    }
+                    
+                    // Roof detail
+                    this.hasRoof = Math.random() < 0.3;
+                    this.roofHeight = 2 + Math.random() * 5;
+                }
+
+                update(progress) {
+                    // Smooth height transition
+                    const ease = 1 - Math.pow(1 - progress, 2);
+                    this.height = this.maxHeight * ease;
+                    this.glowIntensity += (this.glowTarget * ease - this.glowIntensity) * 0.05;
+                }
+
+                draw(ctx, xOffset) {
+                    const x = this.x + xOffset;
+                    const y = H - 30;
+                    const w = this.width;
+                    const h = this.height;
+                    
+                    if (h < 1) return;
+                    
+                    // Shadow
+                    ctx.shadowColor = `rgba(0,0,0,${0.1 + this.glowIntensity * 0.05})`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 4;
+                    
+                    // Building body
+                    ctx.shadowColor = `rgba(100, 200, 255, ${this.glowIntensity * 0.05})`;
+                    ctx.shadowBlur = 20 * this.glowIntensity;
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(x, y - h, w, h);
+                    
+                    // Glow ring at top
+                    if (this.glowIntensity > 0.1) {
+                        ctx.shadowBlur = 0;
+                        const grad = ctx.createRadialGradient(
+                            x + w/2, y - h, 0,
+                            x + w/2, y - h, w * 0.8
+                        );
+                        grad.addColorStop(0, `rgba(100, 200, 255, ${this.glowIntensity * 0.08})`);
+                        grad.addColorStop(0.5, `rgba(100, 200, 255, ${this.glowIntensity * 0.03})`);
+                        grad.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(x + w/2, y - h, w * 0.8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // Windows
+                    ctx.shadowBlur = 0;
+                    for (let win of this.windows) {
+                        const wx = x + win.x * w;
+                        const wy = y - h + win.y * h;
+                        const ww = win.w * w;
+                        const wh = win.h * h;
+                        
+                        if (win.lit && this.glowIntensity > 0.1) {
+                            // Window glow
+                            ctx.fillStyle = `rgba(255, 220, 100, ${win.brightness * this.glowIntensity * 0.3})`;
+                            ctx.shadowColor = `rgba(255, 200, 100, ${win.brightness * this.glowIntensity * 0.1})`;
+                            ctx.shadowBlur = 10;
+                            ctx.fillRect(wx, wy, ww, wh);
+                        }
+                        
+                        // Window frame
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = win.lit ? 
+                            `rgba(255, 220, 150, ${0.1 + win.brightness * this.glowIntensity * 0.3})` :
+                            `rgba(20, 30, 40, 0.3)`;
+                        ctx.fillRect(wx + 1, wy + 1, ww - 2, wh - 2);
+                        
+                        // Window border
+                        ctx.strokeStyle = `rgba(255,255,255,${0.05 + this.glowIntensity * 0.05})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(wx, wy, ww, wh);
+                    }
+                    
+                    // Roof detail
+                    if (this.hasRoof && h > 20) {
+                        ctx.fillStyle = `rgba(40, 50, 60, ${0.2 + this.glowIntensity * 0.1})`;
+                        ctx.fillRect(x - 2, y - h - this.roofHeight, w + 4, this.roofHeight);
+                        
+                        // Antenna
+                        if (Math.random() < 0.3) {
+                            ctx.fillStyle = `rgba(50, 60, 70, ${0.1 + this.glowIntensity * 0.05})`;
+                            ctx.fillRect(x + w/2 - 1, y - h - this.roofHeight - 5, 2, 5);
+                            ctx.fillRect(x + w/2 - 3, y - h - this.roofHeight - 7, 6, 2);
+                        }
+                    }
+                }
+            }
+
+            // ---- City ----
+            let buildings = [];
+
+            function createCity() {
+                buildings = [];
+                for (let i = 0; i < numBuildings; i++) {
+                    buildings.push(new Building(i, numBuildings));
+                }
+                riseProgress = 0;
+                isRising = false;
+                isRisen = false;
+            }
+
+            // ---- Rise ----
+            function riseCity() {
+                if (isRising) return;
+                isRising = true;
+                isRisen = false;
+                riseProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetCity() {
+                isRising = false;
+                isRisen = false;
+                riseProgress = 0;
+                createCity();
+                render();
+            }
+
+            // ---- Draw Ground ----
+            function drawGround() {
+                // Ground gradient
+                const grad = ctx.createLinearGradient(0, H - 30, 0, H);
+                grad.addColorStop(0, 'rgba(20, 30, 40, 0)');
+                grad.addColorStop(0.3, 'rgba(20, 30, 40, 0.2)');
+                grad.addColorStop(0.7, 'rgba(20, 30, 40, 0.4)');
+                grad.addColorStop(1, 'rgba(20, 30, 40, 0.6)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, H - 30, W, 30);
+                
+                // Ground line
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.03)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H - 30);
+                ctx.lineTo(W, H - 30);
+                ctx.stroke();
+            }
+
+            // ---- Draw Stars ----
+            function drawStars() {
+                for (let i = 0; i < 50; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.7);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Sky
+                const skyGrad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H);
+                skyGrad.addColorStop(0, '#0a1a2a');
+                skyGrad.addColorStop(0.3, '#0d1a25');
+                skyGrad.addColorStop(0.6, '#0a1520');
+                skyGrad.addColorStop(0.8, '#080e18');
+                skyGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                drawStars();
+                drawGround();
+                
+                // City scroll (gentle movement)
+                const scroll = Math.sin(time * 0.005) * 2;
+                
+                // Update and draw buildings
+                const progress = Math.min(1, riseProgress);
+                for (let b of buildings) {
+                    b.update(progress);
+                    b.draw(ctx, scroll);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Buildings: ${buildings.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isRisen ? '🌆 RISEN' : 
+                              isRising ? '🔄 RISING...' : 
+                              '🏙️ READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                if (isRising && riseProgress < 1) {
+                    riseProgress += 0.002 * (speed / 5);
+                    if (riseProgress > 1) {
+                        riseProgress = 1;
+                        isRising = false;
+                        isRisen = true;
+                    }
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            buildingsSlider.addEventListener('input', function() {
+                numBuildings = parseInt(this.value);
+                buildingsLabel.textContent = numBuildings;
+                resetCity();
+            });
+
+            // ---- Event Listeners ----
+            riseBtn.addEventListener('click', riseCity);
+            resetBtn.addEventListener('click', resetCity);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isRising && !isRisen) {
+                        riseCity();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCity();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            createCity();
+            render();
+            animate();
+
+            console.log('🏙️ 3D City · Click Rise to watch the city grow and glow!');
+        })();
+    </script>
+</body>
+</html>

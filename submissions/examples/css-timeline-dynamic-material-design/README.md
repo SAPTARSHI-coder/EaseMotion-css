@@ -1,0 +1,2 @@
+# Dynamic Timeline (Material Design)
+A classic Google Material Design vertical stepper. Active nodes utilize heavy drop shadows mimicking physical elevation (`box-shadow`), while hovering a completed node dynamically increases its shadow depth and scales up its corresponding Floating Action Button (FAB) icon.

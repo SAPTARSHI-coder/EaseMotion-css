@@ -1,0 +1,2 @@
+# Responsive Footer (Retro)
+A deeply nostalgic 90s web footer. It embraces high-contrast primary colors (navy backgrounds, yellow/cyan text), rigid ridge/groove borders, and classic typography. The layout gracefully stacks from columns to a vertical list on smaller viewports using modern Flexbox mechanics.

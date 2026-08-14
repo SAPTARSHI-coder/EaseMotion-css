@@ -1,0 +1,2 @@
+# Floating Timeline (Claymorphism)
+A beautifully soft and fluffy vertical timeline. Every element, including the central connecting line, utilizes complex inner and outer inset shadows to form pill-like 3D clay extrusions.

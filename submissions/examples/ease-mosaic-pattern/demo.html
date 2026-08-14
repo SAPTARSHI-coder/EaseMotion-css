@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic Pattern · Mosaic Tiles Shift Color</title>
+    <meta name="description" content="Interactive mosaic pattern where tiles shift colors in a beautiful, flowing animation.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🟦 MOSAIC PATTERN</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="mosaicPatternCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="shift-btn" id="shiftBtn">🎨 SHIFT</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="4" max="12" value="8">
+                <span id="sizeLabel">8</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🟦 MOSAIC PATTERN</span>
+            <small>tiles · color shift · flow</small>
+        </div>
+        <div class="hint">
+            <span>🎨 click to shift the mosaic colors into a new pattern</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('mosaicPatternCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const shiftBtn = document.getElementById('shiftBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let tileSize = 8;
+            let time = 0;
+            let shiftProgress = 0;
+            let isShifting = false;
+            let isShifted = false;
+
+            // ---- Mosaic Grid ----
+            let grid = [];
+            let targetGrid = [];
+            const COLS = Math.floor(W / 8);
+            const ROWS = Math.floor(H / 8);
+
+            // ---- Color Palette ----
+            const palette = [
+                '#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1',
+                '#b026ff', '#ff6bcd', '#00d4ff', '#ff9f43',
+                '#2ecc71', '#e74c3c', '#3498db', '#f1c40f',
+                '#9b59b6', '#1abc9c', '#e67e22', '#2c3e50'
+            ];
+
+            // ---- Generate Mosaic ----
+            function generateMosaic(phase) {
+                const gridData = [];
+                const cols = Math.floor(W / tileSize);
+                const rows = Math.floor(H / tileSize);
+                
+                for (let r = 0; r < rows; r++) {
+                    gridData[r] = [];
+                    for (let c = 0; c < cols; c++) {
+                        // Color based on position and phase
+                        const hue = (r * 20 + c * 15 + phase * 30) % 360;
+                        const sat = 70 + Math.sin(r * 0.3 + c * 0.4 + phase * 0.2) * 20;
+                        const light = 50 + Math.sin(r * 0.5 + c * 0.3 + phase * 0.25) * 25;
+                        gridData[r][c] = {
+                            hue: hue,
+                            sat: sat,
+                            light: light,
+                            r: r,
+                            c: c,
+                            phase: phase
+                        };
+                    }
+                }
+                return gridData;
+            }
+
+            // ---- Initialize ----
+            function initMosaic() {
+                const cols = Math.floor(W / tileSize);
+                const rows = Math.floor(H / tileSize);
+                grid = generateMosaic(0);
+                targetGrid = generateMosaic(Math.random() * Math.PI * 2);
+                shiftProgress = 0;
+                isShifting = false;
+                isShifted = false;
+                render();
+            }
+
+            // ---- Shift Colors ----
+            function shiftColors() {
+                if (isShifting) return;
+                targetGrid = generateMosaic(Math.random() * Math.PI * 2);
+                isShifting = true;
+                isShifted = false;
+                shiftProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetMosaic() {
+                isShifting = false;
+                isShifted = false;
+                shiftProgress = 0;
+                grid = generateMosaic(0);
+                targetGrid = generateMosaic(Math.random() * Math.PI * 2);
+                render();
+            }
+
+            // ---- Update Shift ----
+            function updateShift() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isShifting && shiftProgress < 1) {
+                    shiftProgress += 0.005 * (speed / 5);
+                    if (shiftProgress > 1) {
+                        shiftProgress = 1;
+                        isShifting = false;
+                        isShifted = true;
+                        targetGrid = generateMosaic(Math.random() * Math.PI * 2);
+                    }
+                    
+                    // Interpolate colors
+                    const ease = 1 - Math.pow(1 - shiftProgress, 3);
+                    const cols = Math.floor(W / tileSize);
+                    const rows = Math.floor(H / tileSize);
+                    
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            if (grid[r] && grid[r][c] && targetGrid[r] && targetGrid[r][c]) {
+                                const src = grid[r][c];
+                                const tgt = targetGrid[r][c];
+                                src.hue = src.hue + (tgt.hue - src.hue) * ease;
+                                src.sat = src.sat + (tgt.sat - src.sat) * ease;
+                                src.light = src.light + (tgt.light - src.light) * ease;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw mosaic tiles
+                const cols = Math.floor(W / tileSize);
+                const rows = Math.floor(H / tileSize);
+                
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (!grid[r] || !grid[r][c]) continue;
+                        const tile = grid[r][c];
+                        const x = c * tileSize;
+                        const y = r * tileSize;
+                        
+                        // Color with glow
+                        const hue = ((tile.hue % 360) + 360) % 360;
+                        const sat = Math.min(100, Math.max(0, tile.sat));
+                        const light = Math.min(100, Math.max(0, tile.light));
+                        const color = `hsl(${hue}, ${sat}%, ${light}%)`;
+                        
+                        // Glow
+                        const glowIntensity = 0.05 + Math.sin(time * 0.02 + r * 0.3 + c * 0.4) * 0.03 + 0.03;
+                        ctx.shadowColor = `hsla(${hue}, 80%, 70%, ${glowIntensity})`;
+                        ctx.shadowBlur = 6;
+                        
+                        // Tile
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                        
+                        // Border
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = `rgba(255,255,255,${0.03 + Math.sin(time * 0.01 + r + c) * 0.02 + 0.02})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(x, y, tileSize, tileSize);
+                    }
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Tiles: ${cols * rows}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isShifted ? '🎨 SHIFTED' : 
+                              isShifting ? '🔄 SHIFTING...' : 
+                              '🟦 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateShift();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Update Size ----
+            function updateSize() {
+                tileSize = parseInt(sizeSlider.value);
+                sizeLabel.textContent = tileSize;
+                initMosaic();
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            sizeSlider.addEventListener('input', updateSize);
+
+            // ---- Event Listeners ----
+            shiftBtn.addEventListener('click', shiftColors);
+            resetBtn.addEventListener('click', resetMosaic);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    shiftColors();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMosaic();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initMosaic();
+            animate();
+
+            console.log('🟦 Mosaic Pattern · Click Shift or press Space to shift tile colors!');
+        })();
+    </script>
+</body>
+</html>

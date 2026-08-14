@@ -1,0 +1,2 @@
+# Glowing Stat Card (Dark Mode)
+A premium data visualization card for dark dashboards. The card features a subtle green radial glow originating from the top edge, which intensifies significantly when hovered while simultaneously shifting the card upward.

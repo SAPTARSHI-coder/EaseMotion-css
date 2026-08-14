@@ -1,0 +1,2 @@
+# Interactive Timeline (Neumorphism)
+A soft-UI vertical stepper. Hovering over active nodes physically presses the content card and timeline marker into the page by inverting their `box-shadow` properties to `inset`, simultaneously lighting up the marker core with the primary accent color.

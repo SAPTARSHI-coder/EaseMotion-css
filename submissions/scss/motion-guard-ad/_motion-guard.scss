@@ -1,0 +1,115 @@
+// ==========================================================================
+// EaseMotion CSS — Motion Guard mixin
+// Issue #61718
+// --------------------------------------------------------------------------
+// Wraps an animation or transition block and generates the matching
+// `prefers-reduced-motion: reduce` override automatically.
+//
+// The mixin exists because reduced-motion handling has two distinct failure
+// modes that are routinely conflated:
+//
+//   shorten — for animations using `animation-fill-mode: both`. These must
+//             be SHORTENED, never removed: removing the animation leaves the
+//             fill holding the element at its `from` frame, which for a
+//             typical fade-in entrance means `opacity: 0` — the element
+//             disappears for exactly the users who opted out of motion.
+//
+//   remove  — for looping or infinite animations. A perpetual loop is the
+//             thing motion-sensitive users are opting out of, so shortening
+//             it is not enough; it must be cancelled outright.
+//
+// Getting these the wrong way round is the single most common accessibility
+// bug in animated CSS, and it is invisible until someone enables the setting.
+// ==========================================================================
+
+@use "sass:list";
+@use "sass:meta";
+
+// Duration collapsed to under one frame — effectively instant, but non-zero
+// so that `animationend` / `transitionend` listeners still fire.
+$motion-guard-instant: 1ms !default;
+
+// Valid modes, used for argument validation.
+$motion-guard-modes: (shorten, remove);
+
+// --------------------------------------------------------------------------
+// motion-guard
+//
+// @param {String} $mode
+//        `shorten` (default) — collapse duration and delay to ~0.
+//        `remove`            — cancel the animation entirely.
+// @content The motion declarations to guard.
+// --------------------------------------------------------------------------
+@mixin motion-guard($mode: shorten) {
+    @if not list.index($motion-guard-modes, $mode) {
+        @error "motion-guard(): unknown $mode `#{$mode}`. "
+             + "Expected one of: #{$motion-guard-modes}.";
+    }
+
+    @content;
+
+    @media (prefers-reduced-motion: reduce) {
+        @if $mode == shorten {
+            animation-delay: 0s;
+            animation-duration: $motion-guard-instant;
+            transition-delay: 0s;
+            transition-duration: $motion-guard-instant;
+        } @else {
+            animation: none;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// motion-guard-transform
+//
+// Variant for hover/active states that animate `transform`. Under reduced
+// motion the transform is neutralised as well as shortened, so an element
+// cannot be left rendered mid-transform when the transition is collapsed.
+//
+// @param {String} $reset  Transform value to fall back to. Defaults to `none`.
+// @content The motion declarations to guard.
+// --------------------------------------------------------------------------
+@mixin motion-guard-transform($reset: none) {
+    @content;
+
+    @media (prefers-reduced-motion: reduce) {
+        transform: $reset;
+        transition-delay: 0s;
+        transition-duration: $motion-guard-instant;
+    }
+}
+
+// --------------------------------------------------------------------------
+// motion-guard-stagger
+//
+// Emits `nth-child` animation delays for a staggered entrance, then collapses
+// every delay under reduced motion. Because staggered entrances almost always
+// use `both` fill, this always uses the `shorten` strategy — never `remove`.
+//
+// @param {Number} $count  How many children to emit delays for.
+// @param {Number} $step   Delay increment per child.
+// @param {Number} $from   Index to start counting from. Useful when the
+//                         stagger should trail a parent's own entrance.
+// --------------------------------------------------------------------------
+@mixin motion-guard-stagger($count, $step: 60ms, $from: 1) {
+    @if meta.type-of($count) != "number" or $count < 1 {
+        @error "motion-guard-stagger(): $count must be a positive number, got `#{$count}`.";
+    }
+
+    @for $i from 1 through $count {
+        &:nth-child(#{$i}) {
+            animation-delay: $step * ($i + $from - 1);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        @for $i from 1 through $count {
+            &:nth-child(#{$i}) {
+                animation-delay: 0s;
+            }
+        }
+
+        animation-duration: $motion-guard-instant;
+    }
+}

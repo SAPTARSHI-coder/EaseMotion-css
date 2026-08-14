@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mycelium Pulse</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <main class="mycelium-app">
+
+    <section class="mycelium-card">
+
+      <header class="header">
+        <div>
+          <span class="eyebrow">UNDERGROUND ECOSYSTEM</span>
+          <h1>Mycelium Pulse</h1>
+          <p>
+            Watch nutrients travel through a living fungal network.
+          </p>
+        </div>
+
+        <div class="vitality">
+          <span>VITALITY</span>
+          <strong id="vitalityValue">72%</strong>
+        </div>
+      </header>
+
+      <div class="network-wrapper">
+        <canvas id="myceliumCanvas"></canvas>
+
+        <div class="network-label">
+          <span>●</span>
+          Living Network
+        </div>
+
+        <div class="pulse-status">
+          <span>Active Pulses</span>
+          <strong id="pulseCount">0</strong>
+        </div>
+      </div>
+
+      <section class="stats">
+
+        <div class="stat">
+          <span>Nodes</span>
+          <strong id="nodeCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Connections</span>
+          <strong id="connectionCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Last Pulse</span>
+          <strong id="lastPulse">Waiting</strong>
+        </div>
+
+      </section>
+
+      <div class="controls">
+        <button id="pulseBtn" class="primary">
+          ✦ Generate Pulse
+        </button>
+
+        <button id="resetBtn" class="secondary">
+          ↻ Reset Network
+        </button>
+      </div>
+
+      <p class="hint">
+        Click anywhere inside the soil to inject a nutrient pulse.
+      </p>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("myceliumCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const pulseCountEl = document.getElementById("pulseCount");
+    const nodeCountEl = document.getElementById("nodeCount");
+    const connectionCountEl = document.getElementById("connectionCount");
+    const vitalityValueEl = document.getElementById("vitalityValue");
+    const lastPulseEl = document.getElementById("lastPulse");
+
+    let width = 0;
+    let height = 0;
+
+    let nodes = [];
+    let branches = [];
+    let pulses = [];
+    let particles = [];
+
+    let vitality = 72;
+
+    const NODE_COUNT = 42;
+    const PARTICLE_COUNT = 45;
+    const INITIAL_PULSES = 8;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      const ratio = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      width = rect.width;
+      height = rect.height;
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function createNode(x, y) {
+      return {
+        x,
+        y,
+        radius: 2 + Math.random() * 2,
+        glow: 0,
+        connections: []
+      };
+    }
+
+    function generateNetwork() {
+      nodes = [];
+      branches = [];
+
+      const center = {
+        x: width / 2,
+        y: height / 2
+      };
+
+      nodes.push(createNode(center.x, center.y));
+
+      for (let i = 1; i < NODE_COUNT; i++) {
+
+        const angle = Math.random() * Math.PI * 2;
+        const radius =
+          35 +
+          Math.pow(Math.random(), 0.65) *
+          Math.min(width, height) * 0.45;
+
+        const x =
+          center.x +
+          Math.cos(angle) * radius;
+
+        const y =
+          center.y +
+          Math.sin(angle) * radius * 0.72;
+
+        nodes.push(
+          createNode(
+            Math.max(15, Math.min(width - 15, x)),
+            Math.max(15, Math.min(height - 15, y))
+          )
+        );
+      }
+
+      for (let i = 1; i < nodes.length; i++) {
+
+        let nearest = null;
+        let nearestDistance = Infinity;
+
+        for (let j = 0; j < i; j++) {
+
+          const d = distance(nodes[i], nodes[j]);
+
+          if (d < nearestDistance) {
+            nearestDistance = d;
+            nearest = j;
+          }
+        }
+
+        if (nearest !== null) {
+          connectNodes(i, nearest);
+        }
+      }
+
+      for (let i = 0; i < 10; i++) {
+
+        const a = Math.floor(Math.random() * nodes.length);
+        const b = Math.floor(Math.random() * nodes.length);
+
+        if (a !== b && distance(nodes[a], nodes[b]) < width * 0.35) {
+          connectNodes(a, b);
+        }
+      }
+
+      nodeCountEl.textContent = nodes.length;
+      connectionCountEl.textContent = branches.length;
+    }
+
+    function connectNodes(a, b) {
+
+      if (nodes[a].connections.includes(b)) return;
+      if (nodes[b].connections.includes(a)) return;
+
+      nodes[a].connections.push(b);
+      nodes[b].connections.push(a);
+
+      const start = nodes[a];
+      const end = nodes[b];
+
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+
+      const bend = 0.12 + Math.random() * 0.18;
+
+      const control = {
+        x: (start.x + end.x) / 2 - dy * bend,
+        y: (start.y + end.y) / 2 + dx * bend
+      };
+
+      branches.push({
+        a,
+        b,
+        control,
+        glow: 0
+      });
+    }
+
+    function createParticles() {
+
+      particles = [];
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: 0.5 + Math.random() * 1.8,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.002 + Math.random() * 0.004
+        });
+      }
+    }
+
+    function createPulse(startIndex = null) {
+
+      if (!nodes.length) return;
+
+      let nodeIndex =
+        startIndex === null
+          ? Math.floor(Math.random() * nodes.length)
+          : startIndex;
+
+      const node = nodes[nodeIndex];
+
+      pulses.push({
+        from: nodeIndex,
+        to: node.connections.length
+          ? node.connections[
+              Math.floor(
+                Math.random() * node.connections.length
+              )
+            ]
+          : nodeIndex,
+        progress: 0,
+        speed: 0.004 + Math.random() * 0.005,
+        life: 1
+      });
+
+      vitality = Math.min(100, vitality + 3);
+
+      lastPulseEl.textContent = "Just now";
+    }
+
+    function bezierPoint(a, control, b, t) {
+
+      const mt = 1 - t;
+
+      return {
+        x:
+          mt * mt * a.x +
+          2 * mt * t * control.x +
+          t * t * b.x,
+
+        y:
+          mt * mt * a.y +
+          2 * mt * t * control.y +
+          t * t * b.y
+      };
+    }
+
+    function drawBranches() {
+
+      for (const branch of branches) {
+
+        const a = nodes[branch.a];
+        const b = nodes[branch.b];
+
+        ctx.beginPath();
+
+        ctx.moveTo(a.x, a.y);
+
+        ctx.quadraticCurveTo(
+          branch.control.x,
+          branch.control.y,
+          b.x,
+          b.y
+        );
+
+        ctx.lineWidth = 1.2 + branch.glow * 2;
+        ctx.strokeStyle =
+          branch.glow > 0
+            ? `rgba(110, 255, 177, ${0.25 + branch.glow * 0.55})`
+            : "rgba(102, 147, 119, 0.28)";
+
+        ctx.shadowBlur = branch.glow * 14;
+        ctx.shadowColor = "rgba(80, 255, 170, 0.8)";
+
+        ctx.stroke();
+
+        branch.glow *= 0.94;
+      }
+
+      ctx.shadowBlur = 0;
+    }
+
+    function drawNodes() {
+
+      for (const node of nodes) {
+
+        node.glow *= 0.93;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          node.x,
+          node.y,
+          node.radius + node.glow * 7,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle =
+          node.glow > 0
+            ? `rgba(120,255,180,${0.25 + node.glow * 0.7})`
+            : "rgba(103,160,122,0.65)";
+
+        ctx.shadowBlur = node.glow * 18;
+        ctx.shadowColor = "rgba(110,255,180,0.9)";
+
+        ctx.fill();
+      }
+
+      ctx.shadowBlur = 0;
+    }
+
+    function drawParticles(time) {
+
+      for (const particle of particles) {
+
+        const drift =
+          Math.sin(time * particle.speed + particle.phase) * 4;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          particle.x + drift,
+          particle.y,
+          particle.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle = "rgba(180,205,178,0.28)";
+        ctx.fill();
+      }
+    }
+
+    function updatePulses() {
+
+      for (let i = pulses.length - 1; i >= 0; i--) {
+
+        const pulse = pulses[i];
+
+        pulse.progress += pulse.speed;
+
+        if (pulse.progress >= 1) {
+
+          const current = nodes[pulse.to];
+
+          current.glow = 1;
+
+          for (const branch of branches) {
+
+            if (
+              (branch.a === pulse.to &&
+                branch.b === pulse.from) ||
+              (branch.b === pulse.to &&
+                branch.a === pulse.from)
+            ) {
+              branch.glow = 1;
+            }
+          }
+
+          const nextOptions =
+            current.connections.filter(
+              n => n !== pulse.from
+            );
+
+          if (nextOptions.length) {
+
+            pulse.from = pulse.to;
+
+            pulse.to =
+              nextOptions[
+                Math.floor(
+                  Math.random() * nextOptions.length
+                )
+              ];
+
+            pulse.progress = 0;
+
+          } else {
+
+            pulses.splice(i, 1);
+          }
+        }
+      }
+    }
+
+    function drawPulses() {
+
+      for (const pulse of pulses) {
+
+        const from = nodes[pulse.from];
+        const to = nodes[pulse.to];
+
+        let branch = branches.find(
+          item =>
+            (item.a === pulse.from && item.b === pulse.to) ||
+            (item.b === pulse.from && item.a === pulse.to)
+        );
+
+        if (!branch) continue;
+
+        const point = bezierPoint(
+          from,
+          branch.control,
+          to,
+          pulse.progress
+        );
+
+        ctx.beginPath();
+
+        ctx.arc(
+          point.x,
+          point.y,
+          3.5,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle = "rgba(190,255,210,0.95)";
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(90,255,160,1)";
+
+        ctx.fill();
+      }
+
+      ctx.shadowBlur = 0;
+    }
+
+    function drawCore() {
+
+      const core = nodes[0];
+
+      const gradient = ctx.createRadialGradient(
+        core.x,
+        core.y,
+        2,
+        core.x,
+        core.y,
+        70
+      );
+
+      gradient.addColorStop(
+        0,
+        "rgba(90,255,150,0.22)"
+      );
+
+      gradient.addColorStop(
+        1,
+        "rgba(90,255,150,0)"
+      );
+
+      ctx.fillStyle = gradient;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        core.x,
+        core.y,
+        70,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+    }
+
+    function animate(time) {
+
+      ctx.clearRect(0, 0, width, height);
+
+      drawCore();
+      drawParticles(time);
+      drawBranches();
+      drawNodes();
+
+      updatePulses();
+      drawPulses();
+
+      pulseCountEl.textContent = pulses.length;
+
+      vitality = Math.max(
+        15,
+        vitality - 0.012
+      );
+
+      vitalityValueEl.textContent =
+        `${Math.round(vitality)}%`;
+
+      requestAnimationFrame(animate);
+    }
+
+    function resetNetwork() {
+
+      pulses = [];
+      vitality = 72;
+
+      resizeCanvas();
+      generateNetwork();
+      createParticles();
+
+      for (let i = 0; i < INITIAL_PULSES; i++) {
+        createPulse();
+      }
+
+      lastPulseEl.textContent = "Waiting";
+    }
+
+    canvas.addEventListener("click", event => {
+
+      const rect = canvas.getBoundingClientRect();
+
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      let nearest = 0;
+      let minDistance = Infinity;
+
+      nodes.forEach((node, index) => {
+
+        const d = Math.hypot(
+          node.x - x,
+          node.y - y
+        );
+
+        if (d < minDistance) {
+          minDistance = d;
+          nearest = index;
+        }
+      });
+
+      createPulse(nearest);
+    });
+
+    document
+      .getElementById("pulseBtn")
+      .addEventListener("click", () => {
+        createPulse();
+      });
+
+    document
+      .getElementById("resetBtn")
+      .addEventListener("click", resetNetwork);
+
+    document.addEventListener("keydown", event => {
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        createPulse();
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        resetNetwork();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+
+      resizeCanvas();
+      generateNetwork();
+      createParticles();
+
+    });
+
+    resizeCanvas();
+    generateNetwork();
+    createParticles();
+
+    for (let i = 0; i < INITIAL_PULSES; i++) {
+      createPulse();
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+
+</body>
+</html>

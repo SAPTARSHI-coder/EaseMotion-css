@@ -1,0 +1,2 @@
+# Glowing File Dropzone (Retro Pixel)
+A nostalgic 8-bit file upload target. Hovering over the invisible `<input type="file">` overrides the dashed white border with a solid neon green glow, activating an inset text shadow and a choppy `steps()` blinking animation on the upload icon.

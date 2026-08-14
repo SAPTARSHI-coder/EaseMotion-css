@@ -1,0 +1,2 @@
+# Neumorphic Hero Section (Glassmorphism)
+A unique hybrid design. Fuses ambient glassmorphism blurred background orbs with a Neumorphic outer container box-shadow, creating a soft, translucent frosted panel.

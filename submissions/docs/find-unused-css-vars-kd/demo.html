@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS Variable Scanner - EaseMotion CSS</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Unused CSS Variables Scanner</h1>
+      <p>
+        Analyze your CSS tokens and detect declared variables that are never
+        referenced.
+      </p>
+    </header>
+
+    <main>
+      <!-- Left panel: Code Editor -->
+      <section class="card">
+        <h2 class="card-title"><span>📝</span> Input CSS Source</h2>
+        <div class="editor-container">
+          <textarea id="cssInput" spellcheck="false">
+/* Mock CSS file showing unused custom properties (design tokens) */
+:root {
+  --ease-version: "1.2.0";
+  --ease-speed-fast: 150ms;
+  --ease-speed-medium: 300ms;
+  
+  /* Unused variables */
+  --ease-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --ease-border-heavy: 3px solid var(--ease-color-primary-dark);
+  --ease-primary-light: #a09af8;
+
+  /* Used variables */
+  --ease-color-primary: #6c63ff;
+  --ease-color-primary-dark: #4b44cc;
+}
+
+/* Reference declarations */
+.ease-btn {
+  background-color: var(--ease-color-primary);
+  transition: transform var(--ease-speed-fast);
+}
+
+.ease-btn:hover {
+  background-color: var(--ease-color-primary-dark);
+}
+</textarea>
+        </div>
+
+        <div class="input-group">
+          <label for="ignoreInput">Variables to Ignore (comma-separated)</label>
+          <input
+            type="text"
+            id="ignoreInput"
+            value="--ease-version"
+            placeholder="--ease-version, --my-var"
+          />
+        </div>
+
+        <button id="scanBtn" class="btn-scan">Scan CSS Code</button>
+      </section>
+
+      <!-- Right panel: Results -->
+      <section class="card">
+        <h2 class="card-title"><span>📊</span> Analysis Results</h2>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div id="statDeclared" class="stat-val">0</div>
+            <div class="stat-label">Declared</div>
+          </div>
+          <div class="stat-box">
+            <div id="statUnused" class="stat-val">0</div>
+            <div class="stat-label">Unused</div>
+          </div>
+        </div>
+
+        <div class="results-list-container">
+          <div id="resultsList" class="empty-state">
+            Paste some CSS and click "Scan CSS Code" to begin analysis.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>EaseMotion CSS — Created by bhaikd (kd)</p>
+    </footer>
+
+    <script>
+      // Helper to remove comments while preserving positions and lines
+      function stripComments(source) {
+        let result = "";
+        let i = 0;
+
+        while (i < source.length) {
+          const ch = source[i];
+
+          if (ch === '"' || ch === "'") {
+            const quote = ch;
+            result += ch;
+            i++;
+
+            while (i < source.length) {
+              const c = source[i];
+              result += c;
+
+              if (c === "\\") {
+                i++;
+                if (i < source.length) {
+                  result += source[i];
+                  i++;
+                }
+                continue;
+              }
+
+              if (c === quote) {
+                i++;
+                break;
+              }
+
+              i++;
+            }
+
+            continue;
+          }
+
+          if (ch === "/" && source[i + 1] === "*") {
+            result += "  ";
+            i += 2;
+
+            while (i < source.length) {
+              if (source[i] === "*" && source[i + 1] === "/") {
+                result += "  ";
+                i += 2;
+                break;
+              }
+
+              if (source[i] === "\n") {
+                result += "\n";
+              } else if (source[i] === "\r") {
+                result += "\r";
+              } else {
+                result += " ";
+              }
+              i++;
+            }
+
+            continue;
+          }
+
+          result += ch;
+          i++;
+        }
+
+        return result;
+      }
+
+      function runScan() {
+        const cssContent = document.getElementById("cssInput").value;
+        const ignoreVal = document.getElementById("ignoreInput").value;
+        const resultsList = document.getElementById("resultsList");
+        const statDeclared = document.getElementById("statDeclared");
+        const statUnused = document.getElementById("statUnused");
+
+        // Build ignore set
+        const ignoreList = new Set();
+        ignoreVal.split(",").forEach((v) => {
+          const trimmed = v.trim();
+          if (trimmed) {
+            ignoreList.add(trimmed.startsWith("--") ? trimmed : "--" + trimmed);
+          }
+        });
+
+        const cleanContent = stripComments(cssContent);
+        const lines = cleanContent.split(/\r?\n/);
+        const originalLines = cssContent.split(/\r?\n/);
+
+        const declaredVars = new Map(); // varName -> Array of { line, content }
+        const referencedVars = new Set();
+
+        const declRegex = /(?:^|[{}\s;])(--[a-zA-Z0-9_-]+)\s*:/;
+        const refRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
+
+        for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+          const line = lines[lineIdx];
+          const lineNumber = lineIdx + 1;
+
+          // Check declarations
+          const declMatch = line.match(declRegex);
+          if (declMatch) {
+            const varName = declMatch[1];
+            if (!declaredVars.has(varName)) {
+              declaredVars.set(varName, []);
+            }
+            declaredVars.get(varName).push({
+              line: lineNumber,
+              content: originalLines[lineIdx].trim(),
+            });
+          }
+
+          // Check references
+          let refMatch;
+          while ((refMatch = refRegex.exec(line)) !== null) {
+            referencedVars.add(refMatch[1]);
+          }
+        }
+
+        // Calculate unused
+        const unusedList = [];
+        for (const [varName, declarations] of declaredVars.entries()) {
+          if (ignoreList.has(varName)) {
+            continue;
+          }
+          if (!referencedVars.has(varName)) {
+            unusedList.push({
+              variable: varName,
+              declarations,
+            });
+          }
+        }
+
+        // Update UI Stats
+        statDeclared.textContent = declaredVars.size;
+        statUnused.textContent = unusedList.length;
+
+        // Update UI List
+        resultsList.innerHTML = "";
+        if (unusedList.length === 0) {
+          if (declaredVars.size > 0) {
+            resultsList.innerHTML = `<div class="empty-state success-state">✔ No unused CSS variables found! Your stylesheet is fully clean.</div>`;
+          } else {
+            resultsList.innerHTML = `<div class="empty-state">No CSS variable declarations found in the input code.</div>`;
+          }
+        } else {
+          unusedList.forEach((item) => {
+            const itemEl = document.createElement("div");
+            itemEl.className = "result-item";
+
+            let declLocsHtml = "";
+            item.declarations.forEach((d) => {
+              declLocsHtml += `<div class="result-loc">Line ${d.line}: <code>${escapeHtml(d.content)}</code></div>`;
+            });
+
+            itemEl.innerHTML = `
+            <div class="result-var">${escapeHtml(item.variable)}</div>
+            ${declLocsHtml}
+          `;
+            resultsList.appendChild(itemEl);
+          });
+        }
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // Attach listeners
+      document.getElementById("scanBtn").addEventListener("click", runScan);
+
+      // Initial run
+      runScan();
+    </script>
+  </body>
+</html>

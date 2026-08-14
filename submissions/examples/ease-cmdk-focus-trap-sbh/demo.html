@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ease-cmdk-focus-trap — Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background page with focusable elements (to prove focus can't escape) -->
+  <main class="page">
+    <header class="page__head">
+      <p class="page__eyebrow">ease-cmdk-focus-trap</p>
+      <h1>Command palette with a real keyboard focus trap.</h1>
+      <p class="page__lede">
+        Fixes the bug where the command palette overlay let <kbd>Tab</kbd> move
+        focus to elements behind the backdrop. This example traps focus inside
+        the dialog while it is open: <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>
+        cycle only among the palette's controls, the backdrop is inert, and focus
+        is restored to the trigger when the palette closes. Press
+        <kbd>Ctrl</kbd>+<kbd>K</kbd> (or the button) to open it.
+      </p>
+      <div class="bg-focusables">
+        <p>These background controls must <strong>not</strong> receive focus while the palette is open:</p>
+        <a class="bg-link" href="#">Background link</a>
+        <input class="bg-input" type="text" placeholder="Background input" />
+        <button class="bg-btn" type="button">Background button</button>
+      </div>
+      <button class="btn" id="open">Open command palette <kbd>Ctrl K</kbd></button>
+    </header>
+  </main>
+
+  <!-- Backdrop + palette -->
+  <div class="ease-cmdk-backdrop" id="backdrop" hidden></div>
+
+  <!--
+    The palette dialog.
+    role="dialog" + aria-modal="true" tells ATs the rest is inert.
+    The JS focus trap is the hard guarantee (aria-modal alone is not enough
+    in all browsers).
+  -->
+  <div class="ease-cmdk" id="cmdk" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+    <div class="ease-cmdk__head">
+      <span class="ease-cmdk__prompt" aria-hidden="true">&gt;</span>
+      <input class="ease-cmdk__input" id="cmdk-input" type="text" placeholder="Type a command…" autocomplete="off" />
+      <button class="ease-cmdk__close" id="close" type="button" aria-label="Close palette">esc</button>
+    </div>
+    <ul class="ease-cmdk__list" id="list" role="listbox" aria-label="Commands">
+      <li class="ease-cmdk__item" role="option"><span class="ease-cmdk__ic">⌂</span> Go to Home</li>
+      <li class="ease-cmdk__item" role="option"><span class="ease-cmdk__ic">▹</span> Open Discover</li>
+      <li class="ease-cmdk__item" role="option"><span class="ease-cmdk__ic">♥</span> Open Library</li>
+      <li class="ease-cmdk__item" role="option"><span class="ease-cmdk__ic">⚙</span> Settings</li>
+      <li class="ease-cmdk__item" role="option"><span class="ease-cmdk__ic">⎋</span> Sign out</li>
+    </ul>
+    <div class="ease-cmdk__foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var open = document.getElementById('open');
+      var close = document.getElementById('close');
+      var backdrop = document.getElementById('backdrop');
+      var cmdk = document.getElementById('cmdk');
+      var input = document.getElementById('cmdk-input');
+      var items = Array.from(document.querySelectorAll('.ease-cmdk__item'));
+      // all focusable elements INSIDE the palette (the trap boundary)
+      var trapables = [input].concat(items);
+
+      var lastFocused = null;
+      var active = false;
+
+      function focusableEls() {
+        // recompute in case DOM changed
+        return [input].concat(items);
+      }
+
+      function openPalette() {
+        if (active) return;
+        active = true;
+        lastFocused = document.activeElement;       // remember trigger
+        backdrop.hidden = false;
+        cmdk.hidden = false;
+        cmdk.classList.add('is-open');
+        // focus the input on open
+        input.focus();
+      }
+
+      function closePalette() {
+        if (!active) return;
+        active = false;
+        cmdk.classList.remove('is-open');
+        // hide after transition
+        setTimeout(function () { if (!active) { cmdk.hidden = true; backdrop.hidden = true; } }, 180);
+        // restore focus to the trigger
+        if (lastFocused) lastFocused.focus();
+      }
+
+      // THE FOCUS TRAP: on Tab/Shift+Tab, keep focus within the palette
+      function onKeydown(e) {
+        if (!active) return;
+
+        // Escape closes
+        if (e.key === 'Escape') { e.preventDefault(); closePalette(); return; }
+
+        if (e.key === 'Tab') {
+          var els = focusableEls();
+          var first = els[0];
+          var last = els[els.length - 1];
+          if (e.shiftKey) {
+            // Shift+Tab on the first -> wrap to last
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+          } else {
+            // Tab on the last -> wrap to first
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        }
+
+        // arrow navigation among list items
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          var cur = items.indexOf(document.activeElement);
+          var idx = cur < 0 ? 0 : (e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length);
+          items[idx].setAttribute('tabindex', '0');
+          items[idx].focus();
+        }
+      }
+
+      // Safety net: if focus somehow leaves the palette (e.g. via mouse),
+      // pull it back in. This is the belt-and-suspenders guarantee.
+      function onFocusIn(e) {
+        if (!active) return;
+        if (!cmdk.contains(e.target)) { input.focus(); }
+      }
+
+      open.addEventListener('click', openPalette);
+      close.addEventListener('click', closePalette);
+      backdrop.addEventListener('click', closePalette);
+      items.forEach(function (it) {
+        it.setAttribute('tabindex', '-1');
+        it.addEventListener('click', function () { closePalette(); });
+      });
+      document.addEventListener('keydown', onKeydown);
+      document.addEventListener('focusin', onFocusIn);
+
+      // Ctrl+K / Cmd+K toggles
+      document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+          e.preventDefault();
+          active ? closePalette() : openPalette();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

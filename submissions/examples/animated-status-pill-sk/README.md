@@ -1,0 +1,1 @@
+A row of status pills (Success, Warning, Error, Info, Neutral) with CSS pseudo-element dot icons and colored backgrounds. Each pill scales up and glows on hover, making status comparison intuitive. Built with pure CSS on a dark theme.

@@ -1,0 +1,2 @@
+# Dynamic Popover (Retro Pixel)
+A chunky 8-bit popover menu. The UI utilizes thick solid borders, hard drop shadows (`6px 6px 0 rgba(0,0,0,0.5)`), and a jagged `steps()` animation curve to replicate classic video game aesthetics.

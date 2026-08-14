@@ -1,0 +1,2 @@
+# Responsive Popover (Gradient Glow)
+A highly engaging popover notification card. It utilizes a `::before` pseudo-element with heavy blurring and a linear gradient to create a pulsating, fiery aura behind the popover panel.

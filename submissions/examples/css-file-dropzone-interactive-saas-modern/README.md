@@ -1,0 +1,2 @@
+# Interactive File Dropzone (SaaS Modern)
+A polished, conversion-optimized upload target. Hovering the dropzone area elevates the entire container slightly off the background via a subtle transform, while the internal icon dynamically springs upward and shifts to the primary brand color.

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Koi Feeding · koi fish gather when clicked</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="koi-container">
+      <div class="koi-display" id="koiDisplay">
+        <!-- Canvas for koi pond -->
+        <canvas id="koiCanvas"></canvas>
+        
+        <!-- Koi Info -->
+        <div class="koi-info">
+          <span class="info-label">🐟 Koi</span>
+          <span class="info-value" id="koiCount">0</span>
+        </div>
+
+        <!-- Feeding Indicator -->
+        <div class="feeding-indicator" id="feedingIndicator">
+          <span class="feeding-text">🍚 Click the pond to feed the koi!</span>
+        </div>
+
+        <!-- Koi Text -->
+        <div class="koi-text">
+          <span class="text-label">🐟 Koi Pond</span>
+          <span class="text-message" id="koiMessage">Click the water to feed the koi</span>
+        </div>
+      </div>
+      
+      <div class="koi-status">
+        <span id="koiStatus">🐟 Click the pond to feed the koi fish</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-feed" id="feedBtn">🍚 Feed</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🐟 koi fish gather when fed · 8 koi · graceful swimming</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('koiCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('koiDisplay');
+      const koiCount = document.getElementById('koiCount');
+      const koiStatus = document.getElementById('koiStatus');
+      const koiMessage = document.getElementById('koiMessage');
+      const feedingIndicator = document.getElementById('feedingIndicator');
+      const feedBtn = document.getElementById('feedBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // State
+      let koiFish = [];
+      let foodParticles = [];
+      let animationId = null;
+      let time = 0;
+
+      // Koi colors
+      const koiColors = [
+        { body: '#ff6b35', fin: '#ff8c5a', accent: '#ffa07a' },
+        { body: '#ff3333', fin: '#ff5555', accent: '#ff7777' },
+        { body: '#ffd700', fin: '#ffe44d', accent: '#ffeb73' },
+        { body: '#ffffff', fin: '#f0f0f0', accent: '#e8e8e8' },
+        { body: '#ff69b4', fin: '#ff85c2', accent: '#ffa0d0' },
+        { body: '#ff4500', fin: '#ff6a33', accent: '#ff8c66' },
+        { body: '#ffa500', fin: '#ffb833', accent: '#ffcc66' },
+        { body: '#ff1493', fin: '#ff3d9e', accent: '#ff66b3' }
+      ];
+
+      // Koi fish class
+      class KoiFish {
+        constructor(x, y) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.targetX = this.x;
+          this.targetY = this.y;
+          this.speed = 0.5 + Math.random() * 0.8;
+          this.angle = Math.random() * Math.PI * 2;
+          this.tailAngle = 0;
+          this.tailSpeed = 0.1 + Math.random() * 0.1;
+          this.size = 15 + Math.random() * 15;
+          this.color = koiColors[Math.floor(Math.random() * koiColors.length)];
+          this.index = koiFish.length;
+          this.wanderTimer = 0;
+          this.wanderAngle = Math.random() * Math.PI * 2;
+          this.isFeeding = false;
+          this.feedTimer = 0;
+          this.phase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          // Tail animation
+          this.tailAngle += this.tailSpeed;
+          
+          // Wander behavior
+          this.wanderTimer += 0.01;
+          if (this.wanderTimer > 0.5) {
+            this.wanderTimer = 0;
+            this.wanderAngle += (Math.random() - 0.5) * 0.5;
+          }
+
+          // Move toward target
+          const dx = this.targetX - this.x;
+          const dy = this.targetY - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 1) {
+            const angle = Math.atan2(dy, dx);
+            const moveSpeed = this.speed * Math.min(dist / 50, 1);
+            
+            // Smooth turning
+            let angleDiff = angle - this.angle;
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            this.angle += angleDiff * 0.05;
+            
+            this.x += Math.cos(this.angle) * moveSpeed;
+            this.y += Math.sin(this.angle) * moveSpeed;
+          } else {
+            // Wander
+            this.targetX = this.x + Math.cos(this.wanderAngle) * 50;
+            this.targetY = this.y + Math.sin(this.wanderAngle) * 50;
+          }
+
+          // Boundary
+          const margin = 30;
+          if (this.x < margin) this.x = margin;
+          if (this.x > canvas.width - margin) this.x = canvas.width - margin;
+          if (this.y < margin) this.y = margin;
+          if (this.y > canvas.height - margin) this.y = canvas.height - margin;
+
+          // Update feeding state
+          if (this.isFeeding) {
+            this.feedTimer += 0.02;
+            if (this.feedTimer > 3) {
+              this.isFeeding = false;
+              this.feedTimer = 0;
+            }
+          }
+        }
+
+        draw(ctx) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle);
+          
+          const size = this.size;
+          const tailWag = Math.sin(this.tailAngle) * 0.3;
+          
+          // Shadow
+          ctx.shadowColor = 'rgba(0,0,0,0.15)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 3;
+          
+          // Body
+          const gradient = ctx.createRadialGradient(-size * 0.3, -size * 0.2, 0, 0, 0, size);
+          gradient.addColorStop(0, this.color.accent);
+          gradient.addColorStop(0.5, this.color.body);
+          gradient.addColorStop(1, this.color.fin);
+          ctx.fillStyle = gradient;
+          ctx.shadowBlur = 15;
+          
+          ctx.beginPath();
+          ctx.moveTo(size, 0);
+          ctx.quadraticCurveTo(size * 0.8, -size * 0.4, 0, -size * 0.6);
+          ctx.quadraticCurveTo(-size * 0.6, -size * 0.4, -size * 0.8, -size * 0.3);
+          ctx.quadraticCurveTo(-size * 1.2, -size * 0.1 + tailWag * size * 0.2, -size * 1.0, 0);
+          ctx.quadraticCurveTo(-size * 1.2, size * 0.1 + tailWag * size * 0.2, -size * 0.8, size * 0.3);
+          ctx.quadraticCurveTo(-size * 0.6, size * 0.4, 0, size * 0.6);
+          ctx.quadraticCurveTo(size * 0.8, size * 0.4, size, 0);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Tail fin
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = this.color.fin;
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.8, 0);
+          ctx.quadraticCurveTo(-size * 1.1 + tailWag * size * 0.2, -size * 0.4, -size * 1.3 + tailWag * size * 0.3, -size * 0.2);
+          ctx.quadraticCurveTo(-size * 1.2 + tailWag * size * 0.1, 0, -size * 1.3 + tailWag * size * 0.3, size * 0.2);
+          ctx.quadraticCurveTo(-size * 1.1 + tailWag * size * 0.2, size * 0.4, -size * 0.8, 0);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Dorsal fin
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = this.color.fin;
+          ctx.beginPath();
+          ctx.moveTo(size * 0.1, -size * 0.5);
+          ctx.quadraticCurveTo(size * 0.4, -size * 0.8, size * 0.6, -size * 0.4);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Eye
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#222';
+          ctx.beginPath();
+          ctx.arc(size * 0.5, -size * 0.15, size * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(size * 0.53, -size * 0.18, size * 0.03, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Feeding glow
+          if (this.isFeeding) {
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = 'rgba(255, 200, 100, 0.3)';
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 200, 100, 0.05)';
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+
+        feed(targetX, targetY) {
+          this.targetX = targetX;
+          this.targetY = targetY;
+          this.isFeeding = true;
+          this.feedTimer = 0;
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawPond();
+        if (koiFish.length > 0) {
+          koiFish.forEach(koi => {
+            koi.x = Math.min(koi.x, canvas.width - 30);
+            koi.y = Math.min(koi.y, canvas.height - 30);
+          });
+        }
+      }
+
+      // Draw pond
+      function drawPond() {
+        // Water base
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 80, 120, 0.4)');
+        grad.addColorStop(0.3, 'rgba(20, 60, 100, 0.5)');
+        grad.addColorStop(0.7, 'rgba(15, 40, 70, 0.6)');
+        grad.addColorStop(1, 'rgba(10, 30, 50, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Water ripple effect
+        for (let i = 0; i < 15; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const radius = 20 + Math.random() * 60;
+          const alpha = 0.01 + Math.random() * 0.02;
+          ctx.beginPath();
+          ctx.ellipse(x, y, radius, radius * 0.3, Math.random() * Math.PI, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(100, 180, 255, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+        
+        // Lily pads
+        for (let i = 0; i < 5; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = 15 + Math.random() * 20;
+          ctx.beginPath();
+          ctx.ellipse(x, y, size, size * 0.7, Math.random() * Math.PI, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(34, 120, 50, ${0.2 + Math.random() * 0.15})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(34, 120, 50, ${0.1 + Math.random() * 0.1})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+
+      // Create food particles
+      function createFood(x, y, count = 20) {
+        for (let i = 0; i < count; i++) {
+          foodParticles.push({
+            x: x + (Math.random() - 0.5) * 30,
+            y: y + (Math.random() - 0.5) * 30,
+            size: 2 + Math.random() * 3,
+            life: 1,
+            speed: 0.02 + Math.random() * 0.03,
+            angle: Math.random() * Math.PI * 2,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5
+          });
+        }
+      }
+
+      // Update food particles
+      function updateFood() {
+        for (let i = foodParticles.length - 1; i >= 0; i--) {
+          const f = foodParticles[i];
+          f.x += f.vx + Math.cos(f.angle) * 0.1;
+          f.y += f.vy + Math.sin(f.angle) * 0.1;
+          f.life -= 0.005;
+          f.angle += 0.02;
+          f.vx *= 0.99;
+          f.vy *= 0.99;
+          
+          if (f.life <= 0 || f.x < 0 || f.x > canvas.width || f.y < 0 || f.y > canvas.height) {
+            foodParticles.splice(i, 1);
+          }
+        }
+      }
+
+      // Draw food particles
+      function drawFood() {
+        foodParticles.forEach(f => {
+          ctx.save();
+          ctx.globalAlpha = f.life * 0.6;
+          ctx.fillStyle = '#d4a843';
+          ctx.shadowColor = 'rgba(200, 150, 50, 0.3)';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      // Initialize koi
+      function initKoi(count = 8) {
+        koiFish = [];
+        for (let i = 0; i < count; i++) {
+          const margin = 50;
+          const x = margin + Math.random() * (canvas.width - margin * 2);
+          const y = margin + Math.random() * (canvas.height - margin * 2);
+          const koi = new KoiFish(x, y);
+          koiFish.push(koi);
+        }
+        koiCount.textContent = koiFish.length;
+        koiMessage.textContent = 'Click the water to feed the koi';
+      }
+
+      // Feed koi
+      function feedKoi(x, y) {
+        // Create food particles
+        createFood(x, y, 25);
+        
+        // Feed nearby koi
+        koiFish.forEach(koi => {
+          const dx = koi.x - x;
+          const dy = koi.y - y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < 200) {
+            koi.feed(x, y);
+          } else if (dist < 400) {
+            // Koi farther away still notice
+            const attraction = 1 - (dist - 200) / 200;
+            koi.targetX = x + (koi.x - x) * 0.3;
+            koi.targetY = y + (koi.y - y) * 0.3;
+            koi.isFeeding = true;
+            koi.feedTimer = 0;
+          }
+        });
+        
+        // Update status
+        koiStatus.textContent = '🍚 Feeding the koi!';
+        koiStatus.style.color = '#fbbf24';
+        feedingIndicator.classList.add('active');
+        setTimeout(() => {
+          feedingIndicator.classList.remove('active');
+          koiStatus.textContent = '🐟 Click the pond to feed the koi fish';
+          koiStatus.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        
+        // Clear and draw pond
+        drawPond();
+        
+        // Update food
+        updateFood();
+        
+        // Update koi
+        koiFish.forEach(koi => {
+          koi.update();
+          koi.draw(ctx);
+        });
+        
+        // Draw food particles on top
+        drawFood();
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetPond() {
+        foodParticles = [];
+        const count = koiFish.length || 8;
+        initKoi(count);
+        koiStatus.textContent = '🔄 Pond reset';
+        koiStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          koiStatus.textContent = '🐟 Click the pond to feed the koi fish';
+          koiStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        feedKoi(x, y);
+      });
+
+      if (feedBtn) {
+        feedBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+          const y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+          feedKoi(x, y);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetPond();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+          const y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+          feedKoi(x, y);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetPond();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      initKoi(8);
+      animate();
+      
+      console.log('🐟 Koi Feeding ready · shortcuts: [Space] Feed, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

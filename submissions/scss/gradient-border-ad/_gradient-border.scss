@@ -1,0 +1,174 @@
+// ==========================================================================
+// EaseMotion CSS — Gradient Border mixin
+// Issue #61721
+// --------------------------------------------------------------------------
+// Produces an animated gradient border using a mask-composited pseudo-element
+// rather than `border-image`.
+//
+// `border-image` is the obvious tool and the wrong one: it ignores
+// `border-radius` entirely, so a gradient border on any rounded element
+// renders as a hard-cornered rectangle. The mask approach paints the gradient
+// into a padding-box-subtracted ring, which follows the radius exactly.
+//
+// Animation is driven by rotating the gradient angle, not by animating
+// background-position on an oversized image, so nothing repaints a large
+// surface each frame.
+// ==========================================================================
+
+@use "sass:meta";
+@use "sass:list";
+
+$gradient-border-width: 1px !default;
+$gradient-border-radius: 12px !default;
+$gradient-border-speed: 6s !default;
+$gradient-border-colors: (#22d3ee, #818cf8, #f472b6, #22d3ee) !default;
+
+// --------------------------------------------------------------------------
+// gradient-border
+//
+// @param {Number} $width     Ring thickness.
+// @param {Number} $radius    Corner radius. Must match the element's own.
+// @param {Number} $speed     Rotation period. `0s` disables the animation.
+// @param {List}   $colors    Gradient stops. First and last should match for
+//                            a seamless loop.
+// @param {Color}  $fallback  Solid colour used where mask compositing is
+//                            unavailable.
+// --------------------------------------------------------------------------
+@mixin gradient-border(
+    $width: $gradient-border-width,
+    $radius: $gradient-border-radius,
+    $speed: $gradient-border-speed,
+    $colors: $gradient-border-colors,
+    $fallback: rgba(148, 163, 184, 0.3)
+) {
+    @if meta.type-of($width) != "number" {
+        @error "gradient-border(): $width must be a number, got `#{$width}`.";
+    }
+
+    @if list.length($colors) < 2 {
+        @error "gradient-border(): $colors needs at least 2 stops, got #{list.length($colors)}.";
+    }
+
+    border-radius: $radius;
+    position: relative;
+
+    // Baseline for engines without mask compositing — a plain solid border.
+    // Applied unconditionally so the element is never border-less.
+    border: $width solid $fallback;
+
+    @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+        border-color: transparent;
+
+        &::before {
+            border: $width solid transparent;
+            border-radius: inherit;
+            background: conic-gradient(from var(--gb-angle-ad, 0deg), $colors) border-box;
+            content: "";
+            inset: -$width;
+            pointer-events: none;
+            position: absolute;
+
+            // Paint only the ring: fill both boxes, then subtract the
+            // padding box, leaving the border box alone.
+            -webkit-mask:
+                linear-gradient(#000 0 0) padding-box,
+                linear-gradient(#000 0 0);
+            mask:
+                linear-gradient(#000 0 0) padding-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+
+            @if $speed != 0s {
+                animation: gradient-border-spin-ad $speed linear infinite;
+            }
+        }
+    }
+
+    // An infinitely rotating border is exactly the kind of perpetual motion
+    // that `prefers-reduced-motion` exists for, so it is cancelled outright
+    // rather than shortened. The gradient itself remains visible.
+    @media (prefers-reduced-motion: reduce) {
+        &::before {
+            animation: none;
+        }
+    }
+
+    // High-contrast mode flattens gradients to solid blocks, which would
+    // obscure the element. Fall back to a system-coloured border.
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+
+        &::before {
+            display: none;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// The angle is animated through a registered custom property. `@property`
+// is what makes an angle interpolatable at all — without registration the
+// browser treats `--gb-angle-ad` as an untyped string and the conic gradient
+// jumps from 0deg to 360deg instead of sweeping.
+// --------------------------------------------------------------------------
+@mixin gradient-border-keyframes {
+    @property --gb-angle-ad {
+        syntax: "<angle>";
+        inherits: false;
+        initial-value: 0deg;
+    }
+
+    @keyframes gradient-border-spin-ad {
+        to {
+            --gb-angle-ad: 360deg;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// gradient-border-static
+//
+// Non-animated variant for cases where a gradient outline is wanted without
+// any motion at all — avoids emitting the keyframes entirely.
+// --------------------------------------------------------------------------
+@mixin gradient-border-static(
+    $width: $gradient-border-width,
+    $radius: $gradient-border-radius,
+    $angle: 135deg,
+    $colors: $gradient-border-colors,
+    $fallback: rgba(148, 163, 184, 0.3)
+) {
+    border: $width solid $fallback;
+    border-radius: $radius;
+    position: relative;
+
+    @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+        border-color: transparent;
+
+        &::before {
+            border: $width solid transparent;
+            border-radius: inherit;
+            background: linear-gradient($angle, $colors) border-box;
+            content: "";
+            inset: -$width;
+            pointer-events: none;
+            position: absolute;
+            -webkit-mask:
+                linear-gradient(#000 0 0) padding-box,
+                linear-gradient(#000 0 0);
+            mask:
+                linear-gradient(#000 0 0) padding-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+    }
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+
+        &::before {
+            display: none;
+        }
+    }
+}

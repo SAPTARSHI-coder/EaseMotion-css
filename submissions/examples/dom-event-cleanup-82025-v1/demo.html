@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Event Cleanup Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">COMPONENT LIFECYCLE TEST</span>
+      <h1>DOM Event Cleanup</h1>
+      <p>
+        Verify that event listeners are removed correctly when a
+        component is destroyed.
+      </p>
+    </header>
+
+    <section class="metrics">
+      <article class="metric">
+        <span>EVENTS</span>
+        <strong id="events">0</strong>
+        <small>Events received</small>
+      </article>
+
+      <article class="metric">
+        <span>LISTENERS</span>
+        <strong id="listeners">0</strong>
+        <small>Active component listeners</small>
+      </article>
+
+      <article class="metric">
+        <span>STATE</span>
+        <strong id="state">READY</strong>
+        <small id="stateText">Component not mounted</small>
+      </article>
+
+      <article class="metric">
+        <span>RESULT</span>
+        <strong id="result">--</strong>
+        <small>Cleanup verification</small>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <span>INTERACTIVE COMPONENT</span>
+        <h2>Event Listener Lifecycle</h2>
+      </div>
+
+      <div class="component-box" id="componentBox">
+        <div class="component-status">
+          <span id="componentBadge">DESTROYED</span>
+        </div>
+
+        <h3>Demo Component</h3>
+        <p>
+          Mount the component, interact with it, then destroy it and
+          verify that future events no longer trigger its handler.
+        </p>
+
+        <button id="componentButton">
+          Component Button
+        </button>
+      </div>
+
+      <div class="controls">
+        <button id="mountButton">Mount Component</button>
+        <button id="destroyButton">Destroy Component</button>
+        <button id="dispatchButton">Dispatch Event</button>
+      </div>
+    </section>
+
+    <section class="tests">
+      <div class="section-heading">
+        <span>TEST MATRIX</span>
+        <h2>Cleanup Assertions</h2>
+      </div>
+
+      <div id="testResults" class="test-results"></div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Mount</h2>
+        <p>
+          The component registers its DOM event listener when mounted.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Destroy</h2>
+        <p>
+          The same listener reference is removed during component
+          destruction.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Verify</h2>
+        <p>
+          Events dispatched after destruction must not reach the
+          destroyed component.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const componentButton =
+      document.getElementById("componentButton");
+
+    const mountButton =
+      document.getElementById("mountButton");
+
+    const destroyButton =
+      document.getElementById("destroyButton");
+
+    const dispatchButton =
+      document.getElementById("dispatchButton");
+
+    const eventsOutput =
+      document.getElementById("events");
+
+    const listenersOutput =
+      document.getElementById("listeners");
+
+    const stateOutput =
+      document.getElementById("state");
+
+    const stateText =
+      document.getElementById("stateText");
+
+    const resultOutput =
+      document.getElementById("result");
+
+    const componentBadge =
+      document.getElementById("componentBadge");
+
+    const testResults =
+      document.getElementById("testResults");
+
+    let eventCount = 0;
+    let activeListeners = 0;
+    let component = null;
+
+    /*
+     * Small lifecycle component used by the interactive test.
+     * The same handler reference is passed to addEventListener and
+     * removeEventListener, which is required for successful cleanup.
+     */
+    class DemoComponent {
+      constructor(element) {
+        this.element = element;
+        this.handleClick = this.handleClick.bind(this);
+        this.mounted = false;
+      }
+
+      mount() {
+        if (this.mounted) {
+          return;
+        }
+
+        this.element.addEventListener(
+          "component-action",
+          this.handleClick
+        );
+
+        this.mounted = true;
+        activeListeners++;
+        updateUI();
+      }
+
+      handleClick() {
+        eventCount++;
+        updateUI();
+      }
+
+      destroy() {
+        if (!this.mounted) {
+          return;
+        }
+
+        this.element.removeEventListener(
+          "component-action",
+          this.handleClick
+        );
+
+        this.mounted = false;
+        activeListeners = Math.max(
+          0,
+          activeListeners - 1
+        );
+
+        updateUI();
+      }
+    }
+
+    function updateUI() {
+      eventsOutput.textContent =
+        eventCount;
+
+      listenersOutput.textContent =
+        activeListeners;
+
+      const mounted =
+        Boolean(component && component.mounted);
+
+      stateOutput.textContent =
+        mounted ? "MOUNTED" : "DESTROYED";
+
+      stateText.textContent =
+        mounted
+          ? "Listener is active"
+          : "Listener has been removed";
+
+      componentBadge.textContent =
+        mounted ? "MOUNTED" : "DESTROYED";
+
+      componentBadge.className =
+        mounted ? "mounted" : "destroyed";
+    }
+
+    mountButton.addEventListener("click", () => {
+      if (!component) {
+        component =
+          new DemoComponent(componentButton);
+      }
+
+      component.mount();
+    });
+
+    destroyButton.addEventListener("click", () => {
+      if (component) {
+        component.destroy();
+      }
+    });
+
+    dispatchButton.addEventListener("click", () => {
+      componentButton.dispatchEvent(
+        new CustomEvent("component-action")
+      );
+    });
+
+    componentButton.addEventListener("click", () => {
+      componentButton.dispatchEvent(
+        new CustomEvent("component-action")
+      );
+    });
+
+    function addTest(name, passed, detail) {
+      const card =
+        document.createElement("article");
+
+      card.className =
+        `test-card ${passed ? "passed" : "failed"}`;
+
+      card.innerHTML = `
+        <div class="test-header">
+          <strong>${name}</strong>
+          <span>${passed ? "PASS" : "FAIL"}</span>
+        </div>
+        <p>${detail}</p>
+      `;
+
+      testResults.appendChild(card);
+
+      return passed;
+    }
+
+    function runCleanupTests() {
+      testResults.innerHTML = "";
+
+      let passedTests = 0;
+      let totalTests = 0;
+
+      const test = (name, condition, detail) => {
+        totalTests++;
+
+        if (
+          addTest(
+            name,
+            condition,
+            detail
+          )
+        ) {
+          passedTests++;
+        }
+      };
+
+      if (component) {
+        component.destroy();
+      }
+
+      eventCount = 0;
+      activeListeners = 0;
+
+      component =
+        new DemoComponent(componentButton);
+
+      component.mount();
+
+      test(
+        "Listener registered on mount",
+        activeListeners === 1,
+        "Mounting the component creates one active listener."
+      );
+
+      componentButton.dispatchEvent(
+        new CustomEvent("component-action")
+      );
+
+      test(
+        "Mounted component receives events",
+        eventCount === 1,
+        "The registered handler receives the dispatched event."
+      );
+
+      const beforeDestroy =
+        eventCount;
+
+      component.destroy();
+
+      test(
+        "Listener removed on destroy",
+        activeListeners === 0,
+        "Destroying the component removes its active listener."
+      );
+
+      componentButton.dispatchEvent(
+        new CustomEvent("component-action")
+      );
+
+      test(
+        "Destroyed component receives no events",
+        eventCount === beforeDestroy,
+        "An event after destruction does not increment the event counter."
+      );
+
+      component.destroy();
+
+      test(
+        "Repeated destroy is safe",
+        activeListeners === 0,
+        "Calling destroy more than once does not create a negative listener count."
+      );
+
+      component.mount();
+      component.mount();
+
+      test(
+        "Repeated mount does not duplicate listeners",
+        activeListeners === 1,
+        "Calling mount twice still leaves exactly one listener."
+      );
+
+      component.destroy();
+
+      test(
+        "Final cleanup leaves zero listeners",
+        activeListeners === 0,
+        "The component finishes with no active DOM listeners."
+      );
+
+      resultOutput.textContent =
+        `${passedTests}/${totalTests}`;
+
+      updateUI();
+    }
+
+    runCleanupTests();
+  </script>
+</body>
+</html>

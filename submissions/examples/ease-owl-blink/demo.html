@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owl Blink · Large Eyes Blink Slowly</title>
+    <meta name="description" content="Interactive owl with large, expressive eyes that blink slowly. Click to make the owl blink and turn its head.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🦉 OWL BLINK</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="owlCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🦉 OWL BLINK</span>
+            <small>large eyes · slow blink · wise gaze</small>
+        </div>
+        <div class="hint">
+            <span>👁️ click to make the owl blink and turn its head</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('owlCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Owl Class ----
+            class Owl {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H / 2;
+                    this.size = 60;
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    
+                    // Blink state
+                    this.isBlinking = false;
+                    this.blinkProgress = 0;
+                    this.blinkDuration = 30;
+                    this.blinkTimer = 0;
+                    this.blinkInterval = 120 + Math.random() * 200;
+                    
+                    // Eye tracking
+                    this.eyeTargetX = 0;
+                    this.eyeTargetY = 0;
+                    this.eyeX = 0;
+                    this.eyeY = 0;
+                    this.eyeSpeed = 0.05;
+                    
+                    // Head turn
+                    this.headAngle = 0;
+                    this.headTarget = 0;
+                    this.headSpeed = 0.03;
+                    
+                    // Idle sway
+                    this.swayPhase = 0;
+                    this.swaySpeed = 0.015;
+                    
+                    // Feather fluff
+                    this.fluffPhase = 0;
+                    this.fluffSpeed = 0.02;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Idle sway
+                    this.swayPhase += this.swaySpeed * dt;
+                    const sway = Math.sin(this.swayPhase) * 2;
+                    this.x = W/2 + sway;
+                    
+                    // Fluff
+                    this.fluffPhase += this.fluffSpeed * dt;
+                    
+                    // Blink timer
+                    this.blinkTimer -= dt;
+                    if (!this.isBlinking && this.blinkTimer <= 0) {
+                        // Random blink
+                        if (Math.random() < 0.3) {
+                            this.startBlink();
+                        }
+                        this.blinkTimer = this.blinkInterval * (0.5 + Math.random() * 0.5);
+                    }
+                    
+                    // Blink progress
+                    if (this.isBlinking) {
+                        this.blinkProgress += 1;
+                        if (this.blinkProgress >= this.blinkDuration) {
+                            this.isBlinking = false;
+                            this.blinkProgress = 0;
+                        }
+                    }
+                    
+                    // Smooth eye tracking
+                    this.eyeX += (this.eyeTargetX - this.eyeX) * this.eyeSpeed * dt;
+                    this.eyeY += (this.eyeTargetY - this.eyeY) * this.eyeSpeed * dt;
+                    
+                    // Head angle
+                    this.angle += (this.targetAngle - this.angle) * this.headSpeed * dt;
+                    
+                    // Random head turns
+                    if (Math.random() < 0.002 * dt) {
+                        this.targetAngle = (Math.random() - 0.5) * 0.5;
+                    }
+                }
+
+                startBlink() {
+                    if (this.isBlinking) return;
+                    this.isBlinking = true;
+                    this.blinkProgress = 0;
+                }
+
+                setEyeTarget(x, y) {
+                    const dx = x - this.x;
+                    const dy = y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = 20;
+                    const scale = Math.min(1, dist / 100);
+                    this.eyeTargetX = (dx / (dist + 1)) * maxDist * scale;
+                    this.eyeTargetY = (dy / (dist + 1)) * maxDist * scale;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    const blink = this.isBlinking ? Math.min(1, this.blinkProgress / this.blinkDuration) : 0;
+                    const eyeOpen = 1 - Math.sin(blink * Math.PI);
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    
+                    // ---- Shadow ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetY = 5;
+                    
+                    // ---- Body ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+                    ctx.shadowBlur = 10;
+                    
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.1, -size * 0.1, 0,
+                        0, 0, size
+                    );
+                    bodyGrad.addColorStop(0, '#8a7a6a');
+                    bodyGrad.addColorStop(0.4, '#6a5a4a');
+                    bodyGrad.addColorStop(0.7, '#5a4a3a');
+                    bodyGrad.addColorStop(1, '#4a3a2a');
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, size * 0.15, size * 0.75, size * 0.65, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Wing pattern ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(60, 50, 40, 0.3)';
+                    for (let i = -2; i <= 2; i++) {
+                        const wx = i * size * 0.2;
+                        const wy = size * 0.1 + Math.abs(i) * size * 0.05;
+                        ctx.beginPath();
+                        ctx.ellipse(wx, wy, size * 0.2, size * 0.05, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    const headGrad = ctx.createRadialGradient(
+                        -size * 0.05, -size * 0.05, 0,
+                        0, 0, size * 0.7
+                    );
+                    headGrad.addColorStop(0, '#9a8a7a');
+                    headGrad.addColorStop(0.5, '#7a6a5a');
+                    headGrad.addColorStop(0.8, '#5a4a3a');
+                    headGrad.addColorStop(1, '#4a3a2a');
+                    ctx.fillStyle = headGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -size * 0.05, size * 0.6, size * 0.55, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Ear tufts ----
+                    ctx.shadowBlur = 5;
+                    ctx.fillStyle = '#6a5a4a';
+                    for (let side = -1; side <= 1; side += 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(side * size * 0.25, -size * 0.4);
+                        ctx.quadraticCurveTo(
+                            side * size * 0.4,
+                            -size * 0.7 + Math.sin(this.fluffPhase + side) * 3,
+                            side * size * 0.3,
+                            -size * 0.8 + Math.sin(this.fluffPhase * 0.7 + side) * 4
+                        );
+                        ctx.quadraticCurveTo(
+                            side * size * 0.15,
+                            -size * 0.6 + Math.sin(this.fluffPhase * 0.5 + side) * 3,
+                            side * size * 0.2,
+                            -size * 0.4
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Facial disc ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(160, 140, 120, 0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -size * 0.05, size * 0.5, size * 0.45, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Eyes ----
+                    const eyeSize = size * 0.2;
+                    const eyeOffsetX = size * 0.18;
+                    const eyeOffsetY = -size * 0.05;
+                    const eyeOpenScale = 0.3 + eyeOpen * 0.7;
+                    
+                    // Eye whites (large)
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(200, 200, 150, 0.2)';
+                    for (let side = -1; side <= 1; side += 2) {
+                        const ex = side * eyeOffsetX;
+                        const ey = eyeOffsetY;
+                        
+                        // White
+                        ctx.fillStyle = '#f5f0e8';
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.ellipse(ex, ey, eyeSize, eyeSize * eyeOpenScale, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Iris (yellow/orange)
+                        ctx.shadowBlur = 5;
+                        const irisGrad = ctx.createRadialGradient(
+                            ex - eyeSize * 0.1,
+                            ey - eyeSize * 0.1,
+                            0,
+                            ex,
+                            ey,
+                            eyeSize * 0.7
+                        );
+                        irisGrad.addColorStop(0, '#f5d060');
+                        irisGrad.addColorStop(0.5, '#e8b840');
+                        irisGrad.addColorStop(0.8, '#d4a030');
+                        irisGrad.addColorStop(1, '#b88820');
+                        ctx.fillStyle = irisGrad;
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            ex + this.eyeX * 0.3,
+                            ey + this.eyeY * 0.3,
+                            eyeSize * 0.65,
+                            eyeSize * 0.65 * eyeOpenScale,
+                            0,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // Pupil
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            ex + this.eyeX * 0.5,
+                            ey + this.eyeY * 0.5,
+                            eyeSize * 0.3,
+                            eyeSize * 0.3 * eyeOpenScale,
+                            0,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // Eye highlight
+                        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            ex + this.eyeX * 0.3 + eyeSize * 0.2,
+                            ey + this.eyeY * 0.3 - eyeSize * 0.2,
+                            eyeSize * 0.15,
+                            eyeSize * 0.15 * eyeOpenScale,
+                            0.3,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // Small highlight
+                        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            ex + this.eyeX * 0.3 - eyeSize * 0.15,
+                            ey + this.eyeY * 0.3 + eyeSize * 0.1,
+                            eyeSize * 0.08,
+                            eyeSize * 0.08 * eyeOpenScale,
+                            -0.2,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Beak ----
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = '#8a7a5a';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.02, size * 0.12);
+                    ctx.lineTo(size * 0.12, size * 0.2);
+                    ctx.lineTo(-size * 0.02, size * 0.2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Beak highlight
+                    ctx.fillStyle = 'rgba(160, 140, 100, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.04, size * 0.14);
+                    ctx.lineTo(size * 0.08, size * 0.18);
+                    ctx.lineTo(size * 0.02, size * 0.18);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // ---- Feather texture on body ----
+                    ctx.shadowBlur = 0;
+                    for (let i = 0; i < 12; i++) {
+                        const fx = (i / 12) * Math.PI * 2;
+                        const fr = size * 0.3 + Math.sin(fx * 2 + this.fluffPhase) * size * 0.05;
+                        const fpx = Math.cos(fx) * fr;
+                        const fpy = Math.sin(fx) * fr * 0.5 + size * 0.15;
+                        ctx.fillStyle = `rgba(80, 70, 60, ${0.05 + Math.sin(fx + this.fluffPhase) * 0.03})`;
+                        ctx.beginPath();
+                        ctx.ellipse(fpx, fpy, size * 0.06, size * 0.04, fx, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Owl ----
+            let owl;
+
+            function createOwl() {
+                owl = new Owl();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Night sky / twilight gradient
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#1a2a4a');
+                grad.addColorStop(0.3, '#0d1a3a');
+                grad.addColorStop(0.6, '#0a122a');
+                grad.addColorStop(0.8, '#0d0a1a');
+                grad.addColorStop(1, '#050a12');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Moon
+                const moonX = W - 80;
+                const moonY = 60;
+                const moonGrad = ctx.createRadialGradient(
+                    moonX - 10, moonY - 10, 0,
+                    moonX, moonY, 35
+                );
+                moonGrad.addColorStop(0, '#f5f0e8');
+                moonGrad.addColorStop(0.5, '#e8e0d5');
+                moonGrad.addColorStop(0.8, '#d4d0c8');
+                moonGrad.addColorStop(1, '#c0b8b0');
+                ctx.fillStyle = moonGrad;
+                ctx.shadowColor = 'rgba(200, 200, 200, 0.05)';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 30, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Moon glow
+                ctx.shadowBlur = 60;
+                ctx.shadowColor = 'rgba(200, 220, 255, 0.03)';
+                ctx.fillStyle = 'rgba(200, 220, 255, 0.02)';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Stars
+                ctx.shadowBlur = 0;
+                for (let i = 0; i < 40; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.6);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.02 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Branch
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.strokeStyle = '#3a2a1a';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(0, H * 0.6);
+                ctx.quadraticCurveTo(W * 0.3, H * 0.5, W * 0.5, H * 0.55);
+                ctx.stroke();
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(W * 0.3, H * 0.5);
+                ctx.quadraticCurveTo(W * 0.35, H * 0.35, W * 0.4, H * 0.3);
+                ctx.stroke();
+                
+                // Small leaves on branch
+                for (let i = 0; i < 5; i++) {
+                    const lx = W * 0.2 + i * W * 0.07;
+                    const ly = H * 0.52 - Math.sin(i * 0.7) * 15;
+                    ctx.fillStyle = `rgba(30, 50, 30, ${0.1 + i * 0.02})`;
+                    ctx.beginPath();
+                    ctx.ellipse(lx, ly, 8 + i * 2, 4 + i, i * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                if (owl) {
+                    owl.setEyeTarget(x, y);
+                }
+            }
+
+            // ---- Click handler ----
+            function handleClick() {
+                if (owl) {
+                    owl.startBlink();
+                    // Random head turn on click
+                    owl.targetAngle = (Math.random() - 0.5) * 0.8;
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (owl) {
+                    owl.update();
+                    owl.draw(ctx);
+                }
+                
+                // Ambient fireflies
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 30) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 2) % H;
+                    const size = 1 + Math.sin(time * 0.03 + i * 2.5) * 0.5 + 0.5;
+                    const alpha = 0.1 + Math.sin(time * 0.02 + i * 1.5) * 0.05 + 0.05;
+                    const hue = (i * 30 + 40) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${alpha * 0.5})`;
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetOwl() {
+                createOwl();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetOwl);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+            canvas.addEventListener('click', handleClick);
+            canvas.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    handleClick();
+                }
+            }, { passive: true });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    handleClick();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetOwl();
+                }
+            });
+
+            // ---- Initialize ----
+            createOwl();
+            animate();
+
+            console.log('🦉 Owl Blink · Click or press Space to make the owl blink!');
+        })();
+    </script>
+</body>
+</html>

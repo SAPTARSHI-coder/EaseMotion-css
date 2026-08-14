@@ -1,0 +1,2 @@
+# Glowing Drawer (Retro Pixel)
+A chunky 8-bit arcade drawer. The drawer slides in from the right using a jagged `steps()` animation function to mimic low framerates, heavily styled with green terminal glows.

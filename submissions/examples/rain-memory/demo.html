@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rain Memory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="app">
+
+  <header>
+    <span>ATMOSPHERIC MEMORY</span>
+    <h1>Rain Memory</h1>
+    <p>Every drop leaves a temporary trace.</p>
+  </header>
+
+  <section class="rain-scene" id="scene">
+    <canvas id="canvas"></canvas>
+
+    <div class="rain-label" id="label">
+      Recent impacts: 0
+    </div>
+
+    <div class="hint">
+      Click the ground to make rain
+    </div>
+  </section>
+
+  <section class="controls">
+
+    <div>
+      <label>
+        Rain
+        <span id="rainValue">55%</span>
+      </label>
+
+      <input
+        id="rain"
+        type="range"
+        min="10"
+        max="100"
+        value="55"
+      >
+    </div>
+
+    <div>
+      <label>
+        Wind
+        <span id="windValue">20%</span>
+      </label>
+
+      <input
+        id="wind"
+        type="range"
+        min="0"
+        max="100"
+        value="20"
+      >
+    </div>
+
+    <button id="reset">↻ Clear</button>
+
+  </section>
+
+</main>
+
+<script>
+const scene = document.getElementById("scene");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const rain = document.getElementById("rain");
+const wind = document.getElementById("wind");
+
+const rainValue = document.getElementById("rainValue");
+const windValue = document.getElementById("windValue");
+
+const label = document.getElementById("label");
+
+let width;
+let height;
+let drops = [];
+let memories = [];
+let impacts = 0;
+
+function resize() {
+
+  const rect = scene.getBoundingClientRect();
+
+  width = rect.width;
+  height = rect.height;
+
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function spawnDrop() {
+
+  drops.push({
+    x: Math.random() * width,
+    y: -20,
+    speed: 4 + Math.random() * 5,
+    length: 8 + Math.random() * 10,
+    life: 1
+  });
+}
+
+function createImpact(x, y) {
+
+  memories.push({
+    x,
+    y,
+    radius: 2,
+    opacity: 1
+  });
+
+  impacts++;
+
+  label.textContent =
+    "Recent impacts: " + impacts;
+}
+
+function updateDrops() {
+
+  const windForce =
+    Number(wind.value) / 100 * 1.4;
+
+  for (let i = drops.length - 1; i >= 0; i--) {
+
+    const d = drops[i];
+
+    d.x += windForce;
+    d.y += d.speed;
+
+    d.speed += 0.015;
+
+    if (d.y >= height - 35) {
+
+      createImpact(
+        d.x,
+        height - 35
+      );
+
+      drops.splice(i, 1);
+    }
+  }
+}
+
+function updateMemories() {
+
+  for (let i = memories.length - 1; i >= 0; i--) {
+
+    const m = memories[i];
+
+    m.radius += 0.65;
+    m.opacity -= 0.012;
+
+    if (m.opacity <= 0) {
+      memories.splice(i, 1);
+    }
+  }
+}
+
+function drawBackground() {
+
+  const gradient = ctx.createLinearGradient(
+    0,
+    0,
+    0,
+    height
+  );
+
+  gradient.addColorStop(0, "#101a2d");
+  gradient.addColorStop(0.65, "#18263a");
+  gradient.addColorStop(1, "#263644");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "rgba(180,205,220,0.05)";
+
+  ctx.fillRect(
+    0,
+    height - 35,
+    width,
+    35
+  );
+}
+
+function drawDrops() {
+
+  const windForce =
+    Number(wind.value) / 100 * 8;
+
+  for (const d of drops) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      d.x,
+      d.y
+    );
+
+    ctx.lineTo(
+      d.x + windForce,
+      d.y + d.length
+    );
+
+    ctx.strokeStyle =
+      "rgba(170,205,235,0.55)";
+
+    ctx.lineWidth = 1;
+
+    ctx.stroke();
+  }
+}
+
+function drawMemories() {
+
+  for (const m of memories) {
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      m.x,
+      m.y,
+      m.radius,
+      m.radius * 0.35,
+      0,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.strokeStyle =
+      `rgba(190,220,235,${m.opacity * 0.6})`;
+
+    ctx.lineWidth = 1;
+
+    ctx.stroke();
+  }
+}
+
+function animate() {
+
+  const rainRate =
+    Number(rain.value) / 100;
+
+  const probability =
+    0.04 + rainRate * 0.12;
+
+  if (Math.random() < probability) {
+    spawnDrop();
+  }
+
+  updateDrops();
+  updateMemories();
+
+  drawBackground();
+  drawDrops();
+  drawMemories();
+
+  requestAnimationFrame(animate);
+}
+
+scene.addEventListener("pointerdown", event => {
+
+  const rect = scene.getBoundingClientRect();
+
+  createImpact(
+    event.clientX - rect.left,
+    height - 35
+  );
+});
+
+document.addEventListener("keydown", event => {
+
+  if (event.code === "Space") {
+
+    event.preventDefault();
+
+    createImpact(
+      width / 2,
+      height - 35
+    );
+  }
+
+  if (event.key.toLowerCase() === "r") {
+    memories = [];
+    impacts = 0;
+
+    label.textContent =
+      "Recent impacts: 0";
+  }
+});
+
+rain.addEventListener("input", () => {
+  rainValue.textContent =
+    rain.value + "%";
+});
+
+wind.addEventListener("input", () => {
+  windValue.textContent =
+    wind.value + "%";
+});
+
+document.getElementById("reset").onclick = () => {
+
+  memories = [];
+  impacts = 0;
+
+  label.textContent =
+    "Recent impacts: 0";
+};
+
+window.addEventListener("resize", resize);
+
+resize();
+animate();
+</script>
+
+</body>
+</html>

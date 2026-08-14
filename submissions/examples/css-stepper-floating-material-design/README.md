@@ -1,0 +1,2 @@
+# Floating Stepper (Material Design)
+A Google Material Design stepper that utilizes Floating Action Buttons (FABs) for its nodes. The active node elevates higher off the page by increasing its drop shadow and physically translating upward.
