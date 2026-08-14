@@ -1,0 +1,2 @@
+# Morphing Tooltip (Minimalist)
+A highly dynamic tooltip that starts as a tiny invisible circle and morphs out its `width`, `height`, and `border-radius` to form a full rectangular message box on hover.
