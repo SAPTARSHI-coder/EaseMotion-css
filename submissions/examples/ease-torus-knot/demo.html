@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torus Knot · 3D Knot Rotates and Morphs</title>
+    <meta name="description" content="Interactive 3D torus knot with realistic rotation, morphing shapes, and vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌀 TORUS KNOT</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="knotCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="morph-btn" id="morphBtn">🌀 MORPH</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Complexity</label>
+                <input type="range" id="complexitySlider" min="3" max="8" value="5">
+                <span id="complexityLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌀 TORUS KNOT</span>
+            <small>3D · rotate · morph</small>
+        </div>
+        <div class="hint">
+            <span>🌀 click to morph the torus knot into new shapes</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('knotCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const morphBtn = document.getElementById('morphBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const complexitySlider = document.getElementById('complexitySlider');
+            const complexityLabel = document.getElementById('complexityLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let complexity = 5;
+            let time = 0;
+            let morphProgress = 0;
+            let isMorphing = false;
+            let isMorphed = false;
+
+            // ---- 3D Torus Knot Parameters ----
+            let points = [];
+            let targetPoints = [];
+            let colors = [];
+
+            const numPoints = 300;
+            const numColors = 20;
+
+            // ---- Generate Knot ----
+            function generateKnot(phase) {
+                const pts = [];
+                const cols = [];
+                const p = phase || 0;
+                const pVal = 2 + complexity * 0.5;
+                const qVal = 3 + complexity * 0.4;
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const t = (i / numPoints) * Math.PI * 2;
+                    
+                    // Torus knot parametric equations
+                    const r = 0.5 + 0.3 * Math.sin(pVal * t + p * 0.5);
+                    const x = Math.cos(qVal * t) * (1 + 0.3 * Math.cos(pVal * t + p * 0.3));
+                    const y = Math.sin(qVal * t) * (1 + 0.3 * Math.cos(pVal * t + p * 0.3));
+                    const z = 0.3 * Math.sin(pVal * t + p * 0.4);
+                    
+                    // Apply morph phase
+                    const morphScale = 1 + 0.2 * Math.sin(t * 2 + p);
+                    const mx = x * morphScale;
+                    const my = y * morphScale;
+                    const mz = z * morphScale;
+                    
+                    pts.push({ x: mx, y: my, z: mz });
+                    
+                    // Colors
+                    const hue = (i / numPoints) * 360 + p * 20;
+                    const sat = 80 + 20 * Math.sin(t * 3 + p);
+                    const light = 60 + 20 * Math.sin(t * 2 + p * 0.5);
+                    cols.push({ hue: hue % 360, sat: sat, light: light });
+                }
+                return { points: pts, colors: cols };
+            }
+
+            // ---- Initialize ----
+            function initKnot() {
+                const result = generateKnot(0);
+                points = result.points;
+                colors = result.colors;
+                const target = generateKnot(Math.random() * Math.PI * 2);
+                targetPoints = target.points;
+                morphProgress = 0;
+                isMorphing = false;
+                isMorphed = false;
+            }
+
+            // ---- Morph ----
+            function morphKnot() {
+                if (isMorphing) return;
+                const target = generateKnot(Math.random() * Math.PI * 2);
+                targetPoints = target.points;
+                isMorphing = true;
+                isMorphed = false;
+                morphProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetKnot() {
+                isMorphing = false;
+                isMorphed = false;
+                morphProgress = 0;
+                const result = generateKnot(0);
+                points = result.points;
+                colors = result.colors;
+                const target = generateKnot(Math.random() * Math.PI * 2);
+                targetPoints = target.points;
+            }
+
+            // ---- Update Morph ----
+            function updateMorph() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isMorphing && morphProgress < 1) {
+                    morphProgress += 0.005 * (speed / 5);
+                    if (morphProgress > 1) {
+                        morphProgress = 1;
+                        isMorphing = false;
+                        isMorphed = true;
+                        const target = generateKnot(Math.random() * Math.PI * 2);
+                        targetPoints = target.points;
+                    }
+                    
+                    // Interpolate points
+                    const ease = 1 - Math.pow(1 - morphProgress, 3);
+                    for (let i = 0; i < points.length; i++) {
+                        if (targetPoints[i]) {
+                            points[i].x += (targetPoints[i].x - points[i].x) * 0.08 * (speed / 5);
+                            points[i].y += (targetPoints[i].y - points[i].y) * 0.08 * (speed / 5);
+                            points[i].z += (targetPoints[i].z - points[i].z) * 0.08 * (speed / 5);
+                        }
+                    }
+                }
+            }
+
+            // ---- 3D Projection ----
+            function project3D(x, y, z) {
+                const scale = 180;
+                const distance = 3.5;
+                const rotX = time * 0.2;
+                const rotY = time * 0.15;
+                const rotZ = time * 0.1;
+                
+                // Rotation around X
+                let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
+                let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
+                
+                // Rotation around Y
+                let x1 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
+                let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
+                
+                // Rotation around Z
+                let x2 = x1 * Math.cos(rotZ) - y1 * Math.sin(rotZ);
+                let y2 = x1 * Math.sin(rotZ) + y1 * Math.cos(rotZ);
+                
+                // Perspective projection
+                const persp = distance / (distance + z2);
+                const px = W/2 + x2 * scale * persp;
+                const py = H/2 + y2 * scale * persp;
+                
+                return { x: px, y: py, z: z2, persp: persp };
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Project points
+                const projected = points.map((p, i) => {
+                    const proj = project3D(p.x, p.y, p.z);
+                    return { ...proj, color: colors[i] };
+                });
+                
+                // Sort by z for depth
+                projected.sort((a, b) => a.z - b.z);
+                
+                // Draw lines
+                const step = 2;
+                for (let i = 0; i < projected.length - step; i++) {
+                    const p1 = projected[i];
+                    const p2 = projected[i + step];
+                    const alpha = 0.3 + p1.persp * 0.4;
+                    
+                    // Color
+                    const hue = p1.color.hue;
+                    const sat = p1.color.sat;
+                    const light = p1.color.light;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.1 * p1.persp})`;
+                    ctx.shadowBlur = 10 * p1.persp;
+                    ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+                    ctx.lineWidth = 1.5 + p1.persp * 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // Draw glow nodes
+                for (let i = 0; i < projected.length; i += 3) {
+                    const p = projected[i];
+                    const alpha = 0.2 + p.persp * 0.3;
+                    const size = 2 + p.persp * 2;
+                    const hue = p.color.hue;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${0.2 * p.persp})`;
+                    ctx.shadowBlur = 15 * p.persp;
+                    ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Points: ${points.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isMorphed ? '🌀 MORPHED' : 
+                              isMorphing ? '🔄 MORPHING...' : 
+                              '🌀 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateMorph();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            complexitySlider.addEventListener('input', function() {
+                complexity = parseInt(this.value);
+                complexityLabel.textContent = complexity;
+                initKnot();
+                render();
+            });
+
+            // ---- Event Listeners ----
+            morphBtn.addEventListener('click', morphKnot);
+            resetBtn.addEventListener('click', resetKnot);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    morphKnot();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetKnot();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initKnot();
+            render();
+            animate();
+
+            console.log('🌀 Torus Knot · Click Morph or press Space to transform the knot!');
+        })();
+    </script>
+</body>
+</html>
