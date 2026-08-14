@@ -1,0 +1,2 @@
+# Dynamic Accordion (Cyberpunk)
+A terminal-style expanding accordion. Toggling an item triggers a jagged `steps()` animation curve, revealing neon yellow content, appending a cyan status border, and briefly triggering a CSS text glitch keyframe on the expanding content.
