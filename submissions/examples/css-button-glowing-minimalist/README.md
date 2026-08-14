@@ -1,0 +1,2 @@
+# Glowing Button (Minimalist)
+A highly restrained, monochrome glowing button. It rests as a simple outlined pill, but transitions sharply to a solid black fill on hover while simultaneously projecting a soft, diffused white/gray gradient glow from behind.

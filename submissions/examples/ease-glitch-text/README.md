@@ -1,12 +1,14 @@
-# Glitch Text Reveal
+# Ease Glitch Text Effect
 
-An edgy, high-impact typography animation that simulates a digital "screen tear" or glitch when hovered. This is a highly requested effect for gaming hubs, Web3 landing pages, and cyberpunk-themed portfolios.
+### What does this do?
+This is a purely CSS-driven cyberpunk-style glitching text effect that uses `clip-path` and RGB text-shadows to create a flawless, hardware-accelerated text glitch without requiring canvas manipulation or heavy JS libraries.
 
-### Usage
+### How is it used?
+Apply the `glitch-text` class to any text element and set the `data-text` attribute to match the text content:
+
 ```html
-<h1 class="ease-glitch-text" data-text="CYBERPUNK">CYBERPUNK</h1>
+<h1 class="glitch-text" data-text="CYBERPUNK">CYBERPUNK</h1>
 ```
-*Note: The `data-text` attribute must exactly match the inner HTML of the element for the pseudo-elements to duplicate the text properly.*
 
 ### Why is it useful?
-Historically, glitch effects were either pre-rendered as GIFs/videos or generated via canvas/WebGL plugins. This component brings the effect directly into the DOM using pure CSS. By leveraging `clip-path` to rapidly slice overlapping pseudo-elements colored in cyan and magenta, it achieves a highly performant, authentic digital tear effect with zero JavaScript overhead.
+It fits EaseMotion's philosophy by delivering complex, visually striking animations using lightweight, highly optimized CSS techniques, avoiding unnecessary DOM duplication and keeping rendering performant and GPU-accelerated.
