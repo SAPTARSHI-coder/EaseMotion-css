@@ -1,0 +1,2 @@
+# Responsive Accordion (Neumorphism)
+A soft-UI accordion utilizing the checkbox hack. Expanding an item elegantly shifts its container from an outset shadow drop to a recessed inset shadow, making it feel physically indented.
