@@ -1,48 +1,27 @@
 # CSS Liquid Metal Typography
 
-## Overview
+Metallic, highly reflective 3D text utilizing sweeping linear-gradient overlays, `-webkit-text-fill-color: transparent`, and severe contrast filters.
 
-A metallic typography effect created entirely with CSS.
-
-The design uses multiple sweeping `linear-gradient()` layers,
-transparent text clipping, contrast and brightness filters, and
-animated background movement to create a reflective liquid-metal
-appearance.
-
-## Features
-
-- Pure CSS implementation
-- Reflective metallic typography
-- Multiple gradient overlays
-- Animated light sweeps
-- CSS contrast and brightness filters
-- Responsive typography
-- Floating metallic decorative elements
-- No JavaScript
-- No external assets
-- Reduced-motion support
+## What it does
+A multi-stop metallic gradient is clipped to text and animated across its background position, with high contrast/saturation filters for a liquid chrome look.
 
 ## Files
+- `demo.html` — interactive demo
+- `style.css` — pure CSS animation
+- `README.md` — this guide
 
-- `demo.html` — Self-contained demonstration
-- `style.css` — Typography effect and animations
-- `README.md` — Documentation
+## Usage
+```html
+<link rel="stylesheet" href="./style.css" />
+<h1 class="liquid-metal">LIQUID METAL</h1>
+```
 
-## How It Works
+## Techniques
+- `background-clip: text` + `-webkit-text-fill-color: transparent`.
+- Animated `background-position` for the chrome sweep.
+- `filter: contrast() saturate()` for reflectivity.
 
-The metallic appearance is produced by applying a wide gradient to
-the text and clipping the gradient to the text shape:
+## Accessibility
+- `prefers-reduced-motion` disables the sweep.
 
-```css
-background: linear-gradient(
-    110deg,
-    #222222,
-    #ffffff,
-    #777777,
-    #eeeeee,
-    #333333,
-    #ffffff
-);
-
--webkit-background-clip: text;
-background-clip: text;
+Closes #75228
