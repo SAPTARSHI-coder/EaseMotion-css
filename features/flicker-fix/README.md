@@ -1,0 +1,1 @@
+# UI Fix: Prevent Initial Animation "Flicker" on Page Load\n\nThis is a placeholder for the implementation of UI Fix: Prevent Initial Animation "Flicker" on Page Load.
