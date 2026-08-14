@@ -1,28 +1,16 @@
-# Prefers Reduced Motion Support (Atul's Contribution)
 
-## Overview
+# Prefers Reduced Motion Support
 
-This feature improves accessibility in EaseMotion by supporting users who prefer reduced motion.
+## What does this do?
 
-## What I implemented
+This example demonstrates how to respect a user's `prefers-reduced-motion` preference by disabling decorative CSS animation when reduced motion is requested.
 
-- Detects reduced motion preference via CSS media query
-- Disables animation effects when enabled
-- Ensures content is still visible without animation
-- Keeps normal behavior for other users
+## How is it used?
 
-## Why this matters
+The component uses a normal CSS animation:
 
-Some users experience discomfort with animations. This ensures the UI remains accessible and comfortable.
-
-## How to test
-
-1. Open `demo.html`
-2. Enable "Reduce Motion" in system settings
-3. Reload page
-4. Observe animations are disabled
-
-## Files
-
-- demo.html
-- style.css
+```html
+<div class="motion-box">
+  Motion Demo
+</div>
+```
