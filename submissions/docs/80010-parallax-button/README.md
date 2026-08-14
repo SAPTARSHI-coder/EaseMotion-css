@@ -18,7 +18,7 @@ The issue title references PR #43294.
 
 That merged PR demonstrates the repository's expected three-file submission pattern.
 
-It includes `demo.html`, `style.css`, and `README.md` and keeps changes inside `submissions/`. fileciteturn128file0L8-L14
+It includes `demo.html`, `style.css`, and `README.md` and keeps changes inside `submissions/`.
 
 This documentation follows that same isolated three-file structure.
 
