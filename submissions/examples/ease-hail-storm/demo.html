@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌨️ Hail Storm – Hail Bounces Across Surface</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌨️ Hail Storm</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Pause/Resume">⏸️</button>
+                <button class="control-btn" id="resetBtn" title="Reset storm">🔄</button>
+                <button class="control-btn" id="addBtn" title="Add more hail">➕</button>
+                <button class="control-btn" id="removeBtn" title="Remove hail">➖</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="hailCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="hailCount">0</span> hailstones
+                <span id="intensityDisplay" class="intensity-badge">⚡ Medium</span>
+            </div>
+            <div class="hint" id="hint">🌨️ Watch the hail bounce!</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>Intensity</label>
+                <input type="range" id="intensitySlider" min="1" max="5" value="3" step="1" />
+                <span id="intensityLabel">3/5</span>
+            </div>
+            <div class="slider-group">
+                <label>Bounciness</label>
+                <input type="range" id="bounceSlider" min="30" max="90" value="65" step="5" />
+                <span id="bounceLabel">65%</span>
+            </div>
+            <div class="slider-group">
+                <label>Wind</label>
+                <input type="range" id="windSlider" min="-20" max="20" value="0" step="1" />
+                <span id="windLabel">0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Hail Storm – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('hailCanvas');
+            const ctx = canvas.getContext('2d');
+            const hailCountEl = document.getElementById('hailCount');
+            const intensityDisplay = document.getElementById('intensityDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const addBtn = document.getElementById('addBtn');
+            const removeBtn = document.getElementById('removeBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const bounceSlider = document.getElementById('bounceSlider');
+            const bounceLabel = document.getElementById('bounceLabel');
+            const windSlider = document.getElementById('windSlider');
+            const windLabel = document.getElementById('windLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let hailstones = [];
+            let isPaused = false;
+            let animationId = null;
+            let spawnTimer = 0;
+            let hailCounter = 0;
+
+            // --- Parameters ---
+            let intensity = 3; // 1-5
+            let bounciness = 0.65; // 0.3 - 0.9
+            let wind = 0; // -20 to 20
+
+            // --- Surface details ---
+            const groundY = H - 40;
+            const surfacePoints = [];
+
+            // Generate random surface bumps
+            function generateSurface() {
+                surfacePoints.length = 0;
+                for (let x = 0; x <= W; x += 2) {
+                    const bump = Math.sin(x * 0.02) * 15 +
+                        Math.sin(x * 0.05 + 1.2) * 8 +
+                        Math.sin(x * 0.1 + 3.7) * 4 +
+                        Math.cos(x * 0.03 + 0.8) * 10;
+                    surfacePoints.push({
+                        x: x,
+                        y: groundY + bump
+                    });
+                }
+            }
+            generateSurface();
+
+            // --- Hailstone class ---
+            class Hailstone {
+                constructor(x, y, size) {
+                    this.x = x || Math.random() * W;
+                    this.y = y || -20 - Math.random() * 100;
+                    this.size = size || 4 + Math.random() * 8;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = 1 + Math.random() * 3;
+                    this.gravity = 0.15 + Math.random() * 0.05;
+                    this.bounceFactor = bounciness * (0.85 + Math.random() * 0.3);
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.1;
+                    this.opacity = 0.7 + Math.random() * 0.3;
+                    this.sparkle = Math.random() > 0.7;
+                    this.trail = [];
+                    this.maxTrail = 6;
+                }
+
+                update() {
+                    // Apply wind
+                    this.vx += wind * 0.02;
+
+                    // Gravity
+                    this.vy += this.gravity;
+
+                    // Move
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Rotation
+                    this.rotation += this.rotSpeed;
+
+                    // Surface collision
+                    const surfaceY = this.getSurfaceY(this.x);
+                    if (this.y + this.size > surfaceY) {
+                        this.y = surfaceY - this.size;
+                        this.vy = -this.vy * this.bounceFactor;
+                        this.vx += (Math.random() - 0.5) * 0.5;
+
+                        // Bounce spark
+                        if (Math.abs(this.vy) > 0.5) {
+                            this.sparkle = true;
+                        }
+
+                        // Reduce bounce factor slightly on each bounce (energy loss)
+                        this.bounceFactor *= 0.995;
+                    }
+
+                    // Wall collisions
+                    if (this.x - this.size < 0) {
+                        this.x = this.size;
+                        this.vx = Math.abs(this.vx) * 0.8;
+                    }
+                    if (this.x + this.size > W) {
+                        this.x = W - this.size;
+                        this.vx = -Math.abs(this.vx) * 0.8;
+                    }
+
+                    // Ceiling
+                    if (this.y - this.size < 0) {
+                        this.y = this.size;
+                        this.vy = Math.abs(this.vy) * 0.8;
+                    }
+
+                    // Friction
+                    this.vx *= 0.999;
+
+                    // Trail
+                    if (Math.abs(this.vy) > 0.5) {
+                        this.trail.push({ x: this.x, y: this.y + this.size });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    } else {
+                        this.trail = [];
+                    }
+
+                    // Reset if fallen off bottom
+                    if (this.y > H + 50) {
+                        this.reset();
+                    }
+                }
+
+                getSurfaceY(x) {
+                    // Interpolate surface height
+                    const idx = Math.floor(x / 2);
+                    if (idx < 0) return surfacePoints[0]?.y || groundY;
+                    if (idx >= surfacePoints.length - 1) return surfacePoints[surfacePoints.length - 1]?.y || groundY;
+                    const p1 = surfacePoints[idx];
+                    const p2 = surfacePoints[idx + 1];
+                    const t = (x - p1.x) / (p2.x - p1.x);
+                    return p1.y + (p2.y - p1.y) * t;
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = -20 - Math.random() * 100;
+                    this.vy = 1 + Math.random() * 3;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.bounceFactor = bounciness * (0.85 + Math.random() * 0.3);
+                    this.trail = [];
+                }
+
+                draw(ctx) {
+                    // Shadow
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetY = 3;
+
+                    // Trail
+                    if (this.trail.length > 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                        for (let i = 1; i < this.trail.length; i++) {
+                            ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                        }
+                        ctx.strokeStyle = `rgba(200, 230, 255, ${0.15 * this.opacity})`;
+                        ctx.lineWidth = this.size * 0.4;
+                        ctx.shadowBlur = 0;
+                        ctx.stroke();
+                    }
+
+                    // Main hailstone with gradient
+                    const gradient = ctx.createRadialGradient(
+                        this.x - this.size * 0.3, this.y - this.size * 0.3, this.size * 0.1,
+                        this.x, this.y, this.size
+                    );
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${0.95 * this.opacity})`);
+                    gradient.addColorStop(0.4, `rgba(220, 240, 255, ${0.9 * this.opacity})`);
+                    gradient.addColorStop(0.8, `rgba(180, 210, 240, ${0.8 * this.opacity})`);
+                    gradient.addColorStop(1, `rgba(120, 160, 200, ${0.6 * this.opacity})`);
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(100, 180, 255, 0.1)';
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.25, this.y - this.size * 0.3, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.6 * this.opacity})`;
+                    ctx.fill();
+
+                    // Sparkle
+                    if (this.sparkle && Math.random() < 0.05) {
+                        ctx.beginPath();
+                        const s = this.size * 0.3;
+                        ctx.moveTo(this.x + s, this.y);
+                        ctx.lineTo(this.x, this.y + s * 0.5);
+                        ctx.lineTo(this.x - s, this.y);
+                        ctx.lineTo(this.x, this.y - s * 0.5);
+                        ctx.closePath();
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.4 * this.opacity})`;
+                        ctx.fill();
+                        this.sparkle = false;
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Create hailstones ---
+            function createHailstones(count) {
+                for (let i = 0; i < count; i++) {
+                    const size = 4 + Math.random() * 8;
+                    const hail = new Hailstone(
+                        Math.random() * W,
+                        -20 - Math.random() * 300,
+                        size
+                    );
+                    hail.vy = 1 + Math.random() * (intensity * 1.5);
+                    hailstones.push(hail);
+                    hailCounter++;
+                }
+                updateStats();
+            }
+
+            // --- Spawn hail ---
+            function spawnHail() {
+                const spawnRate = Math.floor(20 / intensity);
+                if (hailCounter % spawnRate === 0) {
+                    const count = Math.floor(1 + intensity * 0.5);
+                    for (let i = 0; i < count; i++) {
+                        const size = 3 + Math.random() * 9;
+                        const hail = new Hailstone(
+                            Math.random() * W,
+                            -20 - Math.random() * 150,
+                            size
+                        );
+                        hail.vy = 1 + Math.random() * (intensity * 1.2);
+                        hail.vx = (Math.random() - 0.5) * (1 + intensity * 0.3);
+                        hailstones.push(hail);
+                        hailCounter++;
+                    }
+                }
+            }
+
+            // --- Render ---
+            function render() {
+                // Clear with trail effect
+                ctx.fillStyle = 'rgba(10, 20, 35, 0.85)';
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Draw sky gradient ---
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                skyGrad.addColorStop(0, '#0a1628');
+                skyGrad.addColorStop(0.3, '#121f35');
+                skyGrad.addColorStop(0.6, '#1a2f42');
+                skyGrad.addColorStop(0.8, '#243b4f');
+                skyGrad.addColorStop(1, '#2a4055');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Draw clouds (subtle) ---
+                ctx.save();
+                ctx.globalAlpha = 0.15;
+                for (let i = 0; i < 5; i++) {
+                    const cx = (i * 200 + 50) % W;
+                    const cy = 30 + i * 20;
+                    const cw = 120 + Math.sin(i * 2.3) * 50;
+                    const ch = 20 + Math.sin(i * 1.7) * 10;
+                    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw);
+                    grad.addColorStop(0, 'rgba(200, 220, 255, 0.3)');
+                    grad.addColorStop(1, 'rgba(200, 220, 255, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, cw, ch, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // --- Draw surface with snow/ice ---
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(surfacePoints[0].x, surfacePoints[0].y);
+                for (let i = 1; i < surfacePoints.length; i++) {
+                    ctx.lineTo(surfacePoints[i].x, surfacePoints[i].y);
+                }
+                ctx.lineTo(W, H);
+                ctx.lineTo(0, H);
+                ctx.closePath();
+
+                const surfaceGrad = ctx.createLinearGradient(0, groundY - 10, 0, H);
+                surfaceGrad.addColorStop(0, 'rgba(200, 225, 250, 0.3)');
+                surfaceGrad.addColorStop(0.1, 'rgba(180, 210, 240, 0.2)');
+                surfaceGrad.addColorStop(0.5, 'rgba(150, 180, 210, 0.15)');
+                surfaceGrad.addColorStop(1, 'rgba(100, 130, 160, 0.1)');
+                ctx.fillStyle = surfaceGrad;
+                ctx.fill();
+
+                // Surface line glow
+                ctx.shadowColor = 'rgba(150, 200, 255, 0.1)';
+                ctx.shadowBlur = 10;
+                ctx.strokeStyle = 'rgba(180, 210, 240, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(surfacePoints[0].x, surfacePoints[0].y);
+                for (let i = 1; i < surfacePoints.length; i++) {
+                    ctx.lineTo(surfacePoints[i].x, surfacePoints[i].y);
+                }
+                ctx.stroke();
+
+                // Surface sparkles
+                for (let i = 0; i < surfacePoints.length; i += 20) {
+                    if (Math.random() < 0.03) {
+                        const p = surfacePoints[i];
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 1 + Math.random() * 2, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.2})`;
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+
+                // --- Update and draw hailstones ---
+                if (!isPaused) {
+                    // Spawn new hail
+                    spawnHail();
+
+                    // Update all hailstones
+                    for (let i = hailstones.length - 1; i >= 0; i--) {
+                        const hail = hailstones[i];
+                        hail.update();
+
+                        // Remove if too many or off screen
+                        if (hail.y > H + 100) {
+                            hailstones.splice(i, 1);
+                            continue;
+                        }
+                    }
+
+                    // Limit total hailstones
+                    const maxHail = 80 + intensity * 40;
+                    if (hailstones.length > maxHail) {
+                        hailstones.splice(0, hailstones.length - maxHail);
+                    }
+
+                    updateStats();
+                }
+
+                // Draw all hailstones
+                ctx.save();
+                for (const hail of hailstones) {
+                    hail.draw(ctx);
+                }
+                ctx.restore();
+
+                // --- Draw faint grid for depth ---
+                ctx.save();
+                ctx.globalAlpha = 0.03;
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < W; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, H);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < H; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(W, i);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // --- Update stats ---
+                function updateStats() {
+                    hailCountEl.textContent = hailstones.length;
+
+                    let intensityText = '';
+                    if (intensity <= 2) intensityText = '🌤️ Light';
+                    else if (intensity <= 3) intensityText = '⚡ Medium';
+                    else if (intensity <= 4) intensityText = '🌩️ Heavy';
+                    else intensityText = '⛈️ Severe';
+                    intensityDisplay.textContent = intensityText;
+                }
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶️' : '⏸️';
+                if (isPaused) {
+                    hint.textContent = '⏸️ Paused';
+                    hint.classList.remove('hidden');
+                } else {
+                    hint.textContent = '🌨️ Hail bouncing!';
+                    setTimeout(() => hint.classList.add('hidden'), 2000);
+                }
+            }
+
+            function resetStorm() {
+                hailstones = [];
+                hailCounter = 0;
+                generateSurface();
+                createHailstones(30 + intensity * 10);
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function addHail() {
+                createHailstones(10 + intensity * 2);
+                hint.textContent = `➕ Added ${10 + intensity * 2} hailstones`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1000);
+            }
+
+            function removeHail() {
+                const removeCount = Math.min(10 + intensity * 2, hailstones.length);
+                hailstones.splice(0, removeCount);
+                hint.textContent = `➖ Removed ${removeCount} hailstones`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1000);
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseInt(this.value);
+                intensityLabel.textContent = `${intensity}/5`;
+                // Update existing hailstones' behavior
+                for (const hail of hailstones) {
+                    if (hail.y < -50) {
+                        hail.vy = 1 + Math.random() * (intensity * 1.5);
+                    }
+                }
+                updateStats();
+            });
+
+            bounceSlider.addEventListener('input', function() {
+                bounciness = parseInt(this.value) / 100;
+                bounceLabel.textContent = `${this.value}%`;
+                // Update existing hailstones' bounce factor
+                for (const hail of hailstones) {
+                    hail.bounceFactor = bounciness * (0.85 + Math.random() * 0.3);
+                }
+            });
+
+            windSlider.addEventListener('input', function() {
+                wind = parseInt(this.value);
+                windLabel.textContent = this.value;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetStorm);
+            addBtn.addEventListener('click', addHail);
+            removeBtn.addEventListener('click', removeHail);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') resetStorm();
+                if (e.key === '+' || e.key === '=') addHail();
+                if (e.key === '-') removeHail();
+            });
+
+            // --- Init ---
+            createHailstones(40);
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 3000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌨️ Hail Storm ready!');
+            console.log('Controls: Space (pause), R (reset), + (add), - (remove)');
+
+        })();
+    </script>
+</body>
+</html>

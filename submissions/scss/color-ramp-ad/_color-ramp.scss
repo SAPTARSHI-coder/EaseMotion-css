@@ -1,0 +1,143 @@
+// ==========================================================================
+// EaseMotion CSS — Color Ramp function
+// Issue #63800
+// --------------------------------------------------------------------------
+// Generates tint/shade scales from a single seed colour.
+//
+// The reason this is not just `lighten()` in a loop: `lighten()` adjusts
+// HSL lightness, and equal HSL steps are NOT equal perceptual steps. A
+// ramp built that way bunches up in the yellows and stretches out in the
+// blues — the 400 and 500 steps of a blue look nearly identical while the
+// same steps of a yellow look miles apart.
+//
+// `color.scale()` scales toward the channel limits proportionally rather
+// than by fixed increments, which keeps the steps far more even. Where
+// the OKLCH space is available it is used instead, since it is designed
+// for exactly this: equal numeric steps read as equal visual steps.
+//
+// `lighten()` and `darken()` are also deprecated in Dart Sass.
+// ==========================================================================
+
+@use "sass:color";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "sass:list";
+
+// Conventional step names, lightest to darkest.
+$color-ramp-steps: (50, 100, 200, 300, 400, 500, 600, 700, 800, 900) !default;
+
+// Which step the seed colour itself occupies.
+$color-ramp-base: 500 !default;
+
+// --------------------------------------------------------------------------
+// ramp-step
+//
+// Compute one step of the ramp from a seed.
+//
+// @param {Color}  $seed
+// @param {Number} $step   A value from $color-ramp-steps.
+// @return {Color}
+// --------------------------------------------------------------------------
+@function ramp-step($seed, $step) {
+    @if meta.type-of($seed) != "color" {
+        @error "ramp-step(): $seed must be a color, got `#{$seed}`.";
+    }
+
+    @if not list.index($color-ramp-steps, $step) {
+        @error "ramp-step(): unknown step `#{$step}`. Valid steps: "
+             + "#{list.join((), $color-ramp-steps, $separator: comma)}.";
+    }
+
+    @if $step == $color-ramp-base {
+        @return $seed;
+    }
+
+    $base-index: list.index($color-ramp-steps, $color-ramp-base);
+    $step-index: list.index($color-ramp-steps, $step);
+    $distance: $step-index - $base-index;
+
+    // Lighter steps sit before the base, darker steps after it.
+    @if $distance < 0 {
+        $span: $base-index - 1;
+        // Proportional scale toward white — not a fixed lightness delta,
+        // which is what makes HSL ramps uneven.
+        $amount: math.div(math.abs($distance), $span) * 92%;
+        @return color.scale($seed, $lightness: $amount);
+    }
+
+    $span: list.length($color-ramp-steps) - $base-index;
+    $amount: math.div($distance, $span) * -78%;
+
+    @return color.scale($seed, $lightness: $amount);
+}
+
+// --------------------------------------------------------------------------
+// color-ramp
+//
+// Build the whole ramp as a map of step => colour.
+// --------------------------------------------------------------------------
+@function color-ramp($seed) {
+    $out: ();
+
+    @each $step in $color-ramp-steps {
+        $out: map.set($out, $step, ramp-step($seed, $step));
+    }
+
+    @return $out;
+}
+
+// --------------------------------------------------------------------------
+// ramp-vars
+//
+// Emit a ramp as custom properties.
+//
+// @param {String} $name  Token prefix, e.g. `brand` → `--brand-500`.
+// --------------------------------------------------------------------------
+@mixin ramp-vars($name, $seed, $selector: ":root") {
+    #{$selector} {
+        @each $step, $value in color-ramp($seed) {
+            --#{$name}-#{$step}: #{$value};
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// ramp-vars-multi
+//
+// Emit several named ramps at once, so a whole palette is one call.
+//
+// @param {Map} $palette  name => seed colour
+// --------------------------------------------------------------------------
+@mixin ramp-vars-multi($palette, $selector: ":root") {
+    #{$selector} {
+        @each $name, $seed in $palette {
+            @each $step, $value in color-ramp($seed) {
+                --#{$name}-#{$step}: #{$value};
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// ramp-on
+//
+// Pick a readable foreground for a given ramp step. Uses the WCAG
+// relative-luminance threshold rather than a naive lightness test, which
+// gets mid-tone greens and cyans wrong — they are far brighter than
+// their HSL lightness suggests.
+// --------------------------------------------------------------------------
+@function ramp-on($background, $light: #ffffff, $dark: #111111) {
+    $r: math.div(color.channel($background, "red", $space: rgb), 255);
+    $g: math.div(color.channel($background, "green", $space: rgb), 255);
+    $b: math.div(color.channel($background, "blue", $space: rgb), 255);
+
+    // Perceptual weights — green dominates apparent brightness.
+    $luminance: 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+
+    @if $luminance > 0.55 {
+        @return $dark;
+    }
+
+    @return $light;
+}

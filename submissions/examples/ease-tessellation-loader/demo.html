@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tessellation Loader – Geometric Patterns Tile and Shift</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🔷 Tessellation Loader</h1>
+    <p class="subtitle">Geometric patterns tile and shift</p>
+
+    <div class="loader-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Info overlay -->
+      <div class="info-overlay">
+        <span class="tessellation-status" id="tessellationStatus">🔷 Tiling</span>
+        <span class="shape-count" id="shapeCount">✦ 0 shapes</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn play" id="playBtn">▶ Play</button>
+      <button class="ctrl-btn pause" id="pauseBtn">⏸ Pause</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">🔄 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Tile Size</span>
+      <input type="range" id="sizeSlider" min="20" max="80" value="40" />
+      <span class="slider-value" id="sizeValue">40px</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Pattern</span>
+      <input type="range" id="patternSlider" min="0" max="3" value="0" step="1" />
+      <span class="slider-value" id="patternValue">Hexagon</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Shift Intensity</span>
+      <input type="range" id="shiftSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="shiftValue">50%</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🔷 Tessellation pattern tiling and shifting</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Space</kbd> Toggle · <kbd>P</kbd> Play/Pause · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const tessellationStatus = document.getElementById('tessellationStatus');
+      const shapeCount = document.getElementById('shapeCount');
+      const playBtn = document.getElementById('playBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const patternSlider = document.getElementById('patternSlider');
+      const patternValue = document.getElementById('patternValue');
+      const shiftSlider = document.getElementById('shiftSlider');
+      const shiftValue = document.getElementById('shiftValue');
+
+      // State
+      let isPlaying = true;
+      let animationId = null;
+      let time = 0;
+      let patternType = 0; // 0: hexagon, 1: triangle, 2: square, 3: diamond
+
+      const PATTERN_NAMES = ['Hexagon', 'Triangle', 'Square', 'Diamond'];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Draw tessellation -----
+      function drawTessellation() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const tileSize = parseInt(sizeSlider.value);
+        const speed = parseInt(speedSlider.value) / 5;
+        const shiftIntensity = parseInt(shiftSlider.value) / 100;
+        const pattern = parseInt(patternSlider.value);
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        let shapeCountTotal = 0;
+
+        // Draw tessellation based on pattern
+        switch(pattern) {
+          case 0: // Hexagon
+            shapeCountTotal = drawHexagonTessellation(w, h, tileSize, speed, shiftIntensity);
+            break;
+          case 1: // Triangle
+            shapeCountTotal = drawTriangleTessellation(w, h, tileSize, speed, shiftIntensity);
+            break;
+          case 2: // Square
+            shapeCountTotal = drawSquareTessellation(w, h, tileSize, speed, shiftIntensity);
+            break;
+          case 3: // Diamond
+            shapeCountTotal = drawDiamondTessellation(w, h, tileSize, speed, shiftIntensity);
+            break;
+        }
+
+        shapeCount.textContent = `✦ ${shapeCountTotal} shapes`;
+        patternValue.textContent = PATTERN_NAMES[pattern];
+      }
+
+      // ----- Draw hexagon tessellation -----
+      function drawHexagonTessellation(w, h, size, speed, shift) {
+        const hexRadius = size * 0.6;
+        const width = hexRadius * Math.sqrt(3);
+        const height = hexRadius * 2;
+        const rowHeight = height * 0.75;
+        const colWidth = width;
+        let count = 0;
+
+        for (let row = -1; row < Math.ceil(h / rowHeight) + 2; row++) {
+          for (let col = -1; col < Math.ceil(w / colWidth) + 2; col++) {
+            const offsetX = (row % 2) * width * 0.5;
+            const x = col * colWidth + offsetX;
+            const y = row * rowHeight;
+            
+            // Skip if outside canvas
+            if (x < -hexRadius * 2 || x > w + hexRadius * 2 || 
+                y < -hexRadius * 2 || y > h + hexRadius * 2) continue;
+
+            // Calculate shift based on time and position
+            const shiftX = Math.sin(time * speed + x * 0.02 + y * 0.015) * shift * 15;
+            const shiftY = Math.cos(time * speed * 0.8 + x * 0.015 + y * 0.02) * shift * 15;
+            
+            const cx = x + shiftX;
+            const cy = y + shiftY;
+
+            // Color based on position and time
+            const hue = (x * 0.5 + y * 0.3 + time * 20 * speed) % 360;
+            const lightness = 50 + 20 * Math.sin(x * 0.05 + y * 0.04 + time * speed);
+
+            drawHexagon(ctx, cx, cy, hexRadius, hue, lightness);
+            count++;
+          }
+        }
+        return count;
+      }
+
+      // ----- Draw triangle tessellation -----
+      function drawTriangleTessellation(w, h, size, speed, shift) {
+        const triSize = size * 0.7;
+        const width = triSize * 2;
+        const height = triSize * Math.sqrt(3);
+        const rowHeight = height * 0.5;
+        const colWidth = width * 0.5;
+        let count = 0;
+
+        for (let row = -1; row < Math.ceil(h / rowHeight) + 2; row++) {
+          for (let col = -1; col < Math.ceil(w / colWidth) + 2; col++) {
+            const x = col * colWidth + (row % 2) * colWidth;
+            const y = row * rowHeight;
+            
+            if (x < -triSize * 2 || x > w + triSize * 2 || 
+                y < -triSize * 2 || y > h + triSize * 2) continue;
+
+            const shiftX = Math.sin(time * speed * 0.7 + x * 0.03 + y * 0.02) * shift * 20;
+            const shiftY = Math.cos(time * speed * 0.9 + x * 0.02 + y * 0.03) * shift * 20;
+            
+            const cx = x + shiftX;
+            const cy = y + shiftY;
+
+            const hue = (x * 0.4 + y * 0.3 + time * 25 * speed) % 360;
+            const lightness = 50 + 15 * Math.sin(x * 0.06 + y * 0.05 + time * speed);
+
+            // Draw two triangles per grid cell (up and down)
+            drawTriangle(ctx, cx, cy, triSize, 1, hue, lightness);
+            drawTriangle(ctx, cx + triSize * 0.5, cy + height * 0.25, triSize, -1, hue + 30, lightness + 10);
+            count += 2;
+          }
+        }
+        return count;
+      }
+
+      // ----- Draw square tessellation -----
+      function drawSquareTessellation(w, h, size, speed, shift) {
+        const sqSize = size * 0.6;
+        let count = 0;
+
+        for (let row = -1; row < Math.ceil(h / sqSize) + 2; row++) {
+          for (let col = -1; col < Math.ceil(w / sqSize) + 2; col++) {
+            const x = col * sqSize;
+            const y = row * sqSize;
+            
+            if (x < -sqSize || x > w + sqSize || y < -sqSize || y > h + sqSize) continue;
+
+            const shiftX = Math.sin(time * speed * 0.6 + x * 0.02 + y * 0.025) * shift * 18;
+            const shiftY = Math.cos(time * speed * 0.8 + x * 0.025 + y * 0.02) * shift * 18;
+            
+            const cx = x + shiftX;
+            const cy = y + shiftY;
+
+            const hue = (x * 0.3 + y * 0.4 + time * 30 * speed) % 360;
+            const lightness = 50 + 20 * Math.sin(x * 0.04 + y * 0.06 + time * speed);
+
+            drawSquare(ctx, cx, cy, sqSize, hue, lightness);
+            count++;
+          }
+        }
+        return count;
+      }
+
+      // ----- Draw diamond tessellation -----
+      function drawDiamondTessellation(w, h, size, speed, shift) {
+        const diaSize = size * 0.5;
+        const width = diaSize * 2;
+        const height = diaSize * 2;
+        let count = 0;
+
+        for (let row = -1; row < Math.ceil(h / height) + 2; row++) {
+          for (let col = -1; col < Math.ceil(w / width) + 2; col++) {
+            const x = col * width + (row % 2) * diaSize;
+            const y = row * height;
+            
+            if (x < -diaSize * 2 || x > w + diaSize * 2 || 
+                y < -diaSize * 2 || y > h + diaSize * 2) continue;
+
+            const shiftX = Math.sin(time * speed * 0.5 + x * 0.02 + y * 0.03) * shift * 22;
+            const shiftY = Math.cos(time * speed * 0.7 + x * 0.03 + y * 0.02) * shift * 22;
+            
+            const cx = x + shiftX;
+            const cy = y + shiftY;
+
+            const hue = (x * 0.3 + y * 0.2 + time * 35 * speed) % 360;
+            const lightness = 50 + 25 * Math.sin(x * 0.05 + y * 0.04 + time * speed);
+
+            drawDiamond(ctx, cx, cy, diaSize, hue, lightness);
+            count++;
+          }
+        }
+        return count;
+      }
+
+      // ----- Shape drawing functions -----
+      function drawHexagon(ctx, x, y, r, hue, lightness) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        gradient.addColorStop(0, `hsl(${hue + 20}, 80%, ${lightness + 20}%)`);
+        gradient.addColorStop(0.5, `hsl(${hue}, 80%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${hue - 20}, 80%, ${lightness - 15}%)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.2)`;
+        ctx.shadowBlur = 15;
+        
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2 - Math.PI / 6;
+          const px = Math.cos(angle) * r;
+          const py = Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        // Border
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `hsla(${hue + 30}, 60%, 80%, 0.15)`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+
+      function drawTriangle(ctx, x, y, r, direction, hue, lightness) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        gradient.addColorStop(0, `hsl(${hue + 20}, 80%, ${lightness + 20}%)`);
+        gradient.addColorStop(0.5, `hsl(${hue}, 80%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${hue - 20}, 80%, ${lightness - 15}%)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.15)`;
+        ctx.shadowBlur = 12;
+        
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+          const angle = (i / 3) * Math.PI * 2 + (direction > 0 ? 0 : Math.PI / 3);
+          const px = Math.cos(angle) * r;
+          const py = Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `hsla(${hue + 30}, 60%, 80%, 0.12)`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+
+      function drawSquare(ctx, x, y, size, hue, lightness) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.8);
+        gradient.addColorStop(0, `hsl(${hue + 20}, 80%, ${lightness + 20}%)`);
+        gradient.addColorStop(0.5, `hsl(${hue}, 80%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${hue - 20}, 80%, ${lightness - 15}%)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.2)`;
+        ctx.shadowBlur = 15;
+        
+        const half = size / 2;
+        ctx.fillRect(-half, -half, size, size);
+        
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `hsla(${hue + 30}, 60%, 80%, 0.12)`;
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(-half, -half, size, size);
+        
+        ctx.restore();
+      }
+
+      function drawDiamond(ctx, x, y, size, hue, lightness) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size);
+        gradient.addColorStop(0, `hsl(${hue + 20}, 80%, ${lightness + 20}%)`);
+        gradient.addColorStop(0.5, `hsl(${hue}, 80%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${hue - 20}, 80%, ${lightness - 15}%)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.2)`;
+        ctx.shadowBlur = 15;
+        
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.lineTo(size, 0);
+        ctx.lineTo(0, size);
+        ctx.lineTo(-size, 0);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `hsla(${hue + 30}, 60%, 80%, 0.12)`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        if (isPlaying) {
+          time += 0.016;
+          drawTessellation();
+        }
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle play -----
+      function togglePlay() {
+        isPlaying = !isPlaying;
+        playBtn.textContent = isPlaying ? '▶ Play' : '⏸ Paused';
+        tessellationStatus.textContent = isPlaying ? '🔷 Tiling' : '⏸ Paused';
+        status.textContent = isPlaying ? '🔷 Tessellation pattern tiling and shifting' : '⏸ Paused';
+      }
+
+      // ----- Play -----
+      function play() {
+        isPlaying = true;
+        playBtn.textContent = '▶ Play';
+        tessellationStatus.textContent = '🔷 Tiling';
+        status.textContent = '🔷 Tessellation pattern tiling and shifting';
+      }
+
+      // ----- Pause -----
+      function pause() {
+        isPlaying = false;
+        playBtn.textContent = '⏸ Paused';
+        tessellationStatus.textContent = '⏸ Paused';
+        status.textContent = '⏸ Paused';
+      }
+
+      // ----- Reset -----
+      function resetTessellation() {
+        time = 0;
+        isPlaying = true;
+        playBtn.textContent = '▶ Play';
+        tessellationStatus.textContent = '🔷 Tiling';
+        status.textContent = '↺ Reset';
+        // Reset sliders
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        sizeSlider.value = 40;
+        sizeValue.textContent = '40px';
+        patternSlider.value = 0;
+        patternValue.textContent = 'Hexagon';
+        shiftSlider.value = 50;
+        shiftValue.textContent = '50%';
+        setTimeout(() => {
+          status.textContent = '🔷 Tessellation pattern tiling and shifting';
+        }, 500);
+      }
+
+      // ----- Event Listeners -----
+      playBtn.addEventListener('click', play);
+      pauseBtn.addEventListener('click', pause);
+      toggleBtn.addEventListener('click', togglePlay);
+      resetBtn.addEventListener('click', resetTessellation);
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + 'px';
+      });
+
+      patternSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        patternValue.textContent = PATTERN_NAMES[val];
+      });
+
+      shiftSlider.addEventListener('input', (e) => {
+        shiftValue.textContent = e.target.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          isPlaying ? pause() : play();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetTessellation();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '🔷 Tessellation pattern tiling and shifting';
+        patternValue.textContent = 'Hexagon';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -12,16 +12,7 @@ const { execSync } = require('child_process');
 const token = process.env.GH_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
 
-const SPAMMERS = [
-  'xenon010101',
-  'tmdeveloper007',
-  'desireddymohithreddy0925',
-  'sanrishi',
-  'sonusharma6-dsa',
-  'zen-ash-dev',
-  'anushreer22',
-  'ashrion'
-];
+const SPAMMERS = [];
 
 function req(pathStr, method = 'GET', data = null) {
   return new Promise((resolve) => {

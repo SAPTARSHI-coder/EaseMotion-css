@@ -1,0 +1,107 @@
+name: Broken Link Checker
+
+# Catches dead links (renamed docs pages, deleted external references, expired
+# Discord invites) on the live docs site before visitors hit them. Runs weekly
+# and on manual dispatch, using lychee (fast Rust link checker). Opens a
+# tracking issue automatically when broken links are found.
+#
+# Install: copy this file to .github/workflows/broken-link-checker.yml
+
+on:
+  schedule:
+    # every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: broken-link-checker
+  cancel-in-progress: false
+
+jobs:
+  check-links:
+    name: Check docs site links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Link Checker (lychee)
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # scan the live GitHub Pages docs site (HTML crawl)
+          args: >-
+            --no-progress
+            --max-concurrency 16
+            --accept 100..=399,401,402,403,429
+            --exclude-mail
+            'https://saptarshi-coder.github.io/EaseMotion-css/'
+          # fail the job when links are broken so the next step can react
+          fail: true
+          # produce a Markdown report we can paste into the issue body
+          format: markdown
+          output: broken-links-report.md
+
+      - name: Read report
+        if: always()
+        id: report
+        run: |
+          if [ -f broken-links-report.md ]; then
+            {
+              echo "body<<EOF"
+              cat broken-links-report.md
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open / update tracking issue for broken links
+        if: failure() && steps.report.outputs.exists == 'true'
+        uses: peter-evans/create-or-update-issue@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'docs: Broken links detected on the docs site 🚫'
+          labels: bug,documentation,ci
+          content: ${{ steps.report.outputs.body }}
+          # search key so subsequent runs reuse the same issue instead of spamming
+          search-existing-title: 'docs: Broken links detected on the docs site 🚫'
+          body: |
+            The weekly **Broken Link Checker** workflow found dead links on the docs site
+            (`https://saptarshi-coder.github.io/EaseMotion-css/`).
+
+            This issue was opened automatically by the
+            [Broken Link Checker workflow](https://github.com/${{ github.repository }}/actions/workflows/broken-link-checker.yml).
+
+            ## lychee report
+
+            ${{ steps.report.outputs.body }}
+
+            ---
+            _Re-run the workflow after fixing to verify. This issue stays open until a run passes clean._
+
+      - name: Close resolved tracking issue when links are clean
+        if: success()
+        uses: peter-evans/create-or-update-issue@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          state: closed
+          search-existing-title: 'docs: Broken links detected on the docs site 🚫'
+          body: |
+            ✅ The latest Broken Link Checker run found **no broken links** — this issue can be closed.
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Upload link report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broken-links-report
+          path: broken-links-report.md
+          if-no-files-found: ignore
+          retention-days: 14
