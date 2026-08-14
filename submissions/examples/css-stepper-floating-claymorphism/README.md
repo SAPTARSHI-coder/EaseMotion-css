@@ -1,0 +1,2 @@
+# Floating Stepper (Claymorphism)
+A soft, pillowy 3D stepper component. The background track is recessed into the page using inset shadows, while the active step node physically detaches and floats upward via a bouncy `cubic-bezier(0.34, 1.56, 0.64, 1)` hover transform.
