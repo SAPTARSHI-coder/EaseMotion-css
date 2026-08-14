@@ -1,19 +1,22 @@
-# CSS Gradient Text Animation Example
+# Pure CSS Gradient Text Animation
 
-Animated gradient text effects using `background-clip: text` with moving gradient backgrounds.
-
-## Features
-
-- Three gradient text styles: rainbow sweep, shimmer wave, neon pulse
-- Pure CSS animations with `@keyframes` for background-position shifts
-- Fallback solid color for unsupported browsers
-- Dark theme with `prefers-reduced-motion` support
+Pure CSS animated gradient text using background-clip with a flowing gradient, no JS. Pure HTML & vanilla CSS, no external JavaScript.
 
 ## Files
+- `demo.html` — fully self-contained working component
+- `style.css` — pure CSS (no JS), hardware-accelerated where applicable
+- `README.md` — this guide
 
-- `demo.html` — Gradient text comparison layout
-- `style.css` — Self-contained CSS (80 lines)
+## Usage
+```html
+<link rel="stylesheet" href="./style.css" />
+<h1 class="ease-cgradient" role="img" aria-label="Gradient text animation">GRADIENT</h1>
+```
 
-## Preview
+## Accessibility
+- Native interactive elements used where possible.
+- `:focus-visible` outlines for keyboard users.
+- `aria-label`, `role`, `aria-current` used where appropriate.
+- `@media (prefers-reduced-motion: reduce)` disables animations.
 
-Three animated gradient text styles demonstrating different background-position animation techniques.
+Closes #71878
