@@ -1,3 +1,3 @@
-# feat(examples): Add CSS parallax depth interaction cards
+# feat(examples): Add CSS parallax depth hover cards
 
-Documentation for css-parallax-depth-cards-harrshita.
+Documentation for `css-parallax-depth-cards-harrshita`.
