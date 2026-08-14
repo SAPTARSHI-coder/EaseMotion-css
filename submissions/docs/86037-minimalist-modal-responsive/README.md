@@ -1,55 +1,95 @@
-# Minimalist Modal Dialog — Responsive Layout
+# Minimalist Modal — Responsive
 
 ## Overview
-This guide covers responsive breakpoints for the Minimalist Modal Dialog Window.
-The modal uses semantic dialog structure, flexible sizing, and CSS custom properties.
+This guide documents responsive behavior for the minimalist modal dialog.
+The dialog adapts to available width while preserving content readability.
 
-## Markup
-Use a dialog element and a clear heading.
-Keep primary and secondary actions as real buttons.
+## Purpose
+Use the modal for focused tasks that require temporary attention.
+Keep the task concise and provide clear actions.
 
-```html
-<dialog class="modal" aria-labelledby="modal-title">
-  <div class="modal__panel">
-    <h2 id="modal-title">Confirm action</h2>
-    <p>Review the information before continuing.</p>
-    <div class="modal__actions">
-      <button type="button">Cancel</button>
-      <button type="button">Continue</button>
-    </div>
-  </div>
-</dialog>
-```
+## Structure
+Use a semantic dialog with a descriptive heading.
+Keep primary and secondary actions as native buttons.
+Group related actions in a dedicated actions region.
 
-## Responsive Rules
+## Responsive Width
 Use a flexible width with a maximum width on large screens.
-Reduce padding at narrow breakpoints.
-Avoid fixed heights that can clip long content.
-Allow the dialog body to scroll when content exceeds the viewport.
+Keep safe horizontal margins on small screens.
+Avoid fixed widths that can cause viewport overflow.
 
-## Modifiers
-Use modifiers for compact or wide presentation variants.
-Keep modifier selectors scoped to the modal block.
+## Responsive Height
+Avoid fixed heights that clip important content.
+Allow the content area to scroll when it exceeds available space.
+Keep the action area reachable after long content.
 
-## Custom Properties
-Expose panel width, padding, radius, surface, text, and shadow as variables.
-Theme variables at the component or page scope.
+## Mobile Behavior
+Reduce decorative padding on narrow screens.
+Allow headings and body text to wrap naturally.
+Keep action controls large enough for touch interaction.
+Do not hide essential content to preserve a compact appearance.
+
+## Tablet Behavior
+Use a moderate maximum width.
+Maintain comfortable spacing around the dialog panel.
+Keep the same semantic and keyboard order as desktop.
+
+## Desktop Behavior
+Use a constrained maximum width for readable line lengths.
+Keep the overlay visually separate from the dialog.
+Avoid excessive panel width on large monitors.
 
 ## Accessibility
-Use a descriptive dialog label.
-Keep focus inside an actively opened modal when implementing scripted behavior.
+Give the dialog an accessible name.
+Keep focus inside the active modal when scripted behavior is used.
 Return focus to the invoking control after closing.
-Ensure every action is keyboard reachable.
+Keep every action keyboard reachable.
 Maintain visible focus indicators.
 
-## Demo
-Open `demo.html` and resize the viewport.
-Use keyboard navigation to inspect action order and focus visibility.
+## Keyboard
+Support Tab navigation through all available controls.
+Support Escape dismissal when appropriate.
+Do not remove browser focus outlines without an accessible replacement.
+
+## Typography
+Use readable text sizes across breakpoints.
+Allow long headings to wrap instead of clipping them.
+Maintain adequate line height for dense content.
+
+## Custom Properties
+Expose width, padding, radius, surface, text, border, and shadow values.
+Theme variables at the component or page scope.
+Use responsive overrides only when a token needs breakpoint-specific behavior.
+
+## Motion
+Respect `prefers-reduced-motion` for optional open and close transitions.
+The dialog must remain usable without animation.
+
+## Usage
+Open `demo.html` to inspect the standalone implementation.
+Resize the viewport to test the responsive layout.
+Replace sample content with the application's actual task.
 
 ## Testing
-Test long content, small screens, browser zoom, keyboard navigation, and desktop widths.
+Test phone widths.
+Test tablet widths.
+Test desktop widths.
+Test long content.
+Test keyboard navigation.
+Test focus visibility.
+Test browser zoom.
+Test reduced motion.
+
+## Browser Support
+The example uses semantic HTML and standard responsive CSS.
+Modern browsers support the layout features used in the demo.
 
 ## Files
 `README.md` documents the responsive scope.
 `demo.html` is the standalone example.
 `style.css` contains responsive presentation rules.
+
+## Summary
+The responsive modal keeps focused tasks usable across screen sizes.
+Let content determine height instead of forcing fixed dimensions.
+Use the supplied demo as the reference for production integration.
