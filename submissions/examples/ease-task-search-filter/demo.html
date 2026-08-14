@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Search & Filter Component | GSSoC '26</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Ambient Glass Background -->
+  <div class="ambient-glow" aria-hidden="true">
+    <div class="glow-orb orb-primary"></div>
+    <div class="glow-orb orb-secondary"></div>
+  </div>
+
+  <main class="component-container">
+    <!-- Header -->
+    <header class="component-header">
+      <span class="badge">UI Component</span>
+      <h1 class="title">Task Search & Filter</h1>
+      <p class="subtitle">Search, filter by status, and manage your tasks effortlessly.</p>
+    </header>
+
+    <!-- Main Card Wrapper -->
+    <section class="task-card">
+      
+      <!-- Search & Filter Controls Toolbar -->
+      <div class="toolbar">
+        <!-- Search Bar -->
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search tasks by title..." 
+            autocomplete="off"
+            aria-label="Search tasks by title"
+          />
+          <button type="button" id="clear-search" class="clear-search-btn hidden" aria-label="Clear search input">&times;</button>
+        </div>
+
+        <!-- Filter Buttons (All, Pending, Completed) -->
+        <div class="filter-group" role="radiogroup" aria-label="Filter tasks by status">
+          <button type="button" class="filter-btn active" data-filter="all" aria-checked="true">
+            All <span class="filter-count" id="count-all">0</span>
+          </button>
+          <button type="button" class="filter-btn" data-filter="pending" aria-checked="false">
+            Pending <span class="filter-count" id="count-pending">0</span>
+          </button>
+          <button type="button" class="filter-btn" data-filter="completed" aria-checked="false">
+            Completed <span class="filter-count" id="count-completed">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Task List Area -->
+      <ul id="task-list" class="task-list" role="list">
+        <!-- Tasks rendered dynamically -->
+      </ul>
+
+      <!-- Empty State View -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">📂</div>
+        <p id="empty-message">No matching tasks found.</p>
+      </div>
+
+      <!-- Footer Info -->
+      <footer class="card-footer">
+        <span id="showing-info">Showing all tasks</span>
+        <span id="results-count">0 items</span>
+      </footer>
+
+    </section>
+  </main>
+
+  <script>
+    // Initial Task Data
+    let tasks = [
+      { id: 1, title: "Review GSSoC '26 Pull Requests", status: "pending", category: "Open Source" },
+      { id: 2, title: "Design responsive Zen UI components", status: "completed", category: "Design" },
+      { id: 3, title: "Add Task Search and Filter component #83621", status: "completed", category: "Feature" },
+      { id: 4, title: "Fix mobile breakpoint grid collapse", status: "pending", category: "Bug" },
+      { id: 5, title: "Write comprehensive README documentation", status: "pending", category: "Docs" }
+    ];
+
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    // DOM Elements
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const taskList = document.getElementById('task-list');
+    const emptyState = document.getElementById('empty-state');
+    const emptyMessage = document.getElementById('empty-message');
+    const countAll = document.getElementById('count-all');
+    const countPending = document.getElementById('count-pending');
+    const countCompleted = document.getElementById('count-completed');
+    const showingInfo = document.getElementById('showing-info');
+    const resultsCount = document.getElementById('results-count');
+
+    // Update Counts Bar
+    function updateCounts() {
+      const allNum = tasks.length;
+      const pendingNum = tasks.filter(t => t.status === 'pending').length;
+      const completedNum = tasks.filter(t => t.status === 'completed').length;
+
+      countAll.textContent = allNum;
+      countPending.textContent = pendingNum;
+      countCompleted.textContent = completedNum;
+    }
+
+    // Toggle Task Completion Status
+    function toggleTaskStatus(id) {
+      tasks = tasks.map(t => {
+        if (t.id === id) {
+          return { ...t, status: t.status === 'completed' ? 'pending' : 'completed' };
+        }
+        return t;
+      });
+      renderTasks();
+    }
+
+    // Escape HTML to Prevent XSS
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    // Render Tasks based on Search & Filter
+    function renderTasks() {
+      updateCounts();
+
+      // Filter Logic
+      const filtered = tasks.filter(task => {
+        const matchesFilter = currentFilter === 'all' || task.status === currentFilter;
+        const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+
+      taskList.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        if (searchQuery.trim() !== '') {
+          emptyMessage.textContent = `No tasks matching "${searchQuery}"`;
+        } else if (currentFilter !== 'all') {
+          emptyMessage.textContent = `No ${currentFilter} tasks currently available.`;
+        } else {
+          emptyMessage.textContent = `No tasks available.`;
+        }
+      } else {
+        emptyState.classList.add('hidden');
+
+        filtered.forEach(task => {
+          const li = document.createElement('li');
+          li.className = `task-item ${task.status}`;
+          
+          li.innerHTML = `
+            <label class="checkbox-wrapper">
+              <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''} aria-label="Toggle task status"/>
+              <span class="custom-checkbox"></span>
+            </label>
+            <div class="task-details">
+              <span class="task-title">${escapeHTML(task.title)}</span>
+              <span class="task-badge">${escapeHTML(task.category)}</span>
+            </div>
+            <span class="status-tag ${task.status}">${task.status}</span>
+          `;
+
+          // Checkbox Listener
+          const checkbox = li.querySelector('input[type="checkbox"]');
+          checkbox.addEventListener('change', () => toggleTaskStatus(task.id));
+
+          taskList.appendChild(li);
+        });
+      }
+
+      // Footer Information
+      showingInfo.textContent = `Filter: ${currentFilter.toUpperCase()}${searchQuery ? ` | Query: "${searchQuery}"` : ''}`;
+      resultsCount.textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+    }
+
+    // Search Input Listener
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      clearSearchBtn.classList.toggle('hidden', searchQuery === '');
+      renderTasks();
+    });
+
+    // Clear Search Input
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      searchQuery = '';
+      clearSearchBtn.classList.add('hidden');
+      searchInput.focus();
+      renderTasks();
+    });
+
+    // Filter Button Click Listeners
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+
+        currentFilter = btn.getAttribute('data-filter');
+        renderTasks();
+      });
+    });
+
+    // Initial Render
+    renderTasks();
+  </script>
+</body>
+</html>
