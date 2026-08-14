@@ -1,0 +1,2 @@
+# Animated Timeline (Dark Mode)
+A highly polished alternating vertical timeline designed for dark mode interfaces. Nodes alternate left and right on desktop, collapsing to a left-aligned layout on mobile. Hovering a node snaps the content into focus with a bouncy spring animation.
