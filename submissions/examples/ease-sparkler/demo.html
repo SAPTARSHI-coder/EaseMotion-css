@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparkler · Sparkler Writes in Light</title>
+    <meta name="description" content="Interactive sparkler that writes in light with glowing trails, sparks, and magical effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">✨ SPARKLER</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="sparklerCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Length</label>
+                <input type="range" id="lengthSlider" min="20" max="200" value="80">
+                <span id="lengthLabel">80</span>
+                <label>Sparks</label>
+                <input type="range" id="sparksSlider" min="5" max="30" value="15">
+                <span id="sparksLabel">15</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>✨ SPARKLER</span>
+            <small>write · glow · light</small>
+        </div>
+        <div class="hint">
+            <span>🖊️ drag to write with a glowing sparkler</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('sparklerCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const clearBtn = document.getElementById('clearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const lengthSlider = document.getElementById('lengthSlider');
+            const lengthLabel = document.getElementById('lengthLabel');
+            const sparksSlider = document.getElementById('sparksSlider');
+            const sparksLabel = document.getElementById('sparksLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            let isDrawing = false;
+            let trail = [];
+            let sparkles = [];
+            let sparklerX = W / 2;
+            let sparklerY = H / 2;
+            let trailLength = 80;
+            let sparkCount = 15;
+
+            // ---- Sparkle Class ----
+            class Sparkle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = 1 + Math.random() * 4;
+                    this.life = 1;
+                    this.decay = 0.02 + Math.random() * 0.04;
+                    this.vx = (Math.random() - 0.5) * 3;
+                    this.vy = (Math.random() - 0.5) * 3 - 1;
+                    this.gravity = 0.05 + Math.random() * 0.05;
+                    this.hue = 30 + Math.random() * 30;
+                    this.sat = 80 + Math.random() * 20;
+                    this.light = 70 + Math.random() * 30;
+                    this.phase = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= 0.98;
+                    this.life -= this.decay;
+                    this.size *= 0.98;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life * 0.8;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Glow
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 2
+                    );
+                    grad.addColorStop(0, `hsla(${this.hue}, ${this.sat}%, ${this.light}%, ${alpha})`);
+                    grad.addColorStop(0.5, `hsla(${this.hue + 10}, ${this.sat}%, ${this.light - 10}%, ${alpha * 0.5})`);
+                    grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.shadowColor = `hsla(${this.hue}, 100%, 80%, ${alpha * 0.3})`;
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `hsla(${this.hue + 10}, 100%, 90%, ${alpha * 0.8})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Sparkles ----
+            function createSparkles(x, y, count) {
+                for (let i = 0; i < count; i++) {
+                    sparkles.push(new Sparkle(x, y));
+                }
+            }
+
+            // ---- Start Drawing ----
+            function startDrawing(x, y) {
+                isDrawing = true;
+                trail = [];
+                sparklerX = x;
+                sparklerY = y;
+                createSparkles(x, y, sparkCount);
+            }
+
+            // ---- Draw ----
+            function draw(x, y) {
+                if (!isDrawing) return;
+                
+                // Add point to trail
+                trail.push({ x, y, time: time });
+                if (trail.length > trailLength) {
+                    trail.shift();
+                }
+                
+                // Update position
+                sparklerX = x;
+                sparklerY = y;
+                
+                // Create sparkles
+                createSparkles(x, y, Math.floor(sparkCount * 0.3));
+            }
+
+            // ---- End Drawing ----
+            function endDrawing() {
+                isDrawing = false;
+                // Final burst
+                if (trail.length > 0) {
+                    const last = trail[trail.length - 1];
+                    createSparkles(last.x, last.y, sparkCount * 2);
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw sparkles
+                sparkles = sparkles.filter(s => s.life > 0);
+                for (let s of sparkles) {
+                    s.update();
+                    s.draw(ctx);
+                }
+                
+                // Draw trail
+                if (trail.length > 1) {
+                    for (let i = 0; i < trail.length - 1; i++) {
+                        const p1 = trail[i];
+                        const p2 = trail[i + 1];
+                        const t = i / trail.length;
+                        const alpha = 0.1 + t * 0.3;
+                        const width = 1 + t * 4;
+                        const hue = 30 + t * 20;
+                        
+                        ctx.save();
+                        ctx.globalAlpha = alpha * 0.8;
+                        ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${alpha * 0.2})`;
+                        ctx.shadowBlur = 15;
+                        ctx.strokeStyle = `hsla(${hue}, 100%, ${70 + t * 20}%, ${alpha})`;
+                        ctx.lineWidth = width;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    
+                    // Glow at end of trail
+                    const last = trail[trail.length - 1];
+                    const glowGrad = ctx.createRadialGradient(
+                        last.x, last.y, 0,
+                        last.x, last.y, 30
+                    );
+                    glowGrad.addColorStop(0, 'rgba(255, 220, 150, 0.06)');
+                    glowGrad.addColorStop(0.5, 'rgba(255, 200, 100, 0.03)');
+                    glowGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw sparkler tip glow
+                if (isDrawing || trail.length > 0) {
+                    const tipX = sparklerX;
+                    const tipY = sparklerY;
+                    const tipGrad = ctx.createRadialGradient(
+                        tipX, tipY, 0,
+                        tipX, tipY, 25
+                    );
+                    tipGrad.addColorStop(0, 'rgba(255, 255, 200, 0.08)');
+                    tipGrad.addColorStop(0.5, 'rgba(255, 220, 150, 0.04)');
+                    tipGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = tipGrad;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(tipX, tipY, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Sparks: ${sparkles.length}`, W - 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                startDrawing(pos.x, pos.y);
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                draw(pos.x, pos.y);
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                endDrawing();
+            }
+
+            // ---- Clear ----
+            function clearSparkler() {
+                trail = [];
+                sparkles = [];
+                isDrawing = false;
+            }
+
+            // ---- Reset ----
+            function resetSparkler() {
+                trail = [];
+                sparkles = [];
+                isDrawing = false;
+                time = 0;
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            lengthSlider.addEventListener('input', function() {
+                trailLength = parseInt(this.value);
+                lengthLabel.textContent = trailLength;
+            });
+            sparksSlider.addEventListener('input', function() {
+                sparkCount = parseInt(this.value);
+                sparksLabel.textContent = sparkCount;
+            });
+
+            // ---- Event Listeners ----
+            clearBtn.addEventListener('click', clearSparkler);
+            resetBtn.addEventListener('click', resetSparkler);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'c' || e.key === 'C') {
+                    clearSparkler();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSparkler();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('✨ Sparkler · Drag to write with light!');
+        })();
+    </script>
+</body>
+</html>
