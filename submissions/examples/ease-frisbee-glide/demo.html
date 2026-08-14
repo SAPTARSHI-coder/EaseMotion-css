@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frisbee Glide · Glides Through Air</title>
+    <meta name="description" content="Interactive frisbee with realistic gliding physics, smooth flight path, and catching mechanics.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🥏 FRISBEE GLIDE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="frisbeeCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="throw-btn" id="throwBtn">🥏 THROW</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Glide</label>
+                <input type="range" id="glideSlider" min="1" max="10" value="5">
+                <span id="glideLabel">5</span>
+                <label>Angle</label>
+                <input type="range" id="angleSlider" min="1" max="10" value="5">
+                <span id="angleLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🥏 FRISBEE GLIDE</span>
+            <small>glide · fly · catch</small>
+        </div>
+        <div class="hint">
+            <span>🥏 click to throw the frisbee and watch it glide</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('frisbeeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const throwBtn = document.getElementById('throwBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const glideSlider = document.getElementById('glideSlider');
+            const glideLabel = document.getElementById('glideLabel');
+            const angleSlider = document.getElementById('angleSlider');
+            const angleLabel = document.getElementById('angleLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            
+            // ---- Frisbee State ----
+            let frisbee = {
+                x: W / 2,
+                y: H - 80,
+                angle: 0,
+                tilt: 0,
+                velocity: 0,
+                vx: 0,
+                vy: 0,
+                isThrown: false,
+                isReturning: false,
+                progress: 0,
+                trail: [],
+                maxTrail: 25,
+                throwCount: 0,
+                size: 35,
+                rotation: 0,
+                lift: 0
+            };
+
+            // ---- Throw Frisbee ----
+            function throwFrisbee() {
+                if (frisbee.isThrown) return;
+                
+                const glide = parseInt(glideSlider.value) / 5;
+                const angle = parseInt(angleSlider.value) / 5;
+                
+                frisbee.isThrown = true;
+                frisbee.isReturning = false;
+                frisbee.progress = 0;
+                frisbee.throwCount++;
+                frisbee.trail = [];
+                frisbee.lift = 0;
+                
+                // Initial velocity and angle
+                const power = 2 + glide * 2;
+                const launchAngle = -0.4 - angle * 0.08;
+                frisbee.velocity = power;
+                frisbee.vx = Math.cos(launchAngle) * power * 1.2;
+                frisbee.vy = Math.sin(launchAngle) * power * 0.8;
+                frisbee.angle = launchAngle;
+                frisbee.tilt = angle * 0.05;
+                frisbee.rotation = 0;
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02;
+                const glide = parseInt(glideSlider.value) / 5;
+                const angle = parseInt(angleSlider.value) / 5;
+                
+                if (frisbee.isThrown) {
+                    // Gravity
+                    const gravity = 0.15 - glide * 0.01;
+                    frisbee.vy += gravity * dt * 2;
+                    
+                    // Lift (glide effect)
+                    const liftFactor = 0.02 + glide * 0.02;
+                    frisbee.lift = Math.abs(frisbee.vx) * liftFactor * dt * 0.5;
+                    frisbee.vy -= frisbee.lift;
+                    
+                    // Update position
+                    frisbee.x += frisbee.vx * dt * 2;
+                    frisbee.y += frisbee.vy * dt * 2;
+                    
+                    // Rotation
+                    frisbee.rotation += frisbee.vx * dt * 0.05;
+                    
+                    // Trail
+                    if (frisbee.trail.length === 0 || 
+                        Math.hypot(frisbee.x - frisbee.trail[frisbee.trail.length-1].x,
+                                  frisbee.y - frisbee.trail[frisbee.trail.length-1].y) > 8) {
+                        frisbee.trail.push({ x: frisbee.x, y: frisbee.y, life: 1 });
+                        if (frisbee.trail.length > frisbee.maxTrail) {
+                            frisbee.trail.shift();
+                        }
+                    }
+                    
+                    // Update trail life
+                    for (let t of frisbee.trail) {
+                        t.life -= 0.03;
+                    }
+                    frisbee.trail = frisbee.trail.filter(t => t.life > 0);
+                    
+                    // Ground collision
+                    if (frisbee.y > H - 30) {
+                        frisbee.y = H - 30;
+                        frisbee.vy *= -0.2;
+                        if (Math.abs(frisbee.vy) < 0.5) {
+                            frisbee.vy = 0;
+                            frisbee.isThrown = false;
+                            frisbee.x = W/2;
+                            frisbee.y = H - 80;
+                            frisbee.trail = [];
+                        }
+                    }
+                    
+                    // Wall boundaries
+                    if (frisbee.x < 20 || frisbee.x > W - 20) {
+                        frisbee.vx *= -0.3;
+                        frisbee.x = Math.max(20, Math.min(W - 20, frisbee.x));
+                    }
+                    
+                    // Slow down
+                    frisbee.vx *= 0.999;
+                    frisbee.vy *= 0.999;
+                    
+                    // Check if landed
+                    if (Math.abs(frisbee.vx) < 0.1 && Math.abs(frisbee.vy) < 0.1 && frisbee.y > H - 50) {
+                        frisbee.isThrown = false;
+                        frisbee.x = W/2;
+                        frisbee.y = H - 80;
+                        frisbee.trail = [];
+                    }
+                }
+            }
+
+            // ---- Reset ----
+            function resetFrisbee() {
+                frisbee.x = W / 2;
+                frisbee.y = H - 80;
+                frisbee.angle = 0;
+                frisbee.tilt = 0;
+                frisbee.vx = 0;
+                frisbee.vy = 0;
+                frisbee.isThrown = false;
+                frisbee.isReturning = false;
+                frisbee.progress = 0;
+                frisbee.trail = [];
+                frisbee.throwCount = 0;
+                frisbee.rotation = 0;
+                frisbee.lift = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Ground
+                ctx.fillStyle = 'rgba(100, 200, 255, 0.02)';
+                ctx.fillRect(0, H - 30, W, 30);
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H - 30);
+                ctx.lineTo(W, H - 30);
+                ctx.stroke();
+                
+                // Draw trail
+                if (frisbee.trail.length > 1) {
+                    ctx.save();
+                    for (let i = 0; i < frisbee.trail.length - 1; i++) {
+                        const t = frisbee.trail[i];
+                        const alpha = t.life * 0.3;
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = 'rgba(100, 200, 255, 0.2)';
+                        ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                        ctx.shadowBlur = 10;
+                        const size = 2 + (1 - t.life) * 4;
+                        ctx.beginPath();
+                        ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+                
+                // Draw frisbee
+                const fx = frisbee.x;
+                const fy = frisbee.y;
+                const size = frisbee.size;
+                const angle = frisbee.angle;
+                const tilt = frisbee.tilt;
+                const rot = frisbee.rotation;
+                const isThrown = frisbee.isThrown;
+                
+                ctx.save();
+                ctx.translate(fx, fy);
+                ctx.rotate(rot);
+                
+                // Shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 5;
+                
+                // Frisbee body (ellipse with tilt)
+                const tiltX = 1 + tilt * 0.3;
+                const tiltY = 1 - tilt * 0.2;
+                
+                // Glow
+                const glowIntensity = isThrown ? 0.5 : 0.1;
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.1})`;
+                ctx.shadowBlur = 20 * glowIntensity;
+                
+                // Frisbee top
+                const grad2 = ctx.createRadialGradient(
+                    -size * 0.2, -size * 0.2, 0,
+                    0, 0, size
+                );
+                grad2.addColorStop(0, '#e8e0d5');
+                grad2.addColorStop(0.3, '#d4c8b8');
+                grad2.addColorStop(0.6, '#b8a898');
+                grad2.addColorStop(0.8, '#9a8a7a');
+                grad2.addColorStop(1, '#7a6a5a');
+                
+                ctx.fillStyle = grad2;
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.1})`;
+                ctx.shadowBlur = 15 * glowIntensity;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * tiltX, size * 0.35 * tiltY, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Frisbee rim
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(80, 70, 60, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * tiltX * 0.9, size * 0.3 * tiltY, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Inner ring
+                ctx.strokeStyle = 'rgba(80, 70, 60, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.5 * tiltX, size * 0.15 * tiltY, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.15 * tiltX, -size * 0.1 * tiltY, size * 0.2 * tiltX, size * 0.06 * tiltY, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Cross lines (for spin effect)
+                if (isThrown) {
+                    ctx.strokeStyle = `rgba(100, 200, 255, ${0.05 + Math.abs(frisbee.vx) * 0.01})`;
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i < 4; i++) {
+                        const a = (i / 4) * Math.PI * 2 + rot;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(a) * size * 0.8 * tiltX, Math.sin(a) * size * 0.3 * tiltY);
+                        ctx.stroke();
+                    }
+                }
+                
+                ctx.restore();
+                
+                // Hand
+                if (!frisbee.isThrown) {
+                    const handX = W/2;
+                    const handY = H - 80;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = 'rgba(200, 220, 240, 0.05)';
+                    ctx.beginPath();
+                    ctx.arc(handX, handY, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                    ctx.font = '24px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('✋', handX, handY);
+                    ctx.restore();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Throws: ${frisbee.throwCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = frisbee.isThrown ? '🔄 FLYING' : '🥏 READY';
+                ctx.fillText(status, 20, H - 10);
+                
+                if (frisbee.isThrown) {
+                    const speed = Math.hypot(frisbee.vx, frisbee.vy);
+                    ctx.fillText(`Speed: ${(speed * 10).toFixed(0)}`, 20, H - 30);
+                }
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            glideSlider.addEventListener('input', function() {
+                glideLabel.textContent = this.value;
+            });
+            angleSlider.addEventListener('input', function() {
+                angleLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            throwBtn.addEventListener('click', throwFrisbee);
+            resetBtn.addEventListener('click', resetFrisbee);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    throwFrisbee();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetFrisbee();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🥏 Frisbee Glide · Click Throw or press Space to launch the frisbee!');
+        })();
+    </script>
+</body>
+</html>

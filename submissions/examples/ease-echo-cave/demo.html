@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🕳️ Echo Cave – Echo Effect With Trails</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🕳️ Echo Cave</h1>
+            <div class="controls">
+                <button class="control-btn" id="echoBtn" title="Make echo">🔊 Echo</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="toggleBtn" title="Toggle audio">🔇 Mute</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="echoCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="caveStatus">🕳️ Silent</span>
+                <span id="echoCount">🌊 0 echoes</span>
+                <span id="trailCount">🌀 0 trails</span>
+            </div>
+            <div class="hint" id="hint">🕳️ Click to make an echo in the cave</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🌊 Echo Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="70" step="1" />
+                <span id="intensityLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌀 Trail Length</label>
+                <input type="range" id="trailSlider" min="10" max="100" value="60" step="1" />
+                <span id="trailLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>🔄 Echo Decay</label>
+                <input type="range" id="decaySlider" min="10" max="100" value="50" step="1" />
+                <span id="decayLabel">50%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Echo Cave – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('echoCanvas');
+            const ctx = canvas.getContext('2d');
+            const caveStatus = document.getElementById('caveStatus');
+            const echoCount = document.getElementById('echoCount');
+            const trailCount = document.getElementById('trailCount');
+            const hint = document.getElementById('hint');
+            const echoBtn = document.getElementById('echoBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const trailSlider = document.getElementById('trailSlider');
+            const trailLabel = document.getElementById('trailLabel');
+            const decaySlider = document.getElementById('decaySlider');
+            const decayLabel = document.getElementById('decayLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isMuted = false;
+            let time = 0;
+            let animationId = null;
+            let totalEchoes = 0;
+            let mouseX = W / 2;
+            let mouseY = H / 2;
+
+            // --- Parameters ---
+            let intensity = 70; // 10-100
+            let trailLength = 60; // 10-100
+            let decayRate = 50; // 10-100
+
+            // --- Echo system ---
+            let echoes = [];
+            let trailParticles = [];
+
+            // --- Audio context ---
+            let audioCtx = null;
+            let isAudioReady = false;
+
+            // --- Echo class ---
+            class Echo {
+                constructor(x, y, strength) {
+                    this.x = x || W / 2;
+                    this.y = y || H / 2;
+                    this.strength = (strength || intensity) / 100;
+                    this.radius = 10;
+                    this.maxRadius = 150 + this.strength * 200;
+                    this.speed = 1 + this.strength * 3;
+                    this.opacity = 0.7 + this.strength * 0.3;
+                    this.life = 1;
+                    this.decay = (0.005 + (1 - decayRate / 100) * 0.02) * (0.5 + this.strength * 0.5);
+                    this.width = 2 + this.strength * 4;
+                    this.hue = 200 + this.strength * 40;
+                    this.saturation = 60 + this.strength * 30;
+                    this.lightness = 50 + this.strength * 30;
+                    this.trail = [];
+                    this.maxTrail = 20;
+                    this.pulse = 0;
+                    this.pulseSpeed = 0.02 + Math.random() * 0.02;
+                    this.alive = true;
+                    this.wobble = (Math.random() - 0.5) * 0.02;
+                    
+                    // Create sound
+                    if (!isMuted) {
+                        playEchoSound(this.strength);
+                    }
+                    
+                    // Create initial trail particles
+                    this.createTrailParticles();
+                }
+
+                createTrailParticles() {
+                    const count = 5 + Math.floor(this.strength * 10);
+                    for (let i = 0; i < count; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = Math.random() * 20;
+                        const p = {
+                            x: this.x + Math.cos(angle) * dist,
+                            y: this.y + Math.sin(angle) * dist,
+                            vx: (Math.random() - 0.5) * 2 * this.strength,
+                            vy: (Math.random() - 0.5) * 2 * this.strength - 0.5,
+                            size: 1 + Math.random() * 3 * this.strength,
+                            life: 1,
+                            maxLife: 0.5 + Math.random() * 0.5,
+                            hue: this.hue + (Math.random() - 0.5) * 20,
+                            opacity: 0.3 + Math.random() * 0.7
+                        };
+                        trailParticles.push(p);
+                    }
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.opacity *= (1 - this.decay * 0.5);
+                    this.life -= this.decay;
+                    this.width *= 0.998;
+                    this.pulse += this.pulseSpeed;
+                    
+                    // Wobble
+                    const wobbleOffset = Math.sin(this.pulse * 2) * this.wobble * this.radius;
+                    this.radius += wobbleOffset * 0.01;
+                    
+                    // Trail particles
+                    if (this.life > 0.3 && Math.random() < this.strength * 0.05) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = this.radius * (0.5 + Math.random() * 0.5);
+                        const p = {
+                            x: this.x + Math.cos(angle) * dist,
+                            y: this.y + Math.sin(angle) * dist,
+                            vx: (Math.random() - 0.5) * 0.5,
+                            vy: (Math.random() - 0.5) * 0.5 - 0.3,
+                            size: 0.5 + Math.random() * 2 * this.strength,
+                            life: 1,
+                            maxLife: 0.3 + Math.random() * 0.4,
+                            hue: this.hue + (Math.random() - 0.5) * 15,
+                            opacity: this.opacity * (0.3 + Math.random() * 0.5)
+                        };
+                        trailParticles.push(p);
+                    }
+                    
+                    if (this.radius > this.maxRadius || this.life < 0.01 || this.opacity < 0.01) {
+                        this.alive = false;
+                    }
+                    
+                    return this.alive;
+                }
+
+                draw(ctx) {
+                    if (!this.alive || this.opacity < 0.01) return;
+
+                    const alpha = this.life * this.opacity;
+                    const radius = this.radius * (1 + 0.05 * Math.sin(this.pulse));
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Outer glow
+                    const glowGrad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, radius * 1.5
+                    );
+                    glowGrad.addColorStop(0, `hsla(${this.hue}, ${this.saturation}%, ${this.lightness + 20}%, ${alpha * 0.1})`);
+                    glowGrad.addColorStop(0.5, `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * 0.05})`);
+                    glowGrad.addColorStop(1, `hsla(${this.hue}, ${this.saturation}%, ${this.lightness - 20}%, 0)`);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Main ring
+                    ctx.shadowBlur = 20 * alpha;
+                    ctx.shadowColor = `hsla(${this.hue}, 80%, 70%, ${alpha * 0.3})`;
+                    ctx.strokeStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * 0.8})`;
+                    ctx.lineWidth = this.width * alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Inner ring
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `hsla(${this.hue + 20}, ${this.saturation - 20}%, ${this.lightness + 20}%, ${alpha * 0.2})`;
+                    ctx.lineWidth = this.width * 0.3 * alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius * 0.6, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Outer ring
+                    ctx.strokeStyle = `hsla(${this.hue - 20}, ${this.saturation - 20}%, ${this.lightness - 20}%, ${alpha * 0.1})`;
+                    ctx.lineWidth = this.width * 0.2 * alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius * 1.3, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Sparkle points on ring
+                    if (alpha > 0.2) {
+                        const sparkleCount = 6 + Math.floor(alpha * 10);
+                        for (let i = 0; i < sparkleCount; i++) {
+                            const angle = (i / sparkleCount) * Math.PI * 2 + this.pulse + i * 0.5;
+                            const dist = radius * (0.7 + 0.3 * Math.sin(this.pulse * 2 + i));
+                            const sx = this.x + Math.cos(angle) * dist;
+                            const sy = this.y + Math.sin(angle) * dist;
+                            const size = 1 + Math.random() * 2 * alpha * this.strength;
+                            ctx.shadowBlur = 5;
+                            ctx.shadowColor = `hsla(50, 100%, 90%, ${alpha * 0.2})`;
+                            ctx.fillStyle = `hsla(50, 100%, 95%, ${alpha * 0.3})`;
+                            ctx.beginPath();
+                            ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Audio functions ---
+            function initAudio() {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    isAudioReady = true;
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                }
+            }
+
+            function playEchoSound(strength) {
+                if (!isAudioReady || isMuted) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const duration = 0.3 + strength * 0.5;
+                    const delayTime = 0.05 + strength * 0.1;
+                    
+                    // Main sound
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const filter = audioCtx.createBiquadFilter();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200 + strength * 200, now);
+                    osc.frequency.exponentialRampToValueAtTime(100 + strength * 100, now + duration);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 1000 + strength * 2000;
+                    
+                    gain.gain.setValueAtTime(strength * 0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                    
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + duration);
+                    
+                    // Echo effect (delay)
+                    const echoCount = 2 + Math.floor(strength * 4);
+                    for (let i = 0; i < echoCount; i++) {
+                        const delay = (i + 1) * delayTime;
+                        const echoGain = gain.gain.value * (0.5 - i * 0.08);
+                        if (echoGain < 0.01) continue;
+                        
+                        const osc2 = audioCtx.createOscillator();
+                        const gain2 = audioCtx.createGain();
+                        const filter2 = audioCtx.createBiquadFilter();
+                        
+                        osc2.type = 'sine';
+                        osc2.frequency.setValueAtTime(200 + strength * 200 - i * 20, now + delay);
+                        osc2.frequency.exponentialRampToValueAtTime(100 + strength * 100 - i * 10, now + delay + duration * 0.7);
+                        
+                        filter2.type = 'lowpass';
+                        filter2.frequency.value = 1000 + strength * 2000 - i * 100;
+                        
+                        gain2.gain.setValueAtTime(echoGain * 0.5, now + delay);
+                        gain2.gain.exponentialRampToValueAtTime(0.001, now + delay + duration * 0.7);
+                        
+                        osc2.connect(filter2);
+                        filter2.connect(gain2);
+                        gain2.connect(audioCtx.destination);
+                        
+                        osc2.start(now + delay);
+                        osc2.stop(now + delay + duration * 0.7);
+                    }
+                    
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Cave gradient
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 50,
+                    W / 2, H / 2, 450
+                );
+                grad.addColorStop(0, '#0a1520');
+                grad.addColorStop(0.3, '#080e18');
+                grad.addColorStop(0.6, '#060a12');
+                grad.addColorStop(0.8, '#04080e');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Cave walls (subtle)
+                ctx.save();
+                ctx.globalAlpha = 0.03;
+                for (let i = 0; i < 10; i++) {
+                    const x = i * 80 + 20;
+                    const y = H / 2 + Math.sin(i * 0.7 + 0.5) * 200;
+                    const w = 40 + Math.sin(i * 0.5) * 20;
+                    const h = 300 + Math.sin(i * 0.3) * 100;
+                    ctx.fillStyle = 'rgba(100, 150, 200, 0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Stalactites (top)
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                for (let i = 0; i < 15; i++) {
+                    const x = i * 55 + 20 + Math.sin(i * 0.5) * 10;
+                    const h = 20 + Math.sin(i * 0.7) * 30 + 30;
+                    ctx.fillStyle = 'rgba(100, 150, 200, 0.1)';
+                    ctx.beginPath();
+                    ctx.moveTo(x - 5, 0);
+                    ctx.quadraticCurveTo(x, h, x + 5, 0);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Stalagmites (bottom)
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                for (let i = 0; i < 15; i++) {
+                    const x = i * 55 + 30 + Math.sin(i * 0.3) * 15;
+                    const h = 20 + Math.sin(i * 0.6) * 30 + 30;
+                    ctx.fillStyle = 'rgba(100, 150, 200, 0.1)';
+                    ctx.beginPath();
+                    ctx.moveTo(x - 5, H);
+                    ctx.quadraticCurveTo(x, H - h, x + 5, H);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Water drops (ambient)
+                ctx.save();
+                ctx.globalAlpha = 0.02;
+                for (let i = 0; i < 20; i++) {
+                    const x = (i * 47 + 10) % W;
+                    const y = (i * 33 + 5) % H;
+                    const size = 1 + Math.sin(i * 0.7) * 0.5 + 0.5;
+                    ctx.fillStyle = 'rgba(150, 200, 255, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Update status
+                echoCount.textContent = `🌊 ${totalEchoes} echoes`;
+                trailCount.textContent = `🌀 ${trailParticles.length} trails`;
+            }
+
+            // --- Create echo ---
+            function createEcho(x, y, strength) {
+                const echo = new Echo(x, y, strength);
+                echoes.push(echo);
+                totalEchoes++;
+                
+                // Update status
+                caveStatus.textContent = '🕳️ Echoing!';
+                setTimeout(() => {
+                    caveStatus.textContent = '🕳️ Silent';
+                }, 1000);
+                
+                hint.textContent = '🕳️ Echo!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 500);
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Update echoes
+                echoes = echoes.filter(e => e.update());
+
+                // Update trail particles
+                trailParticles = trailParticles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.01;
+                    p.life -= 0.01;
+                    p.size *= 0.998;
+                    return p.life > 0 && p.size > 0.1;
+                });
+
+                // Limit particles
+                if (trailParticles.length > 300) {
+                    trailParticles = trailParticles.slice(0, 300);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw trail particles (behind echoes)
+                for (const p of trailParticles) {
+                    const alpha = (p.life / p.maxLife) * p.opacity * 0.6;
+                    if (alpha < 0.01) continue;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = `hsla(${p.hue}, 80%, 80%, ${alpha})`;
+                    ctx.shadowBlur = p.size * 2;
+                    ctx.shadowColor = `hsla(${p.hue}, 80%, 80%, ${alpha * 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Draw echoes
+                for (const echo of echoes) {
+                    echo.draw(ctx);
+                }
+
+                // Ambient particles (floating dust)
+                if (time % 2 === 0 && Math.random() < 0.1) {
+                    const p = {
+                        x: Math.random() * W,
+                        y: Math.random() * H,
+                        vx: (Math.random() - 0.5) * 0.1,
+                        vy: (Math.random() - 0.5) * 0.1 - 0.05,
+                        size: 0.5 + Math.random() * 1.5,
+                        life: 1,
+                        maxLife: 1,
+                        hue: 200 + Math.random() * 30,
+                        opacity: 0.1 + Math.random() * 0.2
+                    };
+                    trailParticles.push(p);
+                }
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function makeEcho() {
+                const strength = intensity / 100;
+                const x = mouseX + (Math.random() - 0.5) * 20;
+                const y = mouseY + (Math.random() - 0.5) * 20;
+                createEcho(x, y, strength);
+                
+                // Create extra echoes for effect
+                for (let i = 0; i < 2; i++) {
+                    setTimeout(() => {
+                        const offsetX = (Math.random() - 0.5) * 80;
+                        const offsetY = (Math.random() - 0.5) * 80;
+                        createEcho(x + offsetX, y + offsetY, strength * 0.6);
+                    }, 100 + i * 150);
+                }
+            }
+
+            function resetAll() {
+                echoes = [];
+                trailParticles = [];
+                totalEchoes = 0;
+                caveStatus.textContent = '🕳️ Silent';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function toggleMute() {
+                isMuted = !isMuted;
+                toggleBtn.textContent = isMuted ? '🔊 Unmute' : '🔇 Mute';
+                if (!isMuted && !isAudioReady) {
+                    initAudio();
+                }
+                hint.textContent = isMuted ? '🔇 Muted' : '🔊 Unmuted';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                mouseX = pos.x;
+                mouseY = pos.y;
+            }
+
+            function onCanvasClick(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                mouseX = pos.x;
+                mouseY = pos.y;
+                makeEcho();
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+            });
+
+            trailSlider.addEventListener('input', function() {
+                trailLength = parseFloat(this.value);
+                trailLabel.textContent = `${Math.round(trailLength)}%`;
+            });
+
+            decaySlider.addEventListener('input', function() {
+                decayRate = parseFloat(this.value);
+                decayLabel.textContent = `${Math.round(decayRate)}%`;
+            });
+
+            // --- Button events ---
+            echoBtn.addEventListener('click', makeEcho);
+            resetBtn.addEventListener('click', resetAll);
+            toggleBtn.addEventListener('click', toggleMute);
+
+            // --- Mouse events ---
+            canvas.addEventListener('click', onCanvasClick);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('touchstart', onCanvasClick, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    makeEcho();
+                }
+                if (e.key === 'm' || e.key === 'M') toggleMute();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Intensity adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    intensity = Math.min(100, intensity + 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    intensity = Math.max(10, intensity - 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            initAudio();
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🕳️ Echo Cave ready!');
+            console.log('Controls: Click canvas or Space (echo), M (mute), R (reset)');
+            console.log('          ↑/↓ (intensity), watch the echoes ripple!');
+
+        })();
+    </script>
+</body>
+</html>
