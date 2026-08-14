@@ -84,17 +84,33 @@ jobs:
           script: |
             const fs   = require('fs');
             const path = require('path');
+            
+            // Retry helper with exponential backoff for GitHub API calls
+            async function withRetry(fn, retries = 5, baseDelayMs = 1000) {
+              for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                  return await fn();
+                } catch (err) {
+                  const msg = err && (err.message || err.toString());
+                  const isSecondaryRateLimit = /secondary rate limit/i.test(msg) || err.status === 403;
+                  if (attempt === retries) throw err;
+                  const backoff = baseDelayMs * Math.pow(2, attempt) + Math.floor(Math.random() * 300);
+                  console.log(`API request failed${msg ? `: ${msg}` : ''}. Retrying in ${backoff}ms (attempt ${attempt + 1}/${retries})`);
+                  await new Promise(r => setTimeout(r, backoff));
+                }
+              }
+            }
 
             const WORKSPACE = process.env.GITHUB_WORKSPACE || '';
             const PR_NUM    = context.payload.pull_request.number;
             const PR_AUTHOR = context.payload.pull_request.user.login;
 
             // ── 1. Fetch all changed files ─────────────────────────────────
-            const { data: files } = await github.rest.pulls.listFiles({
+            const { data: files } = await withRetry(() => github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               pull_number: PR_NUM,
-            });
+            }));
 
             const failures  = [];
             const successes = [];
@@ -147,9 +163,6 @@ jobs:
               if (parts[0] === 'submissions' && parts.length >= 3) {
                 const track  = parts[1];
                 const folder = `${parts[0]}/${parts[1]}/${parts[2]}`;
-                // FIX: Do NOT rely on fs.existsSync — for fork PRs the checkout may
-                // fail silently, leaving the folder absent on disk even though the
-                // contributor did add files correctly. Use the API data instead.
                 if (track === 'react') reactFolders.add(folder);
                 if (track === 'scss')  scssFolders.add(folder);
               }
@@ -171,7 +184,6 @@ jobs:
               const present      = [];
 
               const folderDisk = path.join(WORKSPACE, folder);
-              // FIX: Fall back to PR file list from API if disk checkout failed (fork PRs)
               const allFilesFromApi = files
                 .filter(f => f.filename.startsWith(folder + '/') && f.status !== 'removed')
                 .map(f => path.basename(f.filename));
@@ -238,7 +250,6 @@ jobs:
               const present      = [];
 
               const folderDisk = path.join(WORKSPACE, folder);
-              // FIX: Fall back to PR file list from API if disk checkout failed (fork PRs)
               const allFilesFromApiScss = files
                 .filter(f => f.filename.startsWith(folder + '/') && f.status !== 'removed')
                 .map(f => path.basename(f.filename));
@@ -319,6 +330,21 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
+            // Retry helper with exponential backoff for GitHub API calls
+            async function withRetry(fn, retries = 5, baseDelayMs = 1000) {
+              for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                  return await fn();
+                } catch (err) {
+                  const msg = err && (err.message || err.toString());
+                  if (attempt === retries) throw err;
+                  const backoff = baseDelayMs * Math.pow(2, attempt) + Math.floor(Math.random() * 300);
+                  console.log(`API request failed${msg ? `: ${msg}` : ''}. Retrying in ${backoff}ms`);
+                  await new Promise(r => setTimeout(r, backoff));
+                }
+              }
+            }
+            
             const failures = JSON.parse(process.env.FAILURES_JSON);
             const tracks   = process.env.TRACKS;
             const prAuthor = context.payload.pull_request.user.login;
@@ -369,47 +395,47 @@ jobs:
             body += `3. This validator will re-run automatically\n\n`;
             body += `📖 Questions? See [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md) or ask on our [Discord](https://discord.gg/hWSdGrccBU).\n`;
 
-            const { data: comments } = await github.rest.issues.listComments({
+            const { data: comments } = await withRetry(() => github.rest.issues.listComments({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               issue_number: context.payload.pull_request.number,
-            });
+            }));
 
             const existing = comments.find(c =>
               c.user.type === 'Bot' && c.body.includes('React/SCSS Submission Validation')
             );
 
             if (existing) {
-              await github.rest.issues.updateComment({
+              await withRetry(() => github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 comment_id: existing.id,
                 body,
-              });
+              }));
             } else {
-              await github.rest.issues.createComment({
+              await withRetry(() => github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
                 body,
-              });
+              }));
             }
 
             try {
-              await github.rest.issues.addLabels({
+              await withRetry(() => github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
                 labels: ['invalid-submission', 'needs-files'],
-              });
+              }));
             } catch(e) { console.log('Could not add labels:', e.message); }
 
-            await github.rest.pulls.update({
+            await withRetry(() => github.rest.pulls.update({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               pull_number: context.payload.pull_request.number,
               state: 'closed',
-            });
+            }));
 
       - name: Post Success Comment
         if: success() && steps.validate.outputs.hasFailures == 'false'
@@ -420,6 +446,21 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
+            // Retry helper with exponential backoff for GitHub API calls
+            async function withRetry(fn, retries = 5, baseDelayMs = 1000) {
+              for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                  return await fn();
+                } catch (err) {
+                  const msg = err && (err.message || err.toString());
+                  if (attempt === retries) throw err;
+                  const backoff = baseDelayMs * Math.pow(2, attempt) + Math.floor(Math.random() * 300);
+                  console.log(`API request failed${msg ? `: ${msg}` : ''}. Retrying in ${backoff}ms`);
+                  await new Promise(r => setTimeout(r, backoff));
+                }
+              }
+            }
+
             const successes = JSON.parse(process.env.SUCCESSES_JSON);
             const tracks    = process.env.TRACKS;
             const prAuthor  = context.payload.pull_request.user.login;
@@ -440,58 +481,59 @@ jobs:
             body += `- Once approved, it will be merged into \`main\`!\n\n`;
             body += `Thank you for contributing to EaseMotion CSS! ⚡\n`;
 
-            const { data: comments } = await github.rest.issues.listComments({
+            const { data: comments } = await withRetry(() => github.rest.issues.listComments({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               issue_number: context.payload.pull_request.number,
-            });
+            }));
 
             const existing = comments.find(c =>
               c.user.type === 'Bot' && c.body.includes('React/SCSS Submission Validation')
             );
 
             if (existing) {
-              await github.rest.issues.updateComment({
+              await withRetry(() => github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 comment_id: existing.id,
                 body,
-              });
+              }));
             } else {
-              await github.rest.issues.createComment({
+              await withRetry(() => github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
                 body,
-              });
+              }));
             }
 
             try {
-              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              const { data: labels } = await withRetry(() => github.rest.issues.listLabelsOnIssue({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-              });
+              }));
+              
               const toRemove = ['invalid-submission', 'needs-files', 'spam', 'gssoc:invalid'];
               for (const label of labels) {
                 if (toRemove.includes(label.name)) {
-                  await github.rest.issues.removeLabel({
+                  await withRetry(() => github.rest.issues.removeLabel({
                     owner: context.repo.owner,
                     repo:  context.repo.repo,
                     issue_number: context.payload.pull_request.number,
                     name: label.name,
-                  });
+                  }));
                 }
               }
               const trackLabels = [];
               if (process.env.TRACKS.includes('react')) trackLabels.push('react');
               if (process.env.TRACKS.includes('scss'))  trackLabels.push('scss');
               if (trackLabels.length > 0) {
-                await github.rest.issues.addLabels({
+                await withRetry(() => github.rest.issues.addLabels({
                   owner: context.repo.owner,
                   repo:  context.repo.repo,
                   issue_number: context.payload.pull_request.number,
                   labels: trackLabels,
-                });
+                }));
               }
             } catch(e) { console.log('Label update error:', e.message); }
