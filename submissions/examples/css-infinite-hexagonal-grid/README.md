@@ -1,12 +1,27 @@
 # CSS Infinite Hexagonal Grid
 
-A mathematically tessellated background pattern using cleverly overlapping `linear-gradient` triangles and angles to simulate an infinite geometric honeycomb grid.
+A mathematically tessellated background pattern using cleverly overlapping linear-gradient triangles and angles to simulate an infinite geometric honeycomb grid.
 
-## Features
-- Zero HTML elements required; the entire pattern is generated purely via CSS `background` properties on a single element.
-- Highly optimized rendering using hard-stop `linear-gradient` intersections at 60 and 120-degree angles to mathematically construct perfect hexagons.
-- Infinite panning animation achieved by smoothly translating the `background-position` precisely over the bounds of the `background-size` dimensions (`60px` by `104px`).
+## What it does
+Two linear-gradients at ±60° with alternating color stops tile to form a repeating hexagonal honeycomb, with no images.
 
 ## Files
-- `demo.html`
-- `style.css`
+- `demo.html` — interactive demo
+- `style.css` — pure CSS background pattern
+- `README.md` — this guide
+
+## Usage
+```html
+<link rel="stylesheet" href="./style.css" />
+<div class="hex-grid"></div>
+```
+
+## Techniques
+- Overlapping `linear-gradient` at ±60° angles.
+- `background-size` tiling for the honeycomb repeat.
+- No external assets or JavaScript.
+
+## Accessibility
+- `role="img"` + `aria-label` for screen readers.
+
+Closes #75229
