@@ -1,59 +1,30 @@
-# Text Animations Suite — EaseMotion CSS
+# Text Animation Suite
 
-A collection of 6 pure CSS text animation utilities for titles, hero headers, callouts, and interactive UI elements.
+A pure CSS Text Animations Suite featuring 6 modular animated typography effects: Gradient Wave, Neon Glow Pulse, Kinetic Pop, Cyber RGB Glitch, Metallic Shimmer, and Typewriter Cursor.
 
-## Features Included
+## Files
+- `demo.html` — fully self-contained working component
+- `style.css` — styles (pure CSS where possible; minimal vanilla JS only where interaction requires it)
+- `README.md` — this guide
 
-1. **Text Gradient Wave (`.text-gradient-wave`)**: Smooth multi-color animated gradient text background sweep.
-2. **Neon Glow Pulse (`.text-glow-pulse`)**: Pulsing cyber neon glow animation with layered text-shadows.
-3. **Kinetic Pop & Bounce (`.text-kinetic-pop`)**: High-energy spring scaling and vertical bounce effect.
-4. **Cyber RGB Glitch (`.text-cyber-glitch`)**: Chromatic aberration glitch effect using dynamic pseudo-elements.
-5. **Metallic Shimmer Sweep (`.text-shimmer-sweep`)**: Premium metallic highlight light-sweep traversing across header text.
-6. **Typewriter Cursor (`.text-typewriter-cursor`)**: Typing text effect with realistic blinking block cursor.
 
-## Quick Usage
-
+## Usage
 ```html
-<!-- Gradient Wave -->
-<h1 class="text-gradient-wave">Gradient Header</h1>
-
-<!-- Neon Glow Pulse -->
-<h2 class="text-glow-pulse">Pulsing Neon</h2>
-
-<!-- Cyber RGB Glitch -->
-<h2 class="text-cyber-glitch" data-text="SYSTEM ERROR">SYSTEM ERROR</h2>
-
-<!-- Typewriter Loop -->
-<h2 class="text-typewriter-cursor">Typewriter Animation</h2>
+<link rel="stylesheet" href="./style.css" />
+<div class="ease-tas">
+  <h1 class="ease-tas__gradient-wave">Gradient Wave</h1>
+  <h1 class="ease-tas__neon-glow">Neon Glow</h1>
+  <h1 class="ease-tas__kinetic-pop">Kinetic Pop</h1>
+  <h1 class="ease-tas__cyber-glitch">Cyber Glitch</h1>
+  <h1 class="ease-tas__metallic-shimmer">Metallic</h1>
+  <h1 class="ease-tas__typewriter">Typewriter</h1>
+</div>
 ```
 
-## CSS Custom Variables
 
-Each effect can be customized easily via CSS custom properties:
+## Accessibility
+- Decorative animation elements marked `aria-hidden="true"`.
+- Interactive controls use native elements with `:focus-visible` outlines.
+- `@media (prefers-reduced-motion: reduce)` disables animations.
 
-```css
-/* Customizing Gradient Wave Speed & Colors */
-.text-gradient-wave {
-  --gradient-colors: linear-gradient(90deg, #ff416c, #8a2387, #e94057);
-  --gradient-speed: 3s;
-}
-
-/* Customizing Neon Glow Color */
-.text-glow-pulse {
-  --glow-color: #10b981;
-  --glow-speed: 1.5s;
-}
-```
-
-## Why it Fits EaseMotion CSS
-
-- **Animation-First**: Enhances typographic visual hierarchy with zero JavaScript overhead.
-- **Composable & Lightweight**: Pure CSS animations built with modern CSS properties like `background-clip: text` and CSS custom variables.
-- **Zero Dependencies**: Pure HTML + CSS, works directly out of the box in any web browser.
-
-## Browser Support
-
-- Chrome 80+
-- Firefox 75+
-- Edge 80+
-- Safari 13+
+Closes #75178
