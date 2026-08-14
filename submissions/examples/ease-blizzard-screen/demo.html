@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>❄️ Blizzard Screen – Whiteout Blizzard Effect</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>❄️ Blizzard Screen</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Pause/Resume">⏸️</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄</button>
+                <button class="control-btn" id="intensityUp" title="Increase intensity">➕</button>
+                <button class="control-btn" id="intensityDown" title="Decrease intensity">➖</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="blizzardCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="particleCount">0</span> particles
+                <span id="visibilityDisplay" class="visibility-badge">🌫️ 40% visibility</span>
+            </div>
+            <div class="hint" id="hint">❄️ Whiteout blizzard in progress</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>❄️ Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5" step="1" />
+                <span id="densityLabel">5/10</span>
+            </div>
+            <div class="slider-group">
+                <label>💨 Wind Speed</label>
+                <input type="range" id="windSlider" min="1" max="10" value="6" step="1" />
+                <span id="windLabel">6/10</span>
+            </div>
+            <div class="slider-group">
+                <label>🌫️ Whiteout</label>
+                <input type="range" id="whiteoutSlider" min="0" max="100" value="60" step="5" />
+                <span id="whiteoutLabel">60%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Blizzard Screen – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('blizzardCanvas');
+            const ctx = canvas.getContext('2d');
+            const particleCountEl = document.getElementById('particleCount');
+            const visibilityDisplay = document.getElementById('visibilityDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const intensityUp = document.getElementById('intensityUp');
+            const intensityDown = document.getElementById('intensityDown');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+            const windSlider = document.getElementById('windSlider');
+            const windLabel = document.getElementById('windLabel');
+            const whiteoutSlider = document.getElementById('whiteoutSlider');
+            const whiteoutLabel = document.getElementById('whiteoutLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let particles = [];
+            let isPaused = false;
+            let animationId = null;
+            let particleCounter = 0;
+            let frameCount = 0;
+
+            // --- Parameters ---
+            let density = 5; // 1-10
+            let windSpeed = 6; // 1-10
+            let whiteout = 60; // 0-100 (percentage of whiteout effect)
+            let baseWind = 2;
+
+            // --- Particle class ---
+            class SnowParticle {
+                constructor() {
+                    this.reset(true);
+                }
+
+                reset(initial = false) {
+                    // Position
+                    if (initial) {
+                        this.x = Math.random() * W;
+                        this.y = Math.random() * H;
+                    } else {
+                        this.x = Math.random() * W;
+                        this.y = -10 - Math.random() * 50;
+                    }
+
+                    // Size and appearance
+                    this.size = 1 + Math.random() * 4;
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.02;
+
+                    // Movement
+                    const windFactor = windSpeed / 10;
+                    this.vx = (Math.random() - 0.5) * 1.5 + baseWind * windFactor;
+                    this.vy = 0.5 + Math.random() * 1.5 + windFactor * 0.5;
+
+                    // Random drift for organic feel
+                    this.drift = (Math.random() - 0.5) * 0.3;
+                    this.driftTimer = Math.random() * 100;
+
+                    // Swirl effect
+                    this.swirlRadius = 20 + Math.random() * 60;
+                    this.swirlSpeed = 0.002 + Math.random() * 0.008;
+                    this.swirlAngle = Math.random() * Math.PI * 2;
+                    this.swirlCenterX = this.x;
+                    this.swirlCenterY = this.y;
+
+                    // Twinkle effect
+                    this.twinkleSpeed = 0.02 + Math.random() * 0.05;
+                    this.twinklePhase = Math.random() * Math.PI * 2;
+
+                    // Depth layer (0 = background, 1 = foreground)
+                    this.depth = Math.random();
+                    this.sizeMultiplier = 0.5 + this.depth * 1.5;
+                    this.opacityMultiplier = 0.4 + this.depth * 0.6;
+                }
+
+                update() {
+                    const windFactor = windSpeed / 10;
+
+                    // Wind effect with gusts
+                    const gust = Math.sin(frameCount * 0.005 + this.x * 0.01) * 0.3;
+                    this.vx += (baseWind * windFactor + gust - this.vx) * 0.01;
+
+                    // Drift
+                    this.driftTimer += 0.02;
+                    this.drift = Math.sin(this.driftTimer) * 0.2;
+
+                    // Swirl
+                    this.swirlAngle += this.swirlSpeed;
+                    const swirlX = Math.cos(this.swirlAngle) * this.swirlRadius * 0.1;
+                    const swirlY = Math.sin(this.swirlAngle) * this.swirlRadius * 0.05;
+
+                    // Apply movement
+                    this.x += this.vx + this.drift + swirlX;
+                    this.y += this.vy + swirlY;
+
+                    // Rotation
+                    this.rotation += this.rotSpeed;
+
+                    // Twinkle
+                    this.twinklePhase += this.twinkleSpeed;
+
+                    // Wrap around
+                    if (this.x > W + 20) this.x = -20;
+                    if (this.x < -20) this.x = W + 20;
+                    if (this.y > H + 20) {
+                        this.reset(false);
+                    }
+                    if (this.y < -20) this.y = H + 20;
+                }
+
+                draw(ctx) {
+                    const whiteoutFactor = whiteout / 100;
+                    const size = this.size * this.sizeMultiplier;
+                    const baseOpacity = this.opacity * this.opacityMultiplier;
+                    const twinkle = 0.7 + 0.3 * Math.sin(this.twinklePhase);
+
+                    // Calculate opacity with whiteout effect
+                    let opacity = baseOpacity * twinkle;
+                    // Whiteout makes particles more visible (higher contrast)
+                    opacity = opacity * (0.5 + 0.5 * (1 - whiteoutFactor)) + 0.1 * whiteoutFactor;
+
+                    // Limit opacity
+                    opacity = Math.min(1, Math.max(0, opacity));
+
+                    // Particle glow
+                    ctx.save();
+
+                    // Shadow/glow for depth
+                    if (this.depth > 0.6) {
+                        ctx.shadowColor = `rgba(200, 220, 255, ${opacity * 0.1})`;
+                        ctx.shadowBlur = size * 2;
+                    }
+
+                    // Main particle with gradient
+                    const gradient = ctx.createRadialGradient(
+                        this.x - size * 0.2, this.y - size * 0.2, size * 0.1,
+                        this.x, this.y, size
+                    );
+
+                    const brightness = 200 + 55 * (1 - whiteoutFactor);
+                    const alpha = opacity * 0.9;
+
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+                    gradient.addColorStop(0.3, `rgba(${brightness}, ${brightness + 10}, 255, ${alpha * 0.8})`);
+                    gradient.addColorStop(0.7, `rgba(${brightness - 30}, ${brightness - 20}, 240, ${alpha * 0.5})`);
+                    gradient.addColorStop(1, `rgba(180, 200, 230, ${alpha * 0.2})`);
+
+                    ctx.beginPath();
+
+                    // Slightly oval for motion blur effect
+                    if (Math.abs(this.vx) > 1) {
+                        ctx.ellipse(this.x, this.y, size * 1.3, size * 0.7, this.rotation, 0, Math.PI * 2);
+                    } else {
+                        ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                    }
+
+                    ctx.fillStyle = gradient;
+                    ctx.shadowBlur = size * 3;
+                    ctx.shadowColor = `rgba(200, 230, 255, ${opacity * 0.05})`;
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    if (this.depth > 0.4) {
+                        ctx.beginPath();
+                        ctx.arc(this.x - size * 0.2, this.y - size * 0.25, size * 0.25, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.4})`;
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
+
+                    // Motion trail for fast particles
+                    if (Math.abs(this.vx) > 2 || Math.abs(this.vy) > 2) {
+                        ctx.save();
+                        ctx.globalAlpha = opacity * 0.1;
+                        const trailLength = Math.min(8, Math.abs(this.vx) + Math.abs(this.vy));
+                        for (let i = 1; i < trailLength; i++) {
+                            const t = i / trailLength;
+                            const tx = this.x - this.vx * t * 2;
+                            const ty = this.y - this.vy * t * 2;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, size * (1 - t * 0.5), 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(255, 255, 255, ${0.05 * (1 - t)})`;
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    }
+                }
+
+                getDepth() {
+                    return this.depth;
+                }
+            }
+
+            // --- Create particles ---
+            function createParticles(count) {
+                const targetCount = Math.floor(count);
+                while (particles.length < targetCount) {
+                    const particle = new SnowParticle();
+                    particle.y = Math.random() * H;
+                    particles.push(particle);
+                    particleCounter++;
+                }
+                while (particles.length > targetCount) {
+                    particles.pop();
+                }
+                updateStats();
+            }
+
+            // --- Update stats ---
+            function updateStats() {
+                particleCountEl.textContent = particles.length;
+
+                const visibility = Math.max(0, 100 - whiteout);
+                let visibilityText = '';
+                if (visibility >= 80) visibilityText = '☀️ Clear';
+                else if (visibility >= 50) visibilityText = '🌤️ Light snow';
+                else if (visibility >= 30) visibilityText = '🌨️ Heavy snow';
+                else if (visibility >= 15) visibilityText = '❄️ Blizzard';
+                else visibilityText = '🌫️ Whiteout';
+                visibilityDisplay.textContent = `${visibilityText} (${visibility}% visibility)`;
+            }
+
+            // --- Render whiteout overlay ---
+            function renderWhiteout(ctx) {
+                const whiteoutFactor = whiteout / 100;
+
+                // Whiteout fog overlay
+                const fogGradient = ctx.createRadialGradient(
+                    W / 2, H / 2, 0,
+                    W / 2, H / 2, Math.max(W, H) * 0.7
+                );
+
+                const fogOpacity = whiteoutFactor * 0.3;
+                fogGradient.addColorStop(0, `rgba(240, 248, 255, ${fogOpacity * 0.3})`);
+                fogGradient.addColorStop(0.3, `rgba(230, 240, 250, ${fogOpacity * 0.6})`);
+                fogGradient.addColorStop(0.6, `rgba(220, 235, 248, ${fogOpacity * 0.8})`);
+                fogGradient.addColorStop(0.8, `rgba(210, 230, 245, ${fogOpacity * 0.9})`);
+                fogGradient.addColorStop(1, `rgba(200, 225, 242, ${fogOpacity})`);
+
+                ctx.save();
+                ctx.fillStyle = fogGradient;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                // Whiteout overlay (adds to whiteout effect)
+                if (whiteoutFactor > 0.1) {
+                    ctx.save();
+                    ctx.globalAlpha = whiteoutFactor * 0.15;
+                    ctx.fillStyle = 'rgba(240, 248, 255, 0.5)';
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Add some noise texture to whiteout
+                    for (let i = 0; i < 50; i++) {
+                        const x = Math.random() * W;
+                        const y = Math.random() * H;
+                        const s = 2 + Math.random() * 6;
+                        const a = 0.01 + Math.random() * 0.02;
+                        ctx.beginPath();
+                        ctx.arc(x, y, s, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${a * whiteoutFactor})`;
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Horizontal wind streaks (visible in whiteout)
+                if (whiteoutFactor > 0.3 && windSpeed > 3) {
+                    ctx.save();
+                    ctx.globalAlpha = (whiteoutFactor * 0.08) * (windSpeed / 10);
+                    for (let i = 0; i < 30; i++) {
+                        const x = Math.random() * W;
+                        const y = Math.random() * H;
+                        const len = 30 + Math.random() * 100;
+                        const width = 1 + Math.random() * 3;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + len * (windSpeed / 10), y + (Math.random() - 0.5) * 5);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.2})`;
+                        ctx.lineWidth = width;
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // Vignette for atmospheric depth
+                const vignette = ctx.createRadialGradient(
+                    W / 2, H / 2, W * 0.3,
+                    W / 2, H / 2, W * 0.8
+                );
+                vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                vignette.addColorStop(0.5, 'rgba(0,0,0,0)');
+                vignette.addColorStop(1, `rgba(0,0,0,${0.1 + whiteoutFactor * 0.2})`);
+                ctx.fillStyle = vignette;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Dark, stormy sky gradient
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                const whiteoutFactor = whiteout / 100;
+
+                const darkBase = 10 + 20 * whiteoutFactor;
+                const midBase = 20 + 30 * whiteoutFactor;
+                const lightBase = 30 + 40 * whiteoutFactor;
+
+                skyGrad.addColorStop(0, `rgb(${darkBase}, ${darkBase + 5}, ${darkBase + 15})`);
+                skyGrad.addColorStop(0.3, `rgb(${midBase}, ${midBase + 8}, ${midBase + 20})`);
+                skyGrad.addColorStop(0.6, `rgb(${lightBase}, ${lightBase + 10}, ${lightBase + 25})`);
+                skyGrad.addColorStop(0.8, `rgb(${lightBase + 10}, ${lightBase + 15}, ${lightBase + 30})`);
+                skyGrad.addColorStop(1, `rgb(${lightBase + 15}, ${lightBase + 18}, ${lightBase + 32})`);
+
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Storm clouds
+                ctx.save();
+                ctx.globalAlpha = 0.15 + whiteoutFactor * 0.2;
+                for (let i = 0; i < 8; i++) {
+                    const cx = (i * 150 + 30 + Math.sin(i * 2.3) * 40) % (W + 100) - 50;
+                    const cy = 20 + i * 15 + Math.sin(i * 1.7) * 20;
+                    const cw = 150 + Math.sin(i * 2.1) * 60 + whiteoutFactor * 50;
+                    const ch = 25 + Math.sin(i * 1.3) * 15 + whiteoutFactor * 20;
+
+                    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw);
+                    const cloudOpacity = 0.1 + 0.2 * (1 - whiteoutFactor);
+                    grad.addColorStop(0, `rgba(180, 200, 230, ${cloudOpacity * 0.8})`);
+                    grad.addColorStop(0.5, `rgba(140, 170, 200, ${cloudOpacity * 0.5})`);
+                    grad.addColorStop(1, `rgba(100, 130, 160, 0)`);
+
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, cw, ch, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Snow on ground (bottom)
+                ctx.save();
+                const groundY = H - 15;
+                const groundGrad = ctx.createLinearGradient(0, groundY - 20, 0, H);
+                const groundOpacity = 0.3 + whiteoutFactor * 0.4;
+                groundGrad.addColorStop(0, `rgba(200, 220, 240, ${groundOpacity * 0.2})`);
+                groundGrad.addColorStop(0.3, `rgba(220, 235, 250, ${groundOpacity * 0.4})`);
+                groundGrad.addColorStop(0.7, `rgba(240, 248, 255, ${groundOpacity * 0.6})`);
+                groundGrad.addColorStop(1, `rgba(250, 252, 255, ${groundOpacity * 0.8})`);
+
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, groundY, W, H - groundY);
+
+                // Snow drifts
+                for (let i = 0; i < 20; i++) {
+                    const x = i * 45 + Math.sin(i * 0.7) * 20;
+                    const h = 5 + Math.sin(i * 1.3) * 8 + whiteoutFactor * 5;
+                    const w = 20 + Math.sin(i * 0.9) * 15 + whiteoutFactor * 10;
+                    ctx.beginPath();
+                    ctx.ellipse(x, groundY + h * 0.3, w, h, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(240, 248, 255, ${0.05 + whiteoutFactor * 0.1})`;
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // --- Main render loop ---
+            function render() {
+                frameCount++;
+
+                // Clear with trail effect
+                ctx.clearRect(0, 0, W, H);
+
+                // Render background
+                renderBackground(ctx);
+
+                // Update and draw particles
+                if (!isPaused) {
+                    // Maintain particle count based on density
+                    const targetCount = Math.floor(50 + density * 60);
+                    while (particles.length < targetCount) {
+                        const particle = new SnowParticle();
+                        particle.y = Math.random() * H * 0.5;
+                        particles.push(particle);
+                    }
+                    while (particles.length > targetCount + 20) {
+                        particles.pop();
+                    }
+
+                    // Sort particles by depth for rendering order
+                    particles.sort((a, b) => a.getDepth() - b.getDepth());
+
+                    // Update all particles
+                    for (const particle of particles) {
+                        particle.update();
+                    }
+
+                    updateStats();
+                }
+
+                // Draw all particles
+                ctx.save();
+                for (const particle of particles) {
+                    particle.draw(ctx);
+                }
+                ctx.restore();
+
+                // Render whiteout overlay
+                renderWhiteout(ctx);
+
+                // Hint animation
+                hint.classList.add('hidden');
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶️' : '⏸️';
+                if (isPaused) {
+                    hint.textContent = '⏸️ Paused';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 2000);
+                }
+            }
+
+            function resetBlizzard() {
+                particles = [];
+                particleCounter = 0;
+                createParticles(50 + density * 60);
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function changeIntensity(delta) {
+                const newDensity = Math.max(1, Math.min(10, density + delta));
+                density = newDensity;
+                densitySlider.value = density;
+                densityLabel.textContent = `${density}/10`;
+                // Particle count will adjust in render loop
+                hint.textContent = `❄️ Density: ${density}/10`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1000);
+            }
+
+            // --- Slider handlers ---
+            densitySlider.addEventListener('input', function() {
+                density = parseInt(this.value);
+                densityLabel.textContent = `${density}/10`;
+            });
+
+            windSlider.addEventListener('input', function() {
+                windSpeed = parseInt(this.value);
+                windLabel.textContent = `${windSpeed}/10`;
+                // Update wind for existing particles
+                const windFactor = windSpeed / 10;
+                for (const particle of particles) {
+                    particle.vx += (baseWind * windFactor - particle.vx) * 0.01;
+                }
+            });
+
+            whiteoutSlider.addEventListener('input', function() {
+                whiteout = parseInt(this.value);
+                whiteoutLabel.textContent = `${whiteout}%`;
+                updateStats();
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetBlizzard);
+            intensityUp.addEventListener('click', () => changeIntensity(1));
+            intensityDown.addEventListener('click', () => changeIntensity(-1));
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') resetBlizzard();
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    changeIntensity(1);
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    changeIntensity(-1);
+                }
+            });
+
+            // --- Init ---
+            createParticles(50 + density * 60);
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 3000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('❄️ Blizzard Screen ready!');
+            console.log('Controls: Space (pause), R (reset), ↑/+ (increase), ↓/- (decrease)');
+
+        })();
+    </script>
+</body>
+</html>
