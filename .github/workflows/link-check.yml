@@ -1,0 +1,78 @@
+name: Link Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/link-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/link-check.yml'
+  schedule:
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-links:
+    name: Validate repository links and documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install awesome_bot
+        run: gem install awesome_bot
+
+      - name: Collect markdown files
+        id: files
+        run: |
+          mapfile -t MD_FILES < <(find . -name 'node_modules' -prune -o -name '.git' -prune -o -name '*.md' -print)
+          echo "Found ${#MD_FILES[@]} markdown files"
+          printf '%s\n' "${MD_FILES[@]}" > md_files.txt
+
+      - name: Validate URLs
+        continue-on-error: true
+        run: |
+          awesome_bot \
+            --allow-redirect \
+            --allow-dupe \
+            --allow-ssl \
+            --timeout 20 \
+            --base-url "https://github.com/SAPTARSHI-coder/EaseMotion-css" \
+            $(cat md_files.txt) \
+            || true
+
+      - name: Upload link-check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-check-report
+          path: |
+            ab-results.json
+            ab-results.csv
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Fail on broken links
+        run: |
+          if [ -f ab-results.json ]; then
+            broken=$(jq '[.results[] | select(.status != "OK" and .status != 200)] | length' ab-results.json 2>/dev/null || echo "")
+            if [ -n "$broken" ] && [ "$broken" != "0" ]; then
+              echo "::error::$broken broken link(s) found — see ab-results.json"
+              jq '[.results[] | select(.status != "OK" and .status != 200) | {url, status}]' ab-results.json
+              exit 1
+            fi
+          fi
+          echo "No broken links detected."

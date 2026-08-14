@@ -1,0 +1,82 @@
+name: CDN Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Verify CDN asset integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build distributables
+        run: |
+          if npm run | grep -q "build:scss"; then
+            npm run build:scss
+          fi
+          if npm run | grep -q "build"; then
+            npm run build --if-present
+          fi
+
+      - name: Verify all expected dist files exist
+        run: |
+          EXPECTED=( "easemotion.min.css" "easemotion.css" "easemotion.scss.css" )
+          for f in "${EXPECTED[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing expected distributable: $f"
+              exit 1
+            fi
+            echo "OK: $f present"
+          done
+
+      - name: Compute integrity hashes (SRI)
+        run: |
+          set -e
+          : > integrity-hashes.json
+          printf '{\n' >> integrity-hashes.json
+          first=1
+          for f in easemotion.min.css easemotion.css easemotion.scss.css; do
+            [ -f "$f" ] || continue
+            sha384="sha384-$(openssl dgst -sha384 -binary "$f" | openssl base64 -A)"
+            if [ $first -eq 1 ]; then first=0; else printf ',\n' >> integrity-hashes.json; fi
+            printf '  "%s": "%s"' "$f" "$sha384" >> integrity-hashes.json
+          done
+          printf '\n}\n' >> integrity-hashes.json
+          echo "Computed integrity hashes:"
+          cat integrity-hashes.json
+
+      - name: Upload integrity hashes artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-integrity-hashes
+          path: integrity-hashes.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Verify integrity hashes are non-empty
+        run: |
+          if [ ! -s integrity-hashes.json ]; then
+            echo "::error::integrity-hashes.json is empty"
+            exit 1
+          fi
