@@ -1,0 +1,2 @@
+# Floating Carousel (Pastel)
+A vibrant, floating pastel card slider. The active slide physically floats upward on the Y-axis using `transform: translateY(0)` while casting a larger drop shadow, pushing the inactive siblings down and out of focus.
