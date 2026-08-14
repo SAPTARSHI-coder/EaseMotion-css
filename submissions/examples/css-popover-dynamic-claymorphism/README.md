@@ -1,0 +1,2 @@
+# Dynamic Popover (Claymorphism)
+A fluffy, deeply extruded 3D popover utilizing Claymorphism principles. It relies on a combination of inner and outer shadows to create a playful, rounded pill-like aesthetic.
