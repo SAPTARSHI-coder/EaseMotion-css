@@ -1,0 +1,2 @@
+# Animated Carousel (Minimalist)
+A stark, ultra-minimalist typography slider. It utilizes a dramatic `cubic-bezier` easing curve for an elegant sweeping motion, accompanied by a precise tracking line indicator.
