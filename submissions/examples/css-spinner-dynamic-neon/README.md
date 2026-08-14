@@ -1,0 +1,2 @@
+# Dynamic Spinner (Neon)
+A chaotic, mesmerizing 3D loading animation. It layers three independent CSS borders manipulated in 3D space utilizing `rotateX/Y/Z` transforms. Each ring glows brightly using layered `box-shadow` inset and outset formulas, rotating at different speeds and angles.
