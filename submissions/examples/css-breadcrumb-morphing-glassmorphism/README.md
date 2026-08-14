@@ -1,0 +1,2 @@
+# Morphing Breadcrumb (Glassmorphism)
+A stunning frosted-glass navigation trail. Set against a blurred, animated gradient background orb, the breadcrumb items morph on hover by smoothly scaling a soft white overlay (`transform: scaleX(1)`) beneath the text from left to right.
