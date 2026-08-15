@@ -1,5 +1,5 @@
 # Pulse Ring Beacon
 
-1. What does this do? A continuous, outward-radiating ring animation that scales up and fades out, creating a "radar" or "beacon" effect.
-2. How is it used? Apply `.beacon-pulse` to a circle or badge element.
-3. Why is it useful? It provides an intuitive, human-readable animation for user attention, such as notification badges or live status dots, without requiring additional markup (uses pseudo-elements).
+1. What does this do? Creates an infinite notification indicator that emits smooth, fading circular rings outward from a central dot.
+2. How is it used? Apply `.pulse-beacon` to an empty `div` or `span` element, typically placed next to text, icons, or on map markers.
+3. Why is it useful? Grabbing user attention subtly is a common requirement for modern UIs (e.g., for "new message" or "live status" indicators). A lightweight, pure CSS pulsing beacon provides a reusable attention-grabbing design token without relying on heavy SVG animations or JavaScript.
