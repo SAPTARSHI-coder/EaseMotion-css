@@ -5,3 +5,5 @@ This folder is designated for documentation resources, walkthroughs, and policie
 ## Contents
 *   **Submission Workflow Guidelines**: See the main [submissions/README.md](../README.md) for how to submit examples.
 *   **Contribution Policies**: Detailed naming conventions, review pipeline steps, and conflict prevention strategies.
+*   **Accessibility Guides**: 
+    *   [Dark Mode Connection Status Bar Accessibility Guide](dark-mode-connection-status-accessibility/README.md)
