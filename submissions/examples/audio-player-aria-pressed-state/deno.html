@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Player Play/Pause ARIA Pressed State Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Screen Reader Live Region for Real-Time Status Feedback -->
+  <div 
+    id="audio-live-announcer" 
+    class="sr-only" 
+    role="status" 
+    aria-live="polite" 
+    aria-atomic="true"
+  ></div>
+
+  <main id="main-content" tabindex="-1">
+    <h1>Accessible Audio Player</h1>
+    <p>
+      Tab to the play/pause button below. Use <kbd>Space</kbd> or <kbd>Enter</kbd> to toggle playback, 
+      and <kbd>←</kbd> / <kbd>→</kbd> to jump 5 seconds. The button utilizes <code>aria-pressed</code> 
+      to communicate active playback states without ambiguous label shifts.
+    </p>
+
+    <!-- ACCESSIBLE AUDIO PLAYER COMPONENT -->
+    <div class="player-widget" role="region" aria-label="Audio Track Player">
+      
+      <div class="track-info">
+        <span class="track-title" id="track-name">Accessibility Deep Dive: Ep. 4</span>
+        <span class="track-duration" id="track-time">00:00 / 01:00</span>
+      </div>
+
+      <!-- Playback Progress -->
+      <div class="progress-container">
+        <div 
+          class="progress-track" 
+          role="progressbar" 
+          aria-valuemin="0" 
+          aria-valuemax="60" 
+          aria-valuenow="0" 
+          aria-valuetext="0 seconds elapsed"
+          aria-labelledby="track-name"
+        >
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Controls Group -->
+      <div class="controls-group">
+        <!-- Rewind 5s -->
+        <button 
+          type="button" 
+          id="btn-rewind" 
+          class="btn-ctrl" 
+          aria-label="Rewind 5 seconds"
+        >
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+          </svg>
+        </button>
+
+        <!-- Play / Pause Toggle with aria-pressed -->
+        <button 
+          type="button" 
+          id="btn-play-pause" 
+          class="btn-ctrl btn-play-pause" 
+          aria-label="Play Accessibility Deep Dive: Ep. 4" 
+          aria-pressed="false"
+        >
+          <!-- Play Icon -->
+          <svg id="play-icon" class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <!-- Pause Icon -->
+          <svg id="pause-icon" class="icon" viewBox="0 0 24 24" aria-hidden="true" style="display: none;">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+
+        <!-- Forward 5s -->
+        <button 
+          type="button" 
+          id="btn-forward" 
+          class="btn-ctrl" 
+          aria-label="Skip forward 5 seconds"
+        >
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Inline Accessible Audio Player Controller
+    document.addEventListener('DOMContentLoaded', () => {
+      const playPauseBtn = document.getElementById('btn-play-pause');
+      const rewindBtn = document.getElementById('btn-rewind');
+      const forwardBtn = document.getElementById('btn-forward');
+      const playIcon = document.getElementById('play-icon');
+      const pauseIcon = document.getElementById('pause-icon');
+      const progressBar = document.getElementById('progress-bar');
+      const progressTrack = document.querySelector('.progress-track');
+      const trackTime = document.getElementById('track-time');
+      const announcer = document.getElementById('audio-live-announcer');
+
+      const TOTAL_SECONDS = 60;
+      let currentSeconds = 0;
+      let isPlaying = false;
+      let timer = null;
+
+      function announce(message) {
+        if (!announcer) return;
+        announcer.textContent = '';
+        setTimeout(() => {
+          announcer.textContent = message;
+        }, 50);
+      }
+
+      function updateProgressUI() {
+        const percent = (currentSeconds / TOTAL_SECONDS) * 100;
+        progressBar.style.width = `${percent}%`;
+        progressTrack.setAttribute('aria-valuenow', currentSeconds);
+        progressTrack.setAttribute('aria-valuetext', `${currentSeconds} seconds elapsed`);
+
+        const formatMin = String(Math.floor(currentSeconds / 60)).padStart(2, '0');
+        const formatSec = String(currentSeconds % 60).padStart(2, '0');
+        trackTime.textContent = `${formatMin}:${formatSec} / 01:00`;
+      }
+
+      function togglePlayPause() {
+        isPlaying = !isPlaying;
+        playPauseBtn.setAttribute('aria-pressed', String(isPlaying));
+
+        if (isPlaying) {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+          playPauseBtn.setAttribute('aria-label', 'Pause Accessibility Deep Dive: Ep. 4');
+          announce('Playback started.');
+
+          timer = setInterval(() => {
+            if (currentSeconds < TOTAL_SECONDS) {
+              currentSeconds++;
+              updateProgressUI();
+            } else {
+              togglePlayPause();
+              currentSeconds = 0;
+              updateProgressUI();
+            }
+          }, 1000);
+        } else {
+          clearInterval(timer);
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+          playPauseBtn.setAttribute('aria-label', 'Play Accessibility Deep Dive: Ep. 4');
+          announce('Playback paused.');
+        }
+      }
+
+      function seek(delta) {
+        currentSeconds = Math.max(0, Math.min(TOTAL_SECONDS, currentSeconds + delta));
+        updateProgressUI();
+        announce(`Seeked to ${currentSeconds} seconds.`);
+      }
+
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      rewindBtn.addEventListener('click', () => seek(-5));
+      forwardBtn.addEventListener('click', () => seek(5));
+
+      // Space & Keyboard Navigation
+      playPauseBtn.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault(); // Prevent page scroll
+          togglePlayPause();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          seek(-5);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          seek(5);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
