@@ -195,17 +195,56 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(foundEaseRevealInMedia).toBe(true);
   });
 
-  it('should not have duplicate @keyframes definitions', () => {
-    const keyframeCounts = {};
-    const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
-    let match;
-    while ((match = keyframeRegex.exec(css)) !== null) {
-      const name = match[1];
-      keyframeCounts[name] = (keyframeCounts[name] || 0) + 1;
-    }
-    const duplicates = Object.entries(keyframeCounts)
-      .filter(([, count]) => count > 1)
-      .map(([name]) => name);
-    expect(duplicates).toEqual([]);
+  it('should keep shared animation keyframes compositor-friendly', () => {
+    const sharedAnimationSources = [
+      resolve(__dirname, '../core/animations.css'),
+      resolve(__dirname, '../easemotion/bounce.css'),
+      resolve(__dirname, '../easemotion/fade.css'),
+      resolve(__dirname, '../easemotion/hover.css'),
+      resolve(__dirname, '../easemotion/misc.css'),
+      resolve(__dirname, '../easemotion/rotate.css'),
+      resolve(__dirname, '../easemotion/slide.css'),
+      resolve(__dirname, '../easemotion/zoom.css'),
+    ].map((file) => readFileSync(file, 'utf8'));
+
+    const forbiddenProperties = /\b(width|height|top|left|right|bottom|margin|padding|border-radius|border-width|border-color|border-right-color|box-shadow|background-position|clip-path)\s*:/;
+    const violations = [];
+
+    sharedAnimationSources.forEach((source) => {
+      let index = 0;
+      while (index < source.length) {
+        const start = source.indexOf('@keyframes', index);
+        if (start === -1) break;
+
+        const openBrace = source.indexOf('{', start);
+        if (openBrace === -1) break;
+
+        let depth = 0;
+        let end = -1;
+        for (let cursor = openBrace; cursor < source.length; cursor += 1) {
+          if (source[cursor] === '{') {
+            depth += 1;
+          } else if (source[cursor] === '}') {
+            depth -= 1;
+            if (depth === 0) {
+              end = cursor;
+              break;
+            }
+          }
+        }
+
+        if (end !== -1) {
+          const frame = source.slice(start, end + 1);
+          if (forbiddenProperties.test(frame)) {
+            violations.push(frame.split('\n')[0]);
+          }
+          index = end + 1;
+        } else {
+          break;
+        }
+      }
+    });
+
+    expect(violations).toEqual([]);
   });
 });
