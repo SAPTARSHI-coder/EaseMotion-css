@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fidget Spinner · Spins with Momentum</title>
+    <meta name="description" content="Interactive fidget spinner with realistic spinning physics, momentum, and satisfying rotation.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌀 FIDGET SPINNER</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="spinnerCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="spin-btn" id="spinBtn">🌀 SPIN</button>
+                <button class="stop-btn" id="stopBtn">⏹️ STOP</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Friction</label>
+                <input type="range" id="frictionSlider" min="1" max="10" value="5">
+                <span id="frictionLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌀 FIDGET SPINNER</span>
+            <small>spin · momentum · physics</small>
+        </div>
+        <div class="hint">
+            <span>🌀 click to spin the fidget spinner with realistic momentum</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('spinnerCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const spinBtn = document.getElementById('spinBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const frictionSlider = document.getElementById('frictionSlider');
+            const frictionLabel = document.getElementById('frictionLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let friction = 5;
+            let time = 0;
+            
+            // ---- Spinner State ----
+            let spinner = {
+                angle: 0,
+                velocity: 0,
+                momentum: 0,
+                isSpinning: false,
+                spinCount: 0
+            };
+
+            // ---- Colors ----
+            const COLORS = [
+                { main: '#ff6b6b', light: '#ff9a9a', dark: '#cc4444' },
+                { main: '#feca57', light: '#ffe08a', dark: '#cc9933' },
+                { main: '#48dbfb', light: '#8ae5fc', dark: '#1a9bbf' },
+                { main: '#1dd1a1', light: '#5eddb8', dark: '#0f8f6f' },
+                { main: '#b026ff', light: '#cc66ff', dark: '#7711aa' },
+                { main: '#ff6bcd', light: '#ff99dd', dark: '#cc4499' }
+            ];
+
+            // ---- Spinner Drawing ----
+            function drawSpinner() {
+                const cx = W / 2;
+                const cy = H / 2;
+                const radius = 120;
+                const armLength = 70;
+                const armWidth = 12;
+                const centerRadius = 25;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(spinner.angle);
+                
+                // Glow
+                const glowIntensity = Math.min(1, Math.abs(spinner.velocity) / 10);
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.15})`;
+                ctx.shadowBlur = 30 * glowIntensity;
+                
+                // Arms with colored ends
+                const numArms = 3;
+                for (let i = 0; i < numArms; i++) {
+                    const armAngle = (i / numArms) * Math.PI * 2;
+                    const color = COLORS[i % COLORS.length];
+                    
+                    ctx.save();
+                    ctx.rotate(armAngle);
+                    
+                    // Arm body
+                    const grad = ctx.createLinearGradient(0, 0, armLength, 0);
+                    grad.addColorStop(0, '#4a5a6a');
+                    grad.addColorStop(0.3, '#5a6a7a');
+                    grad.addColorStop(0.7, '#4a5a6a');
+                    grad.addColorStop(1, color.dark);
+                    
+                    ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.05})`;
+                    ctx.shadowBlur = 10 * glowIntensity;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.roundRect(centerRadius, -armWidth/2, armLength, armWidth, 4);
+                    ctx.fill();
+                    
+                    // Arm glow at end
+                    ctx.shadowColor = color.main;
+                    ctx.shadowBlur = 15 * glowIntensity;
+                    
+                    // End circle (weight)
+                    const endRadius = 18 + Math.sin(time * 0.02 + i) * 1;
+                    const endGrad = ctx.createRadialGradient(
+                        armLength - endRadius * 0.3, -endRadius * 0.3, 0,
+                        armLength, 0, endRadius
+                    );
+                    endGrad.addColorStop(0, color.light);
+                    endGrad.addColorStop(0.4, color.main);
+                    endGrad.addColorStop(0.8, color.dark);
+                    endGrad.addColorStop(1, color.dark);
+                    
+                    ctx.fillStyle = endGrad;
+                    ctx.shadowColor = color.main;
+                    ctx.shadowBlur = 20 * glowIntensity;
+                    ctx.beginPath();
+                    ctx.arc(armLength, 0, endRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Highlight on end
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.ellipse(armLength - endRadius * 0.2, -endRadius * 0.2, endRadius * 0.25, endRadius * 0.15, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Small highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(armLength + endRadius * 0.15, -endRadius * 0.05, endRadius * 0.1, endRadius * 0.06, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // Center bearing
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.1})`;
+                ctx.shadowBlur = 20 * glowIntensity;
+                
+                const centerGrad = ctx.createRadialGradient(
+                    -centerRadius * 0.2, -centerRadius * 0.2, 0,
+                    0, 0, centerRadius
+                );
+                centerGrad.addColorStop(0, '#8a9aaa');
+                centerGrad.addColorStop(0.4, '#6a7a8a');
+                centerGrad.addColorStop(0.7, '#4a5a6a');
+                centerGrad.addColorStop(1, '#2a3a4a');
+                ctx.fillStyle = centerGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, centerRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Inner bearing ring
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, centerRadius * 0.6, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Center dot
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.beginPath();
+                ctx.arc(0, 0, centerRadius * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bearing highlights
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                for (let i = 0; i < 8; i++) {
+                    const a = (i / 8) * Math.PI * 2;
+                    const r = centerRadius * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(a) * r, Math.sin(a) * r, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                
+                // Speed indicator
+                const speedDisplay = Math.abs(spinner.velocity);
+                const maxDisplay = 8;
+                const ratio = Math.min(1, speedDisplay / maxDisplay);
+                
+                ctx.save();
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.05 + ratio * 0.1})`;
+                ctx.fillRect(0, H - 4, W * ratio, 4);
+                ctx.restore();
+                
+                // RPM display
+                const rpm = speedDisplay * 60 / (Math.PI * 2);
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`RPM: ${Math.round(rpm)}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Spins: ${spinner.spinCount}`, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02 * (speed / 5);
+                const frictionVal = 0.997 - (friction / 10) * 0.005;
+                
+                if (spinner.isSpinning) {
+                    // Apply friction
+                    spinner.velocity *= Math.pow(frictionVal, dt * 30);
+                    
+                    // Update angle
+                    spinner.angle += spinner.velocity * dt * 20;
+                    
+                    // Check if stopped
+                    if (Math.abs(spinner.velocity) < 0.001) {
+                        spinner.velocity = 0;
+                        spinner.isSpinning = false;
+                    }
+                    
+                    // Track full rotations
+                    spinner.momentum += Math.abs(spinner.velocity) * dt;
+                    if (spinner.momentum > Math.PI * 2) {
+                        spinner.spinCount++;
+                        spinner.momentum = 0;
+                    }
+                }
+            }
+
+            // ---- Spin ----
+            function spin() {
+                const power = 3 + Math.random() * 4;
+                const direction = Math.random() > 0.5 ? 1 : -1;
+                spinner.velocity += direction * power * (0.5 + speed / 10);
+                spinner.isSpinning = true;
+                
+                // Limit max velocity
+                if (Math.abs(spinner.velocity) > 12) {
+                    spinner.velocity = Math.sign(spinner.velocity) * 12;
+                }
+            }
+
+            // ---- Stop ----
+            function stopSpinner() {
+                spinner.velocity = 0;
+                spinner.isSpinning = false;
+            }
+
+            // ---- Reset ----
+            function resetSpinner() {
+                spinner.angle = 0;
+                spinner.velocity = 0;
+                spinner.momentum = 0;
+                spinner.isSpinning = false;
+                spinner.spinCount = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                drawSpinner();
+                
+                // Spin indicator
+                if (spinner.isSpinning) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+                    ctx.font = '16px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    const speedText = Math.round(Math.abs(spinner.velocity) * 10) / 10;
+                    ctx.fillText(`🌀 ${speedText.toFixed(1)} rad/s`, W/2, 20);
+                    ctx.restore();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            frictionSlider.addEventListener('input', function() {
+                friction = parseInt(this.value);
+                frictionLabel.textContent = friction;
+            });
+
+            // ---- Event Listeners ----
+            spinBtn.addEventListener('click', spin);
+            stopBtn.addEventListener('click', stopSpinner);
+            resetBtn.addEventListener('click', resetSpinner);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    spin();
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    stopSpinner();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSpinner();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- RoundRect polyfill for older browsers ----
+            if (!CanvasRenderingContext2D.prototype.roundRect) {
+                CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                    if (r > w/2) r = w/2;
+                    if (r > h/2) r = h/2;
+                    this.moveTo(x + r, y);
+                    this.arcTo(x + w, y, x + w, y + h, r);
+                    this.arcTo(x + w, y + h, x, y + h, r);
+                    this.arcTo(x, y + h, x, y, r);
+                    this.arcTo(x, y, x + w, y, r);
+                    return this;
+                };
+            }
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🌀 Fidget Spinner · Click Spin or press Space to spin!');
+        })();
+    </script>
+</body>
+</html>

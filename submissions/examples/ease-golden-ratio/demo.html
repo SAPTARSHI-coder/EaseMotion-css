@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Ratio · Spiral Expands in Golden Ratio</title>
+    <meta name="description" content="Interactive golden ratio spiral expanding with mathematical precision, vibrant colors, and mesmerizing animation.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">📐 GOLDEN RATIO</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="goldenCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="expand-btn" id="expandBtn">🌀 EXPAND</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Detail</label>
+                <input type="range" id="detailSlider" min="2" max="8" value="5">
+                <span id="detailLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>📐 GOLDEN RATIO</span>
+            <small>φ = 1.618 · spiral · divine proportion</small>
+        </div>
+        <div class="hint">
+            <span>🌀 watch the spiral expand in perfect golden ratio</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('goldenCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const expandBtn = document.getElementById('expandBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const detailSlider = document.getElementById('detailSlider');
+            const detailLabel = document.getElementById('detailLabel');
+
+            const PHI = 1.618033988749895; // Golden ratio
+            const PI = Math.PI;
+
+            let isAnimating = true;
+            let speed = 5;
+            let detail = 5;
+            let time = 0;
+            let expandProgress = 0;
+            let isExpanding = false;
+            let isExpanded = false;
+
+            // ---- Golden Spiral Parameters ----
+            let spiralPoints = [];
+            let targetPoints = [];
+            let colors = [];
+
+            // ---- Generate Golden Spiral ----
+            function generateSpiral(phase) {
+                const pts = [];
+                const cols = [];
+                const numPoints = 200 + detail * 30;
+                const maxRadius = 220;
+                const startRadius = 3;
+                const angleStep = PI / 6;
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const t = i / numPoints;
+                    const radius = startRadius * Math.pow(PHI, t * 6 + phase * 0.5);
+                    const angle = t * PI * 8 + phase * 0.3;
+                    
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    pts.push({ x: x, y: y, radius: radius, angle: angle });
+                    
+                    // Colors
+                    const hue = (t * 360 + phase * 30) % 360;
+                    const sat = 70 + 20 * Math.sin(t * 10 + phase);
+                    const light = 50 + 20 * Math.sin(t * 8 + phase * 0.5);
+                    cols.push({ hue: hue, sat: sat, light: light });
+                }
+                return { points: pts, colors: cols };
+            }
+
+            // ---- Initialize ----
+            function initSpiral() {
+                const result = generateSpiral(0);
+                spiralPoints = result.points;
+                colors = result.colors;
+                const target = generateSpiral(1);
+                targetPoints = target.points;
+                expandProgress = 0;
+                isExpanding = false;
+                isExpanded = false;
+                render();
+            }
+
+            // ---- Expand ----
+            function expandSpiral() {
+                if (isExpanding) return;
+                const target = generateSpiral(Math.random() * 2);
+                targetPoints = target.points;
+                isExpanding = true;
+                isExpanded = false;
+                expandProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetSpiral() {
+                isExpanding = false;
+                isExpanded = false;
+                expandProgress = 0;
+                const result = generateSpiral(0);
+                spiralPoints = result.points;
+                colors = result.colors;
+                const target = generateSpiral(1);
+                targetPoints = target.points;
+                render();
+            }
+
+            // ---- Update Expand ----
+            function updateExpand() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isExpanding && expandProgress < 1) {
+                    expandProgress += 0.004 * (speed / 5);
+                    if (expandProgress > 1) {
+                        expandProgress = 1;
+                        isExpanding = false;
+                        isExpanded = true;
+                        const target = generateSpiral(Math.random() * 2);
+                        targetPoints = target.points;
+                    }
+                    
+                    // Interpolate points
+                    const ease = 1 - Math.pow(1 - expandProgress, 3);
+                    for (let i = 0; i < spiralPoints.length; i++) {
+                        if (targetPoints[i]) {
+                            spiralPoints[i].x += (targetPoints[i].x - spiralPoints[i].x) * 0.04 * (speed / 5);
+                            spiralPoints[i].y += (targetPoints[i].y - spiralPoints[i].y) * 0.04 * (speed / 5);
+                            spiralPoints[i].radius += (targetPoints[i].radius - spiralPoints[i].radius) * 0.04 * (speed / 5);
+                            spiralPoints[i].angle += (targetPoints[i].angle - spiralPoints[i].angle) * 0.04 * (speed / 5);
+                        }
+                    }
+                }
+            }
+
+            // ---- Draw Golden Spiral ----
+            function drawSpiral(ctx) {
+                const cx = W / 2;
+                const cy = H / 2;
+                
+                // Draw golden ratio rectangles
+                const progress = Math.min(1, expandProgress * 1.5);
+                const maxRectSize = 220;
+                const rectSize = 10 + (maxRectSize - 10) * progress;
+                
+                // Draw rectangles
+                let rectX = cx - rectSize * 0.3;
+                let rectY = cy - rectSize * 0.3;
+                let rectW = rectSize * 0.6;
+                let rectH = rectSize * 0.6;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.05 + progress * 0.05;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.1)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 6; i++) {
+                    const size = rectSize * Math.pow(PHI, -i * 0.5);
+                    const x = cx - size * 0.3 + Math.sin(i * 0.5 + time * 0.01) * 5;
+                    const y = cy - size * 0.3 + Math.cos(i * 0.7 + time * 0.01) * 5;
+                    ctx.strokeRect(x, y, size * 0.6, size * 0.6);
+                }
+                ctx.restore();
+                
+                // Draw spiral points
+                const numPoints = spiralPoints.length;
+                const step = Math.max(1, Math.floor(numPoints / 200));
+                
+                for (let i = 0; i < numPoints - step; i += step) {
+                    const p1 = spiralPoints[i];
+                    const p2 = spiralPoints[i + step];
+                    const t = i / numPoints;
+                    
+                    const x1 = cx + p1.x;
+                    const y1 = cy + p1.y;
+                    const x2 = cx + p2.x;
+                    const y2 = cy + p2.y;
+                    
+                    const hue = colors[i].hue;
+                    const sat = colors[i].sat;
+                    const light = colors[i].light;
+                    const alpha = 0.1 + t * 0.5;
+                    const size = 1 + t * 2;
+                    
+                    // Glow line
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.05 * t})`;
+                    ctx.shadowBlur = 10 * t;
+                    ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha * 0.8})`;
+                    ctx.lineWidth = size * 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // Draw glow nodes
+                for (let i = 0; i < numPoints; i += step * 2) {
+                    const p = spiralPoints[i];
+                    const t = i / numPoints;
+                    const x = cx + p.x;
+                    const y = cy + p.y;
+                    const hue = colors[i].hue;
+                    const light = colors[i].light;
+                    const size = 1 + t * 3;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = 0.1 + t * 0.3;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${0.05 * t})`;
+                    ctx.shadowBlur = 15 * t;
+                    ctx.fillStyle = `hsla(${hue}, 80%, ${light + 20}%, ${0.3 + t * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Golden ratio label
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.1)';
+                ctx.font = '16px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                const phiText = `φ = ${PHI.toFixed(3)}`;
+                ctx.fillText(phiText, cx, 30);
+                ctx.restore();
+                
+                // Progress indicator
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.1)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const progressPercent = Math.round(expandProgress * 100);
+                ctx.fillText(`Expand: ${progressPercent}%`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isExpanded ? '🌀 EXPANDED' : 
+                              isExpanding ? '🔄 EXPANDING...' : 
+                              '📐 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                drawSpiral(ctx);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateExpand();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            detailSlider.addEventListener('input', function() {
+                detail = parseInt(this.value);
+                detailLabel.textContent = detail;
+                initSpiral();
+            });
+
+            // ---- Event Listeners ----
+            expandBtn.addEventListener('click', expandSpiral);
+            resetBtn.addEventListener('click', resetSpiral);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    expandSpiral();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSpiral();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initSpiral();
+            animate();
+
+            console.log('📐 Golden Ratio · Click Expand or press Space to watch the spiral grow!');
+        })();
+    </script>
+</body>
+</html>
