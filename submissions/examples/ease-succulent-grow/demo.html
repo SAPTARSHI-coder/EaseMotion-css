@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Succulent Grow · succulent plumps up on interaction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="succulent-container">
+      <div class="succulent-display" id="succulentDisplay">
+        <!-- Canvas for succulent -->
+        <canvas id="succulentCanvas"></canvas>
+        
+        <!-- Succulent Info -->
+        <div class="succulent-info">
+          <span class="info-label">🌱 Plumpness</span>
+          <span class="info-value" id="plumpnessLevel">0%</span>
+        </div>
+
+        <!-- Succulent Controls -->
+        <div class="succulent-controls">
+          <div class="control-group">
+            <label class="control-label">💧 Water</label>
+            <input type="range" class="control-slider" id="waterSlider" min="0" max="100" value="0">
+            <span class="control-value" id="waterValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Type</label>
+            <div class="type-options">
+              <button class="type-btn active" data-type="echeveria" title="Echeveria">🌿</button>
+              <button class="type-btn" data-type="jade" title="Jade">🪴</button>
+              <button class="type-btn" data-type="aloe" title="Aloe">🌵</button>
+              <button class="type-btn" data-type="haworthia" title="Haworthia">⭐</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Succulent Text -->
+        <div class="succulent-text">
+          <span class="text-label">🌱 Succulent</span>
+          <span class="text-message" id="succulentMessage">Water the succulent to make it plump</span>
+        </div>
+      </div>
+      
+      <div class="succulent-status">
+        <span id="succulentStatus">🌱 Water the succulent to help it grow</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-water" id="waterBtn">💧 Water</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌱 succulent plumps up · 4 types · water control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('succulentCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('succulentDisplay');
+      const plumpnessLevel = document.getElementById('plumpnessLevel');
+      const succulentStatus = document.getElementById('succulentStatus');
+      const succulentMessage = document.getElementById('succulentMessage');
+      const waterBtn = document.getElementById('waterBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const waterSlider = document.getElementById('waterSlider');
+      const waterValue = document.getElementById('waterValue');
+      const typeBtns = document.querySelectorAll('.type-btn');
+
+      // State
+      let plumpness = 0; // 0-100
+      let targetPlumpness = 0;
+      let currentType = 'echeveria';
+      let particles = [];
+      let animationId = null;
+
+      // Succulent types
+      const succulentTypes = {
+        echeveria: {
+          name: 'Echeveria',
+          colors: ['#4ade80', '#22c55e', '#16a34a', '#86efac'],
+          petalCount: 5,
+          petalShape: 'round'
+        },
+        jade: {
+          name: 'Jade',
+          colors: ['#34d399', '#10b981', '#059669', '#6ee7b7'],
+          petalCount: 4,
+          petalShape: 'oval'
+        },
+        aloe: {
+          name: 'Aloe',
+          colors: ['#22c55e', '#16a34a', '#15803d', '#4ade80'],
+          petalCount: 6,
+          petalShape: 'pointed'
+        },
+        haworthia: {
+          name: 'Haworthia',
+          colors: ['#a78bfa', '#8b5cf6', '#7c3aed', '#c4b5fd'],
+          petalCount: 5,
+          petalShape: 'star'
+        }
+      };
+
+      // Water particle class
+      class WaterParticle {
+        constructor(x, y) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || -10 - Math.random() * 20;
+          this.size = 2 + Math.random() * 4;
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.wobble = 0.3 + Math.random() * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.angle = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.y += this.speed;
+          this.phase += 0.03;
+          this.x += Math.sin(this.phase) * this.wobble * 0.2;
+          this.life -= 0.005;
+          return this.life > 0 && this.y < canvas.height + 20;
+        }
+
+        draw(ctx) {
+          const alpha = (this.life / this.maxLife) * 0.3;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#60a5fa';
+          ctx.shadowColor = '#60a5fa';
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Generate water particles
+      function createWaterBurst(count = 30) {
+        for (let i = 0; i < count; i++) {
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+          const y = canvas.height * 0.3 + (Math.random() - 0.5) * 50;
+          const particle = new WaterParticle(x, y);
+          particle.speed = 0.3 + Math.random() * 1;
+          particle.angle = Math.random() * Math.PI * 2;
+          particles.push(particle);
+        }
+      }
+
+      // Draw succulent
+      function drawSucculent(plumpness, type) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2 + 20;
+        const typeData = succulentTypes[type];
+        const colors = typeData.colors;
+        const petalCount = typeData.petalCount;
+        const size = 30 + (plumpness / 100) * 50;
+        const scale = 0.5 + (plumpness / 100) * 0.5;
+
+        // Clear and draw background
+        drawBackground();
+
+        // Draw pot
+        drawPot(cy + 20);
+
+        // Draw succulent
+        ctx.save();
+        ctx.translate(cx, cy - 10);
+
+        // Shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetY = 5;
+
+        // Draw petals in layers
+        for (let layer = 0; layer < 3; layer++) {
+          const layerSize = size * (1 - layer * 0.2) * scale;
+          const layerCount = petalCount + layer * 2;
+          const layerOffset = layer * 0.15;
+
+          for (let i = 0; i < layerCount; i++) {
+            const angle = (i / layerCount) * Math.PI * 2 + layerOffset;
+            const petalSize = layerSize * (0.4 + (1 - layer / 3) * 0.3);
+            const colorIndex = (layer + i) % colors.length;
+            const color = colors[colorIndex];
+
+            ctx.save();
+            ctx.rotate(angle);
+            ctx.translate(0, -layerSize * 0.2);
+
+            // Petal shape
+            ctx.shadowColor = 'rgba(0,0,0,0.05)';
+            ctx.shadowBlur = 5;
+
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, -petalSize * 0.3, petalSize);
+            grad.addColorStop(0, colors[(colorIndex + 1) % colors.length]);
+            grad.addColorStop(0.5, color);
+            grad.addColorStop(1, colors[(colorIndex + 2) % colors.length]);
+
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 3;
+
+            // Petal shape based on type
+            ctx.beginPath();
+            if (typeData.petalShape === 'round') {
+              // Round petal
+              ctx.ellipse(0, -petalSize * 0.3, petalSize * 0.4, petalSize * 0.7, 0, 0, Math.PI * 2);
+            } else if (typeData.petalShape === 'oval') {
+              // Oval petal
+              ctx.ellipse(0, -petalSize * 0.3, petalSize * 0.3, petalSize * 0.8, 0, 0, Math.PI * 2);
+            } else if (typeData.petalShape === 'pointed') {
+              // Pointed petal
+              ctx.moveTo(0, -petalSize);
+              ctx.quadraticCurveTo(petalSize * 0.4, -petalSize * 0.4, petalSize * 0.2, 0);
+              ctx.quadraticCurveTo(0, petalSize * 0.1, -petalSize * 0.2, 0);
+              ctx.quadraticCurveTo(-petalSize * 0.4, -petalSize * 0.4, 0, -petalSize);
+            } else if (typeData.petalShape === 'star') {
+              // Star petal
+              const points = 5;
+              for (let j = 0; j < points * 2; j++) {
+                const r = j % 2 === 0 ? petalSize * 0.5 : petalSize * 0.25;
+                const a = (j / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+                const px = Math.cos(a) * r;
+                const py = Math.sin(a) * r;
+                if (j === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+              }
+              ctx.closePath();
+            }
+            ctx.fill();
+
+            // Petal highlight
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 0.1;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(-petalSize * 0.1, -petalSize * 0.4, petalSize * 0.15, petalSize * 0.2, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+          }
+        }
+
+        // Center of succulent
+        ctx.shadowBlur = 5;
+        const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.15);
+        centerGrad.addColorStop(0, colors[0]);
+        centerGrad.addColorStop(0.5, colors[1]);
+        centerGrad.addColorStop(1, colors[2]);
+        ctx.fillStyle = centerGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        // Update plumpness display
+        const percent = Math.round(plumpness);
+        plumpnessLevel.textContent = percent + '%';
+        plumpnessLevel.style.color = percent > 70 ? '#4ade80' : '#94a3b8';
+
+        // Update status
+        if (plumpness > 80) {
+          succulentStatus.textContent = '🌱 Succulent is beautifully plump! ✨';
+          succulentStatus.style.color = '#4ade80';
+        } else if (plumpness > 40) {
+          succulentStatus.textContent = '🌱 Succulent is growing plump and healthy';
+          succulentStatus.style.color = '#818cf8';
+        } else if (plumpness > 5) {
+          succulentStatus.textContent = '🌱 Succulent is starting to plump up...';
+          succulentStatus.style.color = '#94a3b8';
+        } else {
+          succulentStatus.textContent = '🌱 Water the succulent to help it grow';
+          succulentStatus.style.color = '#94a3b8';
+        }
+
+        // Update message
+        if (plumpness > 70) {
+          succulentMessage.textContent = '💚 So plump and healthy!';
+          succulentMessage.style.color = '#4ade80';
+        } else if (plumpness > 30) {
+          succulentMessage.textContent = '🌱 Growing beautifully';
+          succulentMessage.style.color = '#818cf8';
+        } else {
+          succulentMessage.textContent = '💧 Water me to grow plump!';
+          succulentMessage.style.color = '#94a3b8';
+        }
+      }
+
+      // Draw pot
+      function drawPot(y) {
+        const w = canvas.width;
+        const cx = w / 2;
+
+        ctx.save();
+        ctx.translate(cx, y);
+
+        // Pot shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 3;
+
+        // Pot body
+        const grad = ctx.createLinearGradient(-45, 0, 45, 0);
+        grad.addColorStop(0, '#6b4a3a');
+        grad.addColorStop(0.3, '#8b6a5a');
+        grad.addColorStop(0.7, '#8b6a5a');
+        grad.addColorStop(1, '#5a3a2a');
+        ctx.fillStyle = grad;
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.moveTo(-50, 0);
+        ctx.quadraticCurveTo(-55, 5, -45, 25);
+        ctx.quadraticCurveTo(0, 30, 45, 25);
+        ctx.quadraticCurveTo(55, 5, 50, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Pot rim
+        ctx.shadowBlur = 3;
+        const rimGrad = ctx.createLinearGradient(-55, 0, 55, 0);
+        rimGrad.addColorStop(0, '#5a3a2a');
+        rimGrad.addColorStop(0.3, '#7a5a4a');
+        rimGrad.addColorStop(0.7, '#7a5a4a');
+        rimGrad.addColorStop(1, '#4a2a1a');
+        ctx.fillStyle = rimGrad;
+        ctx.beginPath();
+        ctx.moveTo(-55, 0);
+        ctx.quadraticCurveTo(0, -5, 55, 0);
+        ctx.quadraticCurveTo(0, 3, -55, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Soil
+        ctx.shadowBlur = 0;
+        const soilGrad = ctx.createRadialGradient(0, 2, 0, 0, 2, 35);
+        soilGrad.addColorStop(0, '#3a2a1a');
+        soilGrad.addColorStop(0.5, '#2a1a0a');
+        soilGrad.addColorStop(1, '#1a0a00');
+        ctx.fillStyle = soilGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 2, 35, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Soft gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle light spots
+        for (let i = 0; i < 3; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h * 0.5;
+          const size = 30 + Math.random() * 60;
+          const grad2 = ctx.createRadialGradient(x, y, 0, x, y, size);
+          grad2.addColorStop(0, 'rgba(255,255,255,0.02)');
+          grad2.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Water the succulent
+      function waterSucculent() {
+        targetPlumpness = Math.min(100, targetPlumpness + 25);
+        createWaterBurst(20);
+        if (targetPlumpness > 90) {
+          succulentStatus.textContent = '💧 Succulent is fully watered!';
+          succulentStatus.style.color = '#60a5fa';
+          setTimeout(() => {
+            if (plumpness > 80) {
+              succulentStatus.textContent = '🌱 Succulent is beautifully plump! ✨';
+              succulentStatus.style.color = '#4ade80';
+            }
+          }, 1500);
+        }
+        // Update slider to match
+        waterSlider.value = targetPlumpness;
+        waterValue.textContent = Math.round(targetPlumpness) + '%';
+      }
+
+      // Animation loop
+      function animate() {
+        // Smooth interpolation
+        plumpness += (targetPlumpness - plumpness) * 0.06;
+
+        // Update particles
+        particles = particles.filter(p => p.update());
+        particles.forEach(p => p.draw(ctx));
+
+        drawSucculent(plumpness, currentType);
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set type
+      function setType(type) {
+        currentType = type;
+        typeBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.type === type);
+        });
+        const typeData = succulentTypes[type];
+        succulentStatus.textContent = `🌱 Type: ${typeData.name}`;
+        succulentStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          if (plumpness < 10) {
+            succulentStatus.textContent = '🌱 Water the succulent to help it grow';
+            succulentStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Set water
+      function setWater(value) {
+        targetPlumpness = Math.max(0, Math.min(100, parseInt(value)));
+        waterSlider.value = targetPlumpness;
+        waterValue.textContent = Math.round(targetPlumpness) + '%';
+        if (targetPlumpness > plumpness + 5) {
+          createWaterBurst(15);
+        }
+      }
+
+      // Reset
+      function resetSucculent() {
+        targetPlumpness = 0;
+        plumpness = 0;
+        particles = [];
+        waterSlider.value = 0;
+        waterValue.textContent = '0%';
+        succulentStatus.textContent = '🔄 Reset complete';
+        succulentStatus.style.color = '#94a3b8';
+        succulentMessage.textContent = 'Water the succulent to make it plump';
+        succulentMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          succulentStatus.textContent = '🌱 Water the succulent to help it grow';
+          succulentStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Event listeners
+      waterSlider.addEventListener('input', function() {
+        setWater(this.value);
+      });
+
+      typeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setType(this.dataset.type);
+        });
+      });
+
+      if (waterBtn) {
+        waterBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          waterSucculent();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetSucculent();
+        });
+      }
+
+      // Click on display to water
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          waterSucculent();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          waterSucculent();
+        } else if (key === 'w' || key === 'W') {
+          e.preventDefault();
+          waterSucculent();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetSucculent();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+
+      console.log('🌱 Succulent Grow ready · shortcuts: [Space/W] Water, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

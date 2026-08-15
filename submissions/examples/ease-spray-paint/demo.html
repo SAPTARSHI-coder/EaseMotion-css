@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spray Paint · Paint Sprays from Cursor</title>
+    <meta name="description" content="Interactive spray paint tool with realistic spray particles, color control, and adjustable spray size.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 SPRAY PAINT</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="sprayCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#ff6b6b">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="5" max="80" value="30">
+                <span id="sizeLabel">30</span>
+                <label>Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5">
+                <span id="densityLabel">5</span>
+            </div>
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 SPRAY PAINT</span>
+            <small>particles · realistic spray · expressive</small>
+        </div>
+        <div class="hint">
+            <span>🖌️ drag to spray paint particles from cursor</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('sprayCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+            const clearBtn = document.getElementById('clearBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isSpraying = false;
+            let currentColor = '#ff6b6b';
+            let spraySize = 30;
+            let sprayDensity = 5;
+
+            // ---- Spray Particles ----
+            let particles = [];
+            let splatters = [];
+
+            // ---- Spray Particle Class ----
+            class SprayParticle {
+                constructor(x, y, color, size) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * size;
+                    const dist = Math.sqrt(Math.random()) * radius;
+                    
+                    this.x = x + Math.cos(angle) * dist;
+                    this.y = y + Math.sin(angle) * dist;
+                    this.size = 1 + Math.random() * 3;
+                    this.color = color;
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.decay = 0.002 + Math.random() * 0.005;
+                    
+                    // Slight drift
+                    this.vx = (Math.random() - 0.5) * 0.2;
+                    this.vy = (Math.random() - 0.5) * 0.2 - 0.1;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life -= this.decay;
+                    this.opacity = this.life * 0.8;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = 'rgba(0,0,0,0)';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Splatter Particle (occasional larger drops) ----
+            class SplatterParticle {
+                constructor(x, y, color, size) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * size * 0.6;
+                    this.x = x + Math.cos(angle) * radius;
+                    this.y = y + Math.sin(angle) * radius;
+                    this.size = 2 + Math.random() * 5;
+                    this.color = color;
+                    this.opacity = 0.5 + Math.random() * 0.5;
+                    this.life = 1;
+                    this.decay = 0.005 + Math.random() * 0.01;
+                    
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5 - 0.3;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += 0.02;
+                    this.life -= this.decay;
+                    this.opacity = this.life * 0.6;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Spray function ----
+            function spray(x, y) {
+                const numParticles = 5 + sprayDensity * 3;
+                const color = currentColor;
+                const size = spraySize;
+                
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new SprayParticle(x, y, color, size));
+                }
+                
+                // Occasional splatter
+                if (Math.random() < 0.08) {
+                    splatters.push(new SplatterParticle(x, y, color, size));
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Clear canvas with slight transparency for trail effect
+                ctx.fillStyle = 'rgba(10, 10, 18, 0.05)';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Update particles
+                particles = particles.filter(p => p.life > 0);
+                for (let p of particles) {
+                    p.update();
+                }
+                
+                splatters = splatters.filter(s => s.life > 0);
+                for (let s of splatters) {
+                    s.update();
+                }
+                
+                // Render
+                render();
+                
+                // Draw particles
+                for (let p of particles) {
+                    p.draw(ctx);
+                }
+                for (let s of splatters) {
+                    s.draw(ctx);
+                }
+                
+                // Limit particles
+                if (particles.length > 5000) {
+                    particles.splice(0, particles.length - 5000);
+                }
+                if (splatters.length > 500) {
+                    splatters.splice(0, splatters.length - 500);
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                isSpraying = true;
+                const pos = getPos(e);
+                spray(pos.x, pos.y);
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                if (isSpraying) {
+                    spray(pos.x, pos.y);
+                }
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                isSpraying = false;
+            }
+
+            // ---- Clear ----
+            function clearCanvas() {
+                particles = [];
+                splatters = [];
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Reset ----
+            function resetCanvas() {
+                clearCanvas();
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Color Control ----
+            colorPicker.addEventListener('input', function() {
+                currentColor = this.value;
+            });
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                spraySize = parseInt(this.value);
+                sizeLabel.textContent = spraySize;
+            });
+
+            // ---- Density Control ----
+            densitySlider.addEventListener('input', function() {
+                sprayDensity = parseInt(this.value);
+                densityLabel.textContent = sprayDensity;
+            });
+
+            // ---- Event Listeners ----
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetCanvas);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'c' || e.key === 'C') {
+                    clearCanvas();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCanvas();
+                }
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            ctx.fillStyle = '#0a0a12';
+            ctx.fillRect(0, 0, W, H);
+            animate();
+
+            console.log('🎨 Spray Paint · Drag to spray · C to clear · Space to pause');
+        })();
+    </script>
+</body>
+</html>

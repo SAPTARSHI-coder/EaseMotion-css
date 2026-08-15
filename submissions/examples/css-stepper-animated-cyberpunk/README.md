@@ -1,0 +1,2 @@
+# Animated Stepper (Cyberpunk)
+A gritty, high-contrast process tracker. The progress bar fills utilizing a jagged `steps()` animation function, and the active node offsets with a hard box-shadow to simulate a tactile mechanical keyboard switch.
