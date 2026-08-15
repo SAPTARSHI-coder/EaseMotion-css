@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yo-yo Trick · Yo-yo Goes Up and Down</title>
+    <meta name="description" content="Interactive yo-yo with realistic physics, string animation, and up/down trick mechanics.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪀 YO-YO TRICK</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="yoyoCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="throw-btn" id="throwBtn">🪀 THROW</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Gravity</label>
+                <input type="range" id="gravitySlider" min="1" max="10" value="5">
+                <span id="gravityLabel">5</span>
+                <label>String</label>
+                <input type="range" id="stringSlider" min="1" max="10" value="5">
+                <span id="stringLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🪀 YO-YO TRICK</span>
+            <small>up · down · spin</small>
+        </div>
+        <div class="hint">
+            <span>🪀 click to throw the yo-yo and watch it return</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('yoyoCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const throwBtn = document.getElementById('throwBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const gravitySlider = document.getElementById('gravitySlider');
+            const gravityLabel = document.getElementById('gravityLabel');
+            const stringSlider = document.getElementById('stringSlider');
+            const stringLabel = document.getElementById('stringLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            
+            // ---- Yo-yo State ----
+            let yoyo = {
+                x: W / 2,
+                y: 120,
+                velocity: 0,
+                gravity: 0.3,
+                stringLength: 0,
+                maxStringLength: 300,
+                isThrown: false,
+                isReturning: false,
+                spin: 0,
+                throwCount: 0,
+                stringWidth: 2,
+                yoSize: 30
+            };
+
+            // ---- Throw Yo-yo ----
+            function throwYoyo() {
+                if (yoyo.isThrown && yoyo.velocity > 0) return;
+                
+                yoyo.isThrown = true;
+                yoyo.isReturning = false;
+                yoyo.velocity = -6 - (parseInt(gravitySlider.value) / 10) * 2;
+                yoyo.throwCount++;
+                
+                // Reset string length
+                yoyo.stringLength = 0;
+            }
+
+            // ---- Reset ----
+            function resetYoyo() {
+                yoyo.y = 120;
+                yoyo.velocity = 0;
+                yoyo.stringLength = 0;
+                yoyo.isThrown = false;
+                yoyo.isReturning = false;
+                yoyo.spin = 0;
+                yoyo.throwCount = 0;
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02;
+                const gravity = parseInt(gravitySlider.value) / 10 * 0.4 + 0.1;
+                const stringSpeed = parseInt(stringSlider.value) / 10 * 0.5 + 0.1;
+                
+                if (yoyo.isThrown) {
+                    // Gravity
+                    yoyo.velocity += gravity * dt * 20;
+                    
+                    // Update position
+                    yoyo.y += yoyo.velocity * dt * 3;
+                    
+                    // Update string length
+                    yoyo.stringLength = Math.abs(yoyo.y - 120);
+                    
+                    // String tension (pull back)
+                    if (yoyo.stringLength > yoyo.maxStringLength) {
+                        yoyo.stringLength = yoyo.maxStringLength;
+                        yoyo.velocity = -yoyo.velocity * 0.3;
+                        yoyo.isReturning = true;
+                    }
+                    
+                    // Bottom check
+                    if (yoyo.y > H - 50) {
+                        yoyo.y = H - 50;
+                        yoyo.velocity = -yoyo.velocity * 0.3;
+                        yoyo.isReturning = true;
+                    }
+                    
+                    // Return to hand
+                    if (yoyo.isReturning && yoyo.y <= 120) {
+                        yoyo.y = 120;
+                        yoyo.velocity = 0;
+                        yoyo.isThrown = false;
+                        yoyo.isReturning = false;
+                        yoyo.stringLength = 0;
+                        
+                        // Add spin on return
+                        yoyo.spin += 2;
+                    }
+                    
+                    // Spin while moving
+                    if (Math.abs(yoyo.velocity) > 0.5) {
+                        yoyo.spin += Math.abs(yoyo.velocity) * 0.05;
+                    }
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Hand
+                const handX = yoyo.x;
+                const handY = 120;
+                
+                // Draw hand
+                ctx.save();
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.05)';
+                ctx.beginPath();
+                ctx.arc(handX, handY, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '20px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✋', handX, handY);
+                ctx.restore();
+                
+                // String
+                if (yoyo.stringLength > 0) {
+                    ctx.save();
+                    const stringLen = yoyo.stringLength;
+                    const yoyoY = yoyo.y;
+                    
+                    // String glow
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.1)';
+                    ctx.shadowBlur = 10;
+                    
+                    // Main string
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.4)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(handX, handY);
+                    
+                    // Curved string
+                    const midX = handX + Math.sin(time * 0.02 + yoyo.stringLength * 0.01) * 10;
+                    const midY = (handY + yoyoY) / 2 + Math.sin(time * 0.03 + yoyo.stringLength * 0.005) * 5;
+                    ctx.quadraticCurveTo(midX, midY, handX, yoyoY);
+                    ctx.stroke();
+                    
+                    // Inner glow string
+                    ctx.shadowBlur = 5;
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.1)';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(handX, handY);
+                    ctx.quadraticCurveTo(midX, midY, handX, yoyoY);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+                
+                // Yo-yo
+                const yx = yoyo.x;
+                const yy = yoyo.y;
+                const size = yoyo.yoSize;
+                const spin = yoyo.spin;
+                
+                ctx.save();
+                ctx.translate(yx, yy);
+                ctx.rotate(spin);
+                
+                // Glow
+                const glowIntensity = Math.min(1, Math.abs(yoyo.velocity) / 10);
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.15})`;
+                ctx.shadowBlur = 20 * glowIntensity;
+                
+                // Yo-yo body
+                const bodyGrad = ctx.createRadialGradient(
+                    -size * 0.2, -size * 0.2, 0,
+                    0, 0, size
+                );
+                bodyGrad.addColorStop(0, '#e8e0d5');
+                bodyGrad.addColorStop(0.3, '#d4c8b8');
+                bodyGrad.addColorStop(0.6, '#b8a898');
+                bodyGrad.addColorStop(0.8, '#9a8a7a');
+                bodyGrad.addColorStop(1, '#7a6a5a');
+                
+                ctx.fillStyle = bodyGrad;
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.1})`;
+                ctx.shadowBlur = 15 * glowIntensity;
+                ctx.beginPath();
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Inner ring
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.6, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Inner circle
+                ctx.fillStyle = 'rgba(80, 70, 60, 0.3)';
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Axle
+                ctx.fillStyle = 'rgba(60, 50, 40, 0.5)';
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Highlight
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.2, -size * 0.25, size * 0.2, size * 0.1, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Small highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.beginPath();
+                ctx.ellipse(size * 0.15, -size * 0.1, size * 0.1, size * 0.06, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Throws: ${yoyo.throwCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const speedText = Math.abs(yoyo.velocity).toFixed(1);
+                ctx.fillText(`Speed: ${speedText}`, 20, H - 10);
+                ctx.restore();
+                
+                // Status indicator
+                if (yoyo.isThrown) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+                    ctx.font = '16px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    const status = yoyo.isReturning ? '⬆️ RETURNING' : '⬇️ THROWING';
+                    ctx.fillText(status, W/2, 20);
+                    ctx.restore();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            gravitySlider.addEventListener('input', function() {
+                gravityLabel.textContent = this.value;
+            });
+            stringSlider.addEventListener('input', function() {
+                stringLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            throwBtn.addEventListener('click', throwYoyo);
+            resetBtn.addEventListener('click', resetYoyo);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    throwYoyo();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetYoyo();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🪀 Yo-yo Trick · Click Throw or press Space to throw the yo-yo!');
+        })();
+    </script>
+</body>
+</html>

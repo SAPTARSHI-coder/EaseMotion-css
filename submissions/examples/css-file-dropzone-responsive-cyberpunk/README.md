@@ -1,0 +1,2 @@
+# Responsive File Dropzone (Cyberpunk)
+A gritty sci-fi terminal interface for file uploads. The background utilizes a CSS linear-gradient grid that intensifies on hover, while the text swaps neon chromatic aberration states. Completely responsive and scales down cleanly for mobile viewports.
