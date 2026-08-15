@@ -1,0 +1,2 @@
+# Glowing Popover (Pastel)
+A welcoming, perfectly rounded help-tip popover. It casts a soft pink pastel glow onto the page and triggers its entry animation utilizing `:focus-within` for improved accessibility.

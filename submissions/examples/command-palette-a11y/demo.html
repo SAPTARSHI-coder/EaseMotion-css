@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Command Palette Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <main class="demo-container">
+        <h1>Command Palette (A11y Demo)</h1>
+        <p>Press <code>Cmd+K</code> or <code>Ctrl+K</code> to open the command palette. Use arrow keys to navigate results.</p>
+        
+        <button type="button" class="btn" id="open-palette-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="command-palette">
+            Open Command Palette
+        </button>
+    </main>
+
+    <!-- 
+        Command Palette Dialog 
+    -->
+    <div class="palette-backdrop" id="command-palette" role="dialog" aria-modal="true" aria-label="Command Palette" aria-hidden="true" tabindex="-1">
+        
+        <div class="palette-surface" role="document">
+            
+            <div tabindex="0" class="focus-sentinel sr-only" id="trap-start"></div>
+
+            <header class="palette-header">
+                <!-- 
+                    ARIA Combobox Pattern
+                    The input controls the listbox.
+                -->
+                <input 
+                    type="text" 
+                    id="palette-input" 
+                    class="palette-input" 
+                    placeholder="Search commands..." 
+                    role="combobox" 
+                    aria-expanded="true" 
+                    aria-autocomplete="list" 
+                    aria-controls="palette-results" 
+                    aria-activedescendant=""
+                >
+            </header>
+
+            <!-- 
+                ARIA Live Region for Live Announcements
+                Announces the number of results found as the user types.
+            -->
+            <div id="palette-announcer" class="sr-only" aria-live="polite" aria-atomic="true">
+                3 results found.
+            </div>
+
+            <div class="palette-body">
+                <!-- 
+                    ARIA Listbox Pattern 
+                -->
+                <ul id="palette-results" class="palette-results" role="listbox" aria-label="Commands">
+                    <!-- Options -->
+                    <li id="option-1" class="palette-option" role="option" aria-selected="false">
+                        <span class="option-icon" aria-hidden="true">📄</span>
+                        <span class="option-text">Create new file</span>
+                    </li>
+                    <li id="option-2" class="palette-option" role="option" aria-selected="false">
+                        <span class="option-icon" aria-hidden="true">⚙️</span>
+                        <span class="option-text">Open Settings</span>
+                    </li>
+                    <li id="option-3" class="palette-option" role="option" aria-selected="false">
+                        <span class="option-icon" aria-hidden="true">🌙</span>
+                        <span class="option-text">Toggle Dark Mode</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div tabindex="0" class="focus-sentinel sr-only" id="trap-end"></div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openBtn = document.getElementById('open-palette-btn');
+            const palette = document.getElementById('command-palette');
+            const input = document.getElementById('palette-input');
+            const resultsList = document.getElementById('palette-results');
+            const options = Array.from(document.querySelectorAll('.palette-option'));
+            const announcer = document.getElementById('palette-announcer');
+            
+            const trapStart = document.getElementById('trap-start');
+            const trapEnd = document.getElementById('trap-end');
+
+            let lastFocusedElement;
+            let activeIndex = -1;
+
+            function openPalette() {
+                lastFocusedElement = document.activeElement;
+                palette.classList.add('is-open');
+                palette.removeAttribute('aria-hidden');
+                openBtn.setAttribute('aria-expanded', 'true');
+                
+                input.value = '';
+                filterResults('');
+                
+                // Focus the input inside the palette
+                setTimeout(() => input.focus(), 50);
+            }
+
+            function closePalette() {
+                palette.classList.remove('is-open');
+                palette.setAttribute('aria-hidden', 'true');
+                openBtn.setAttribute('aria-expanded', 'false');
+                
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                }
+            }
+
+            // Keyboard shortcut (Cmd+K / Ctrl+K)
+            document.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (palette.classList.contains('is-open')) closePalette();
+                    else openPalette();
+                }
+                
+                // Escape to close
+                if (e.key === 'Escape' && palette.classList.contains('is-open')) {
+                    closePalette();
+                }
+            });
+
+            openBtn.addEventListener('click', openPalette);
+            
+            palette.addEventListener('click', (e) => {
+                if (e.target === palette) closePalette();
+            });
+
+            // Filtering and Live Announcement
+            input.addEventListener('input', (e) => {
+                filterResults(e.target.value);
+            });
+
+            function filterResults(query) {
+                const lowerQuery = query.toLowerCase();
+                let visibleCount = 0;
+                
+                options.forEach(option => {
+                    const text = option.querySelector('.option-text').textContent.toLowerCase();
+                    if (text.includes(lowerQuery)) {
+                        option.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        option.style.display = 'none';
+                        option.setAttribute('aria-selected', 'false');
+                        option.classList.remove('is-active');
+                    }
+                });
+
+                // Update ARIA Live Region to announce results to screen readers
+                if (visibleCount === 0) {
+                    announcer.textContent = 'No results found.';
+                } else if (visibleCount === 1) {
+                    announcer.textContent = '1 result found.';
+                } else {
+                    announcer.textContent = `${visibleCount} results found.`;
+                }
+
+                // Reset active descendant
+                input.setAttribute('aria-activedescendant', '');
+                activeIndex = -1;
+            }
+
+            // Arrow Key Navigation (ARIA Combobox)
+            input.addEventListener('keydown', (e) => {
+                const visibleOptions = options.filter(opt => opt.style.display !== 'none');
+                
+                if (visibleOptions.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex + 1) % visibleOptions.length;
+                    updateActiveOption(visibleOptions);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex - 1 + visibleOptions.length) % visibleOptions.length;
+                    updateActiveOption(visibleOptions);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (activeIndex >= 0) {
+                        alert(`Executed: ${visibleOptions[activeIndex].querySelector('.option-text').textContent}`);
+                        closePalette();
+                    }
+                }
+            });
+
+            function updateActiveOption(visibleOptions) {
+                // Clear all
+                options.forEach(opt => {
+                    opt.setAttribute('aria-selected', 'false');
+                    opt.classList.remove('is-active');
+                });
+
+                // Set new active
+                if (activeIndex >= 0) {
+                    const activeOpt = visibleOptions[activeIndex];
+                    activeOpt.setAttribute('aria-selected', 'true');
+                    activeOpt.classList.add('is-active');
+                    
+                    // Tell the input which option is currently active for screen readers
+                    input.setAttribute('aria-activedescendant', activeOpt.id);
+                    
+                    // Ensure it's scrolled into view
+                    activeOpt.scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            // Focus Trapping
+            trapStart.addEventListener('focus', () => input.focus());
+            trapEnd.addEventListener('focus', () => input.focus());
+        });
+    </script>
+</body>
+</html>

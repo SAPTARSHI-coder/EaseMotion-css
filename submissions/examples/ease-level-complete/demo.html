@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Complete · Rainbow Celebration</title>
+    <meta name="description" content="Interactive level complete celebration with rainbow confetti, fireworks, sparkles, and triumphant sound effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="level-display">
+            <div class="level-progress">
+                <div class="progress-bar" id="progressBar"></div>
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
+            <div class="level-status">
+                <span class="level-label">LEVEL</span>
+                <span class="level-number" id="levelNumber">1</span>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <div class="task-indicator">
+                <span class="task-icon">🎯</span>
+                <span class="task-text" id="taskText">Complete tasks to advance</span>
+            </div>
+            <button class="complete-btn" id="completeBtn">⭐ COMPLETE LEVEL</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+        </div>
+
+        <div class="info">
+            <span>🏆 LEVEL COMPLETE</span>
+            <small>click → rainbow celebration</small>
+        </div>
+        <div class="hint">
+            <span>🎉 confetti · fireworks · sparkles · triumph</span>
+        </div>
+    </div>
+
+    <!-- Celebration Canvas for fireworks and confetti -->
+    <canvas id="celebrationCanvas"></canvas>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('celebrationCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H;
+            
+            const completeBtn = document.getElementById('completeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const levelNumber = document.getElementById('levelNumber');
+            const taskText = document.getElementById('taskText');
+
+            let level = 1;
+            let progress = 0;
+            let isCelebrating = false;
+            let celebrationActive = false;
+
+            // ---- Celebration Particles ----
+            let confetti = [];
+            let fireworks = [];
+            let sparkles = [];
+            let stars = [];
+
+            // ---- Resize Canvas ----
+            function resizeCanvas() {
+                W = window.innerWidth;
+                H = window.innerHeight;
+                canvas.width = W;
+                canvas.height = H;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // ---- Colors ----
+            const rainbowColors = [
+                '#ff0000', '#ff7f00', '#ffff00', '#00ff00', 
+                '#0000ff', '#4b0082', '#8f00ff', '#ff1493',
+                '#00ffff', '#ff4500', '#7cfc00', '#ff69b4'
+            ];
+
+            function randomColor() {
+                return rainbowColors[Math.floor(Math.random() * rainbowColors.length)];
+            }
+
+            function randomRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            // ---- Confetti Class ----
+            class Confetti {
+                constructor() {
+                    this.x = randomRange(0, W);
+                    this.y = randomRange(-H, 0);
+                    this.w = randomRange(6, 14);
+                    this.h = randomRange(6, 14);
+                    this.color = randomColor();
+                    this.vx = randomRange(-4, 4);
+                    this.vy = randomRange(2, 6);
+                    this.rotation = randomRange(0, Math.PI * 2);
+                    this.rotationSpeed = randomRange(-0.1, 0.1);
+                    this.shape = Math.random() > 0.5 ? 'rect' : 'circle';
+                    this.gravity = 0.05;
+                    this.friction = 0.99;
+                    this.life = 1;
+                    this.decay = randomRange(0.002, 0.008);
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    this.rotation += this.rotationSpeed;
+                    this.life -= this.decay;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 10;
+                    
+                    if (this.shape === 'rect') {
+                        ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.w/2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // ---- Firework Class ----
+            class Firework {
+                constructor() {
+                    this.x = randomRange(W * 0.1, W * 0.9);
+                    this.y = randomRange(H * 0.1, H * 0.6);
+                    this.particles = [];
+                    this.color = randomColor();
+                    this.count = randomRange(30, 60);
+                    this.exploded = false;
+                    
+                    for (let i = 0; i < this.count; i++) {
+                        const angle = randomRange(0, Math.PI * 2);
+                        const speed = randomRange(2, 8);
+                        this.particles.push({
+                            x: this.x,
+                            y: this.y,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            life: 1,
+                            decay: randomRange(0.005, 0.02),
+                            color: this.color,
+                            size: randomRange(2, 5)
+                        });
+                    }
+                    this.exploded = true;
+                }
+
+                update() {
+                    let alive = false;
+                    for (let p of this.particles) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.05;
+                        p.life -= p.decay;
+                        if (p.life > 0) alive = true;
+                    }
+                    return alive;
+                }
+
+                draw(ctx) {
+                    for (let p of this.particles) {
+                        if (p.life <= 0) continue;
+                        ctx.save();
+                        ctx.globalAlpha = p.life;
+                        ctx.fillStyle = p.color;
+                        ctx.shadowColor = p.color;
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+            }
+
+            // ---- Sparkle Class ----
+            class Sparkle {
+                constructor(x, y) {
+                    this.x = x || randomRange(0, W);
+                    this.y = y || randomRange(0, H);
+                    this.size = randomRange(2, 6);
+                    this.color = randomColor();
+                    this.life = 1;
+                    this.decay = randomRange(0.01, 0.03);
+                    this.angle = randomRange(0, Math.PI * 2);
+                    this.speed = randomRange(1, 3);
+                }
+
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    this.life -= this.decay;
+                    this.size *= 0.99;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 15;
+                    // Star shape
+                    const spikes = 4;
+                    const outerRadius = this.size;
+                    const innerRadius = this.size * 0.4;
+                    ctx.beginPath();
+                    for (let i = 0; i < spikes * 2; i++) {
+                        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                        const angle = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+                        const x = this.x + Math.cos(angle) * radius;
+                        const y = this.y + Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Star Class (shooting star) ----
+            class Star {
+                constructor() {
+                    this.x = randomRange(-100, W + 100);
+                    this.y = randomRange(-100, H * 0.3);
+                    this.length = randomRange(50, 150);
+                    this.speed = randomRange(8, 15);
+                    this.angle = randomRange(-Math.PI / 4, Math.PI / 4);
+                    this.color = randomColor();
+                    this.life = 1;
+                    this.decay = randomRange(0.005, 0.02);
+                    this.width = randomRange(2, 4);
+                }
+
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    this.life -= this.decay;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.strokeStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 30;
+                    ctx.lineWidth = this.width;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(
+                        this.x - Math.cos(this.angle) * this.length,
+                        this.y - Math.sin(this.angle) * this.length
+                    );
+                    ctx.stroke();
+                    
+                    // Glow at head
+                    ctx.shadowBlur = 50;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.width * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Celebration ----
+            function createCelebration() {
+                if (isCelebrating) return;
+                isCelebrating = true;
+                celebrationActive = true;
+
+                // Create confetti
+                for (let i = 0; i < 150; i++) {
+                    confetti.push(new Confetti());
+                }
+
+                // Create fireworks
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        if (celebrationActive) {
+                            fireworks.push(new Firework());
+                        }
+                    }, i * 200);
+                }
+
+                // Create sparkles
+                for (let i = 0; i < 50; i++) {
+                    sparkles.push(new Sparkle());
+                }
+
+                // Create shooting stars
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        if (celebrationActive) {
+                            stars.push(new Star());
+                        }
+                    }, i * 300);
+                }
+
+                // Continue spawning
+                let spawnInterval = setInterval(() => {
+                    if (!celebrationActive) {
+                        clearInterval(spawnInterval);
+                        return;
+                    }
+                    // Spawn more confetti
+                    for (let i = 0; i < 20; i++) {
+                        confetti.push(new Confetti());
+                    }
+                    // Spawn fireworks periodically
+                    if (Math.random() < 0.3) {
+                        fireworks.push(new Firework());
+                    }
+                    // Spawn sparkles
+                    for (let i = 0; i < 5; i++) {
+                        sparkles.push(new Sparkle());
+                    }
+                    // Spawn shooting stars
+                    if (Math.random() < 0.2) {
+                        stars.push(new Star());
+                    }
+                }, 500);
+
+                // Auto-stop after 8 seconds
+                setTimeout(() => {
+                    celebrationActive = false;
+                    clearInterval(spawnInterval);
+                    // Let remaining particles fade out
+                    setTimeout(() => {
+                        confetti = [];
+                        fireworks = [];
+                        sparkles = [];
+                        stars = [];
+                        isCelebrating = false;
+                    }, 3000);
+                }, 8000);
+            }
+
+            // ---- Animation Loop ----
+            function animateCelebration() {
+                ctx.clearRect(0, 0, W, H);
+
+                // Update and draw stars (behind everything)
+                stars = stars.filter(s => s.life > 0);
+                for (let s of stars) {
+                    s.update();
+                    s.draw(ctx);
+                }
+
+                // Update and draw fireworks
+                fireworks = fireworks.filter(f => f.update());
+                for (let f of fireworks) {
+                    f.draw(ctx);
+                }
+
+                // Update and draw sparkles
+                sparkles = sparkles.filter(s => s.life > 0);
+                for (let s of sparkles) {
+                    s.update();
+                    s.draw(ctx);
+                }
+
+                // Update and draw confetti (on top)
+                confetti = confetti.filter(c => c.life > 0 && c.y < H + 50);
+                for (let c of confetti) {
+                    c.update();
+                    c.draw(ctx);
+                }
+
+                if (celebrationActive || confetti.length > 0 || fireworks.length > 0 || sparkles.length > 0 || stars.length > 0) {
+                    requestAnimationFrame(animateCelebration);
+                } else {
+                    ctx.clearRect(0, 0, W, H);
+                }
+            }
+
+            // ---- Complete Level ----
+            function completeLevel() {
+                if (isCelebrating) return;
+                
+                progress = 100;
+                updateProgress();
+                level++;
+                levelNumber.textContent = level;
+                taskText.textContent = `🎉 Level ${level - 1} Complete! Starting Level ${level}`;
+                
+                // Create celebration
+                createCelebration();
+                animateCelebration();
+                
+                // Play triumphant sound
+                playTriumphSound();
+                
+                // Reset progress after celebration
+                setTimeout(() => {
+                    progress = 0;
+                    updateProgress();
+                    taskText.textContent = `Complete tasks to advance`;
+                }, 3000);
+            }
+
+            // ---- Reset ----
+            function resetGame() {
+                if (isCelebrating) return;
+                level = 1;
+                progress = 0;
+                levelNumber.textContent = level;
+                taskText.textContent = `Complete tasks to advance`;
+                updateProgress();
+                confetti = [];
+                fireworks = [];
+                sparkles = [];
+                stars = [];
+                celebrationActive = false;
+                isCelebrating = false;
+                ctx.clearRect(0, 0, W, H);
+            }
+
+            // ---- Update Progress ----
+            function updateProgress() {
+                progressBar.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+            }
+
+            // ---- Triumph Sound ----
+            function playTriumphSound() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    // Fanfare: ascending major arpeggio
+                    const notes = [523, 659, 784, 1047, 1319, 1568]; // C5, E5, G5, C6, E6, G6
+                    notes.forEach((freq, index) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(freq, now + index * 0.1);
+                        gain.gain.setValueAtTime(0.15, now + index * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + index * 0.1);
+                        osc.stop(now + index * 0.1 + 0.2);
+                    });
+
+                    // Add a triumphant chord at the end
+                    setTimeout(() => {
+                        const chordNotes = [523, 659, 784, 1047];
+                        chordNotes.forEach((freq) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, now + 0.6);
+                            gain.gain.setValueAtTime(0.1, now + 0.6);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + 0.6);
+                            osc.stop(now + 1.0);
+                        });
+                    }, 600);
+
+                    // Add shimmer
+                    setTimeout(() => {
+                        for (let i = 0; i < 5; i++) {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(randomRange(1000, 2000), now + 0.8 + i * 0.05);
+                            gain.gain.setValueAtTime(0.03, now + 0.8 + i * 0.05);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8 + i * 0.05 + 0.1);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + 0.8 + i * 0.05);
+                            osc.stop(now + 0.8 + i * 0.05 + 0.1);
+                        }
+                    }, 800);
+
+                } catch (e) {
+                    console.log('Audio not available');
+                }
+            }
+
+            // ---- Event Listeners ----
+            completeBtn.addEventListener('click', completeLevel);
+            resetBtn.addEventListener('click', resetGame);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    completeLevel();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetGame();
+                }
+            });
+
+            // ---- Initial Progress ----
+            updateProgress();
+
+            console.log('🏆 Level Complete · click Complete or press Enter/Space to celebrate!');
+        })();
+    </script>
+</body>
+</html>
