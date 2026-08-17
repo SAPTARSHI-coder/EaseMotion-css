@@ -1,46 +1,69 @@
 (function(){
-  // Create a single shared AudioContext (will be resumed on user interaction)
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  const ctx = new AudioCtx();
+  // Lazy-created shared AudioContext
+  let audioCtx;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtx();
+    }
+    if (audioCtx.state !== 'running') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
 
-  // Internal helper to play a short tone
-  function beep(durationSec, frequency) {
+  // Internal helper to play a short oscillator tone
+  function beep(durationSec, frequency, type = 'square') {
+    const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'square';
+    osc.type = type;
     osc.frequency.value = frequency;
     osc.connect(gain);
     gain.connect(ctx.destination);
+
     const now = ctx.currentTime;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.1, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.15, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
+
     osc.start(now);
     osc.stop(now + durationSec);
   }
 
-  /** Play a crisp click sound (≈ 50 ms at 1 kHz) */
+  /** Play a crisp click sound (≈ 50ms at 1kHz) */
   function click() {
-    // Ensure the AudioContext is resumed (required after a user gesture)
-    if (ctx.state !== 'running') ctx.resume();
-    beep(0.05, 1000);
+    beep(0.05, 1000, 'square');
   }
 
-  /** Play a low‑frequency pop sound (≈ 70 ms at 150 Hz) */
+  /** Play a low-frequency pop sound (≈ 70ms at 150Hz) */
   function pop() {
-    if (ctx.state !== 'running') ctx.resume();
-    beep(0.07, 150);
+    beep(0.07, 150, 'sine');
   }
 
-  /** Trigger optional haptic feedback if the device supports it.
-   *  pattern can be a number (ms) or an array of numbers for vibration patterns.
-   */
-  function haptic(pattern) {
-    if (navigator.vibrate) {
+  /** Trigger optional haptic feedback if supported */
+  function haptic(pattern = 10) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(pattern);
     }
   }
 
-  // Expose a tiny API on the global window object.
-  window.EaseMotionSound = { click, pop, haptic };
+  /** Automatically attach sound and haptic feedback to matching interactive elements */
+  function init(options = {}) {
+    const {
+      selector = '[class*="ease-click"], [class*="ease-btn"], [class*="ease-pop"]',
+      enableSound = true,
+      enableHaptic = true,
+    } = options;
+
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest(selector);
+      if (!target) return;
+      if (enableSound) click();
+      if (enableHaptic) haptic(15);
+    });
+  }
+
+  // Expose public API
+  window.EaseMotionSound = { click, pop, haptic, init };
 })();
