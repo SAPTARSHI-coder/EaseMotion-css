@@ -1,0 +1,510 @@
+/* ==========================================================================
+   EaseMotion Interactive Focus Zoom UI Parameter Engine
+   ========================================================================== */
+:root {
+  /* Slate & Cyberspace Cybernetic Color Palette */
+  --bg-deep-canvas: #07080c;
+  --bg-surface-card: #0f111a;
+  --bg-surface-panel: #141724;
+  --border-cyber: rgba(255, 255, 255, 0.06);
+  --border-cyber-vibrant: #10b981; /* Vibrant Emerald Green */
+
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-hyper: #34d399;
+
+  /* Custom Zoom-Out Transition Architecture Variables */
+  --zoom-duration: 0.65s;
+  --zoom-easing: cubic-bezier(
+    0.34,
+    1.56,
+    0.64,
+    1
+  ); /* Custom smooth elastic overshooting curve */
+  --zoom-scale-start: 1.15; /* Oversized start scale factor */
+  --zoom-blur-start: 15px; /* Initial out-of-focus background depth blur */
+
+  /* Content Stagger Cascade Values */
+  --stagger-increment: 0.06s;
+  --stagger-speed: 0.5s;
+  --stagger-drift-scale: 0.92; /* Minor expansion inside elements during reveal */
+}
+
+/* Document Environment Overrides */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: var(--bg-deep-canvas);
+  color: var(--text-main);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Interactive Canvas Layout Environment 
+   ========================================================================== */
+.interactive-env {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.interface-header {
+  margin-bottom: 5rem;
+}
+.pill-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--text-hyper);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+.interface-header h1 {
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+.interface-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.canvas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+.interactive-node-card {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-cyber);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  transition:
+    border-color 0.3s,
+    transform 0.3s;
+}
+.interactive-node-card:hover,
+.interactive-node-card:focus {
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.node-preview {
+  height: 180px;
+  background: #0b0c10;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-cyber);
+}
+.matrix-grid-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: 20px 20px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+.glowing-orb {
+  width: 16px;
+  height: 16px;
+  background: var(--text-hyper);
+  border-radius: 50%;
+  box-shadow: 0 0 25px var(--text-hyper);
+}
+
+.node-details {
+  padding: 1.5rem;
+}
+.node-title-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.node-title-group h3 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+.signal-pulse {
+  width: 6px;
+  height: 6px;
+  background: var(--text-hyper);
+  border-radius: 50%;
+  display: block;
+  animation: pulseFade 2s infinite ease-in-out;
+}
+@keyframes pulseFade {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+.node-details p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+.action-prompt {
+  font-size: 0.85rem;
+  color: var(--text-hyper);
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Focus Zoom-Out Modal Window Design Blocks
+   ========================================================================== */
+.modal-checkbox {
+  display: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 4, 7, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--zoom-duration) ease;
+}
+.modal-overlay-close {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+/* Focus Zoom-Out Structural Content Frame Asset */
+.modal-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 940px;
+  min-height: 500px;
+  background: var(--bg-surface-panel);
+  border: 1px solid var(--border-cyber);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+
+  /* Zoom-Out (Inverted Oversized Zoom) Initialization Transformations */
+  transform: scale(var(--zoom-scale-start));
+  filter: blur(var(--zoom-blur-start));
+  transition:
+    transform var(--zoom-duration) var(--zoom-easing),
+    filter var(--zoom-duration) ease,
+    opacity var(--zoom-duration) ease;
+}
+@media (min-width: 768px) {
+  .modal-content {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+.modal-close-trigger {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-cyber);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 0;
+}
+.modal-close-trigger:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Left Pillar Side panel Layout */
+.panel-visualization {
+  background: #0d0f18;
+  border-bottom: 1px solid var(--border-cyber);
+  padding: 2.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2.5rem;
+}
+@media (min-width: 768px) {
+  .panel-visualization {
+    border-bottom: none;
+    border-right: 1px solid var(--border-cyber);
+  }
+}
+
+.visualization-bg {
+  height: 140px;
+  background: #06070a;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vector-crosshair {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 50%;
+}
+.vector-crosshair::before,
+.vector-crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(16, 185, 129, 0.3);
+}
+.vector-crosshair::before {
+  top: 50%;
+  left: -5px;
+  width: 40px;
+  height: 1px;
+  transform: translateY(-50%);
+}
+.vector-crosshair::after {
+  left: 50%;
+  top: -5px;
+  width: 1px;
+  height: 40px;
+  transform: translateX(-50%);
+}
+
+.wave-graph-simulation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 10px;
+  opacity: 0.4;
+}
+.wave-graph-simulation .bar {
+  flex: 1;
+  height: var(----h);
+  background: var(--border-cyber-vibrant);
+  border-radius: 1px 1px 0 0;
+}
+
+.panel-tag-stamp {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Right Panel Configurations Interface Body */
+.panel-controls {
+  padding: 3.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.block-heading {
+  margin-bottom: 2.25rem;
+}
+.system-path {
+  font-size: 0.7rem;
+  color: var(--text-hyper);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.block-heading h2 {
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+/* Interactive Form Slider Rows */
+.block-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.25rem;
+}
+.slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.numeric-indicator {
+  font-family: monospace;
+  color: #fff;
+}
+.slider-track-mimic {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.slider-fill-mimic {
+  height: 100%;
+  background: var(--text-hyper);
+  border-radius: 2px;
+}
+
+.block-notification {
+  margin-bottom: 2.5rem;
+}
+.system-notification-box {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-cyber);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.system-notification-box strong {
+  color: var(--text-main);
+}
+
+.block-operations {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.btn-muted-action {
+  background: transparent;
+  border-color: var(--border-cyber);
+  color: var(--text-main);
+}
+.btn-muted-action:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.btn-vibrant-action {
+  background: var(--border-cyber-vibrant);
+  color: #000;
+  font-weight: 600;
+}
+.btn-vibrant-action:hover {
+  background: #34d399;
+}
+
+/* ==========================================================================
+   Focus Zoom-Out Transition Engine Choreography
+   ========================================================================== */
+
+/* Checked Selector Assertions driving state activation mappings */
+.modal-checkbox:checked ~ .modal-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Settles the modal back into its standard, sharp focus state */
+.modal-checkbox:checked ~ .modal-overlay .modal-content {
+  transform: scale(1);
+  filter: blur(0);
+}
+
+/* Nested Inner Element Scale Stagger Configuration Blocks */
+.modal-stagger-item {
+  opacity: 0;
+  transform: scale(var(--stagger-drift-scale));
+  transition-property: opacity, transform;
+  transition-duration: var(--stagger-speed);
+  transition-timing-function: var(--zoom-easing);
+}
+
+/* Stagger Activation State Resets */
+.modal-checkbox:checked ~ .modal-overlay .modal-stagger-item {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 5-Phase Concentric Stagger Delay Mappings */
+.modal-checkbox:checked ~ .modal-overlay .modal-stagger-item:nth-child(1) {
+  transition-delay: calc(var(--stagger-increment) * 1 + 0.1s);
+}
+.modal-checkbox:checked
+  ~ .modal-overlay
+  .panel-controls
+  .modal-stagger-item:nth-child(1) {
+  transition-delay: calc(var(--stagger-increment) * 2 + 0.1s);
+}
+.modal-checkbox:checked
+  ~ .modal-overlay
+  .panel-controls
+  .modal-stagger-item:nth-child(2) {
+  transition-delay: calc(var(--stagger-increment) * 3 + 0.1s);
+}
+.modal-checkbox:checked
+  ~ .modal-overlay
+  .panel-controls
+  .modal-stagger-item:nth-child(3) {
+  transition-delay: calc(var(--stagger-increment) * 4 + 0.1s);
+}
+.modal-checkbox:checked
+  ~ .modal-overlay
+  .panel-controls
+  .modal-stagger-item:nth-child(4) {
+  transition-delay: calc(var(--stagger-increment) * 5 + 0.1s);
+}

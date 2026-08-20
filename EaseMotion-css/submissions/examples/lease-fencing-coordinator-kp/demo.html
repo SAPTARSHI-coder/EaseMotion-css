@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lease Fencing Coordinator</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="coordinator" data-state="warning">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">EaseMotion consensus lab</p>
+          <h1 id="title">Lease Fencing Coordinator</h1>
+          <p class="lede">
+            Tune lease and quorum signals to watch stale writers get fenced
+            before a split-brain epoch can corrupt shared state.
+          </p>
+        </div>
+        <aside class="badge" aria-live="polite">
+          <span class="beacon"></span>
+          <small>Coordinator mode</small>
+          <strong id="modeLabel">Lease warning</strong>
+        </aside>
+      </section>
+
+      <section class="controls" aria-label="Lease inputs">
+        <label
+          ><span>Lease age</span
+          ><input id="age" type="range" min="0" max="100" value="63" /><output
+            id="ageOut"
+            >63%</output
+          ></label
+        >
+        <label
+          ><span>Quorum confidence</span
+          ><input
+            id="quorum"
+            type="range"
+            min="0"
+            max="100"
+            value="58"
+          /><output id="quorumOut">58%</output></label
+        >
+        <label
+          ><span>Write drift</span
+          ><input id="drift" type="range" min="0" max="100" value="49" /><output
+            id="driftOut"
+            >49%</output
+          ></label
+        >
+        <label
+          ><span>Replica lag</span
+          ><input id="lag" type="range" min="0" max="100" value="54" /><output
+            id="lagOut"
+            >54%</output
+          ></label
+        >
+      </section>
+
+      <section class="grid" aria-label="Lease dashboard">
+        <article class="epoch-panel">
+          <div class="panel-title">
+            <span>Epoch pressure</span><strong id="riskScore">55</strong>
+          </div>
+          <div class="epoch-map" aria-hidden="true">
+            <span class="ring ring-a"></span><span class="ring ring-b"></span
+            ><span class="ring ring-c"></span>
+            <span class="fence fence-a"></span
+            ><span class="fence fence-b"></span
+            ><span class="fence fence-c"></span>
+            <span class="node node-a">L</span><span class="node node-b">R1</span
+            ><span class="node node-c">R2</span
+            ><span class="node node-d">R3</span>
+            <span class="core"></span>
+          </div>
+          <div class="telemetry">
+            <span></span><span></span><span></span><span></span><span></span
+            ><span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+
+        <article class="writers">
+          <div class="panel-title">
+            <span>Writer lanes</span><strong id="laneLabel">Guarded</strong>
+          </div>
+          <div class="lane-list">
+            <div class="lane" style="--fill: 0.76">
+              <span>Primary ledger</span><i></i><b>lease</b>
+            </div>
+            <div class="lane" style="--fill: 0.64">
+              <span>Order stream</span><i></i><b>epoch</b>
+            </div>
+            <div class="lane" style="--fill: 0.48">
+              <span>Inventory lock</span><i></i><b>probe</b>
+            </div>
+            <div class="lane" style="--fill: 0.39">
+              <span>Audit mirror</span><i></i><b>hold</b>
+            </div>
+            <div class="lane" style="--fill: 0.57">
+              <span>Session cache</span><i></i><b>drain</b>
+            </div>
+          </div>
+        </article>
+
+        <article class="playbook">
+          <div class="panel-title">
+            <span>Fencing playbook</span><strong id="actionLabel">Warn</strong>
+          </div>
+          <ol>
+            <li>
+              <em>01</em>
+              <div>
+                <strong>Sample lease timestamp</strong>
+                <p>Compare observed writer age against quorum clock bounds.</p>
+              </div>
+            </li>
+            <li>
+              <em>02</em>
+              <div>
+                <strong>Issue epoch token</strong>
+                <p>
+                  Only the current leader can commit with a fresh fencing token.
+                </p>
+              </div>
+            </li>
+            <li>
+              <em>03</em>
+              <div>
+                <strong>Fence stale writers</strong>
+                <p>Late writers get rejected before they reach storage.</p>
+              </div>
+            </li>
+            <li>
+              <em>04</em>
+              <div>
+                <strong>Recover leadership</strong>
+                <p>
+                  Capacity returns once quorum confidence and lag are stable.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <article class="metrics">
+          <div class="metric">
+            <span>Fence risk</span><strong id="fenceLabel">22%</strong>
+          </div>
+          <div class="metric">
+            <span>Epoch skew</span><strong id="skewLabel">15ms</strong>
+          </div>
+          <div class="metric">
+            <span>Safe writes</span><strong id="safeLabel">61%</strong>
+          </div>
+        </article>
+      </section>
+    </main>
+    <script>
+      const root = document.querySelector(".coordinator");
+      const input = {
+        age: document.querySelector("#age"),
+        quorum: document.querySelector("#quorum"),
+        drift: document.querySelector("#drift"),
+        lag: document.querySelector("#lag"),
+      };
+      const output = {
+        age: document.querySelector("#ageOut"),
+        quorum: document.querySelector("#quorumOut"),
+        drift: document.querySelector("#driftOut"),
+        lag: document.querySelector("#lagOut"),
+        mode: document.querySelector("#modeLabel"),
+        risk: document.querySelector("#riskScore"),
+        lane: document.querySelector("#laneLabel"),
+        action: document.querySelector("#actionLabel"),
+        fence: document.querySelector("#fenceLabel"),
+        skew: document.querySelector("#skewLabel"),
+        safe: document.querySelector("#safeLabel"),
+      };
+
+      function update() {
+        const age = Number(input.age.value);
+        const quorum = Number(input.quorum.value);
+        const drift = Number(input.drift.value);
+        const lag = Number(input.lag.value);
+        const risk = Math.round(
+          age * 0.32 + drift * 0.26 + lag * 0.24 + (100 - quorum) * 0.18
+        );
+        let state = "valid",
+          mode = "Lease valid",
+          lane = "Open",
+          action = "Observe";
+        if (risk > 76) {
+          state = "fenced";
+          mode = "Writer fenced";
+          lane = "Blocked";
+          action = "Fence";
+        } else if (risk > 50) {
+          state = "warning";
+          mode = "Lease warning";
+          lane = "Guarded";
+          action = "Warn";
+        } else if (risk < 32) {
+          state = "recovered";
+          mode = "Recovered leader";
+          lane = "Cooling";
+          action = "Restore";
+        }
+        root.dataset.state = state;
+        root.style.setProperty("--risk", risk);
+        root.style.setProperty("--age", age);
+        root.style.setProperty("--drift", drift);
+        root.style.setProperty("--lag", lag);
+        output.age.value = `${age}%`;
+        output.quorum.value = `${quorum}%`;
+        output.drift.value = `${drift}%`;
+        output.lag.value = `${lag}%`;
+        output.risk.textContent = risk;
+        output.mode.textContent = mode;
+        output.lane.textContent = lane;
+        output.action.textContent = action;
+        output.fence.textContent = `${Math.max(0, risk - 46)}%`;
+        output.skew.textContent = `${Math.max(4, Math.round((drift + lag) / 5))}ms`;
+        output.safe.textContent = `${Math.max(8, Math.round((quorum + 100 - risk) / 2))}%`;
+      }
+      Object.values(input).forEach((item) =>
+        item.addEventListener("input", update)
+      );
+      update();
+    </script>
+  </body>
+</html>

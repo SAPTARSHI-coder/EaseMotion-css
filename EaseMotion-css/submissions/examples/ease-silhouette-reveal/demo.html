@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌑 Silhouette Reveal – Emerge From Darkness</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌑 Silhouette Reveal</h1>
+            <div class="controls">
+                <button class="control-btn" id="revealBtn" title="Reveal silhouette">✨ Reveal</button>
+                <button class="control-btn" id="resetBtn" title="Reset to darkness">🌑 Reset</button>
+                <button class="control-btn" id="autoBtn" title="Auto-reveal">▶️ Auto</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="silhouetteCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="revealStatus">🌑 Hidden</span>
+                <span id="revealPercent">0% revealed</span>
+            </div>
+            <div class="hint" id="hint">✨ Click "Reveal" to emerge from darkness</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🌓 Reveal</label>
+                <input type="range" id="revealSlider" min="0" max="100" value="0" step="1" />
+                <span id="revealLabel">0%</span>
+            </div>
+            <div class="slider-group">
+                <label>✨ Glow</label>
+                <input type="range" id="glowSlider" min="0" max="50" value="20" step="1" />
+                <span id="glowLabel">20px</span>
+            </div>
+            <div class="slider-group">
+                <label>🌅 Ambience</label>
+                <input type="range" id="ambienceSlider" min="0" max="100" value="30" step="1" />
+                <span id="ambienceLabel">30%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Silhouette Reveal – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('silhouetteCanvas');
+            const ctx = canvas.getContext('2d');
+            const revealStatus = document.getElementById('revealStatus');
+            const revealPercent = document.getElementById('revealPercent');
+            const hint = document.getElementById('hint');
+            const revealBtn = document.getElementById('revealBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const revealSlider = document.getElementById('revealSlider');
+            const revealLabel = document.getElementById('revealLabel');
+            const glowSlider = document.getElementById('glowSlider');
+            const glowLabel = document.getElementById('glowLabel');
+            const ambienceSlider = document.getElementById('ambienceSlider');
+            const ambienceLabel = document.getElementById('ambienceLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let revealAmount = 0; // 0-100
+            let glowIntensity = 20;
+            let ambience = 30;
+            let isAutoRevealing = false;
+            let autoDirection = 1;
+            let animationId = null;
+            let time = 0;
+
+            // --- Silhouette data ---
+            // We'll use a combination of shapes to create an interesting silhouette
+            // A person-like figure with surrounding elements
+
+            function drawSilhouette(ctx, reveal, glow, ambience) {
+                const w = W,
+                    h = H;
+
+                // --- Background ---
+                // Dark gradient that gradually brightens with reveal
+                const darkBase = 5 + (reveal / 100) * 30;
+                const darkMid = 15 + (reveal / 100) * 40;
+                const darkLight = 25 + (reveal / 100) * 50;
+
+                const bgGrad = ctx.createRadialGradient(
+                    w / 2 + 50, h / 2 - 100, 50,
+                    w / 2, h / 2, 450
+                );
+                bgGrad.addColorStop(0, `rgb(${darkLight + 20}, ${darkLight + 15}, ${darkLight + 10})`);
+                bgGrad.addColorStop(0.4, `rgb(${darkMid + 10}, ${darkMid + 5}, ${darkMid})`);
+                bgGrad.addColorStop(0.7, `rgb(${darkBase + 5}, ${darkBase}, ${darkBase - 5})`);
+                bgGrad.addColorStop(1, `rgb(${darkBase}, ${darkBase - 5}, ${darkBase - 10})`);
+
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // --- Ambient glow (increases with reveal) ---
+                const ambienceFactor = ambience / 100;
+                const glowRadius = 200 + reveal * 2 + ambience * 2;
+
+                const ambGrad = ctx.createRadialGradient(
+                    w / 2 + 20, h / 2 - 50, 20,
+                    w / 2 + 20, h / 2 - 50, glowRadius
+                );
+                const ambAlpha = 0.05 + (reveal / 100) * 0.15 + ambienceFactor * 0.1;
+                ambGrad.addColorStop(0, `rgba(255, 200, 150, ${ambAlpha * 0.5})`);
+                ambGrad.addColorStop(0.3, `rgba(200, 150, 100, ${ambAlpha * 0.3})`);
+                ambGrad.addColorStop(0.7, `rgba(150, 100, 50, ${ambAlpha * 0.1})`);
+                ambGrad.addColorStop(1, `rgba(100, 50, 20, 0)`);
+
+                ctx.fillStyle = ambGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // --- Silhouette ---
+                ctx.save();
+
+                // Main silhouette path - a person/character with surrounding elements
+                ctx.beginPath();
+
+                // Person body
+                const cx = w / 2 + 20;
+                const cy = h / 2 + 20;
+
+                // Head
+                ctx.arc(cx, cy - 120, 35, 0, Math.PI * 2);
+
+                // Neck
+                ctx.rect(cx - 12, cy - 95, 24, 20);
+
+                // Shoulders
+                ctx.moveTo(cx - 70, cy - 75);
+                ctx.quadraticCurveTo(cx - 80, cy - 60, cx - 75, cy - 40);
+                ctx.quadraticCurveTo(cx - 40, cy - 30, cx, cy - 35);
+                ctx.quadraticCurveTo(cx + 40, cy - 30, cx + 75, cy - 40);
+                ctx.quadraticCurveTo(cx + 80, cy - 60, cx + 70, cy - 75);
+
+                // Left arm
+                ctx.moveTo(cx - 75, cy - 40);
+                ctx.quadraticCurveTo(cx - 100, cy - 20, cx - 110, cy + 10);
+                ctx.quadraticCurveTo(cx - 100, cy + 30, cx - 80, cy + 20);
+
+                // Right arm
+                ctx.moveTo(cx + 75, cy - 40);
+                ctx.quadraticCurveTo(cx + 100, cy - 20, cx + 110, cy + 10);
+                ctx.quadraticCurveTo(cx + 100, cy + 30, cx + 80, cy + 20);
+
+                // Torso
+                ctx.moveTo(cx - 30, cy - 35);
+                ctx.quadraticCurveTo(cx - 35, cy + 10, cx - 35, cy + 50);
+                ctx.quadraticCurveTo(cx - 20, cy + 60, cx, cy + 65);
+                ctx.quadraticCurveTo(cx + 20, cy + 60, cx + 35, cy + 50);
+                ctx.quadraticCurveTo(cx + 35, cy + 10, cx + 30, cy - 35);
+
+                // Left leg
+                ctx.moveTo(cx - 15, cy + 60);
+                ctx.quadraticCurveTo(cx - 25, cy + 100, cx - 30, cy + 140);
+                ctx.quadraticCurveTo(cx - 20, cy + 145, cx - 10, cy + 140);
+                ctx.quadraticCurveTo(cx - 5, cy + 100, cx + 5, cy + 65);
+
+                // Right leg
+                ctx.moveTo(cx + 15, cy + 60);
+                ctx.quadraticCurveTo(cx + 25, cy + 100, cx + 30, cy + 140);
+                ctx.quadraticCurveTo(cx + 20, cy + 145, cx + 10, cy + 140);
+                ctx.quadraticCurveTo(cx + 5, cy + 100, cx - 5, cy + 65);
+
+                // --- Additional elements for interesting silhouette ---
+
+                // Tree/branch on left
+                ctx.moveTo(cx - 180, cy + 80);
+                ctx.quadraticCurveTo(cx - 190, cy + 40, cx - 185, cy - 20);
+                ctx.quadraticCurveTo(cx - 200, cy - 40, cx - 215, cy - 20);
+                ctx.quadraticCurveTo(cx - 210, cy + 20, cx - 200, cy + 60);
+                ctx.quadraticCurveTo(cx - 190, cy + 80, cx - 180, cy + 80);
+
+                // Tree/branch on right
+                ctx.moveTo(cx + 180, cy + 80);
+                ctx.quadraticCurveTo(cx + 190, cy + 40, cx + 185, cy - 20);
+                ctx.quadraticCurveTo(cx + 200, cy - 40, cx + 215, cy - 20);
+                ctx.quadraticCurveTo(cx + 210, cy + 20, cx + 200, cy + 60);
+                ctx.quadraticCurveTo(cx + 190, cy + 80, cx + 180, cy + 80);
+
+                // Ground line with slight curve
+                ctx.moveTo(0, cy + 145);
+                ctx.quadraticCurveTo(w / 3, cy + 155, w / 2, cy + 150);
+                ctx.quadraticCurveTo(w * 2 / 3, cy + 155, w, cy + 145);
+
+                // Moon/circle in background (subtle)
+                ctx.moveTo(cx - 250, cy - 200);
+                ctx.arc(cx - 250, cy - 200, 40, 0, Math.PI * 2);
+
+                ctx.closePath();
+
+                // --- Apply silhouette style ---
+                // The silhouette gets lighter and more detailed with reveal
+                const silhouetteAlpha = 0.3 + (reveal / 100) * 0.7;
+                const silhouetteBrightness = 20 + (reveal / 100) * 60;
+
+                // Shadow glow around silhouette (increases with reveal)
+                ctx.shadowColor = `rgba(255, 200, 150, ${(reveal / 100) * 0.1})`;
+                ctx.shadowBlur = glow + (reveal / 100) * 30;
+
+                // Fill silhouette with gradient
+                const silGrad = ctx.createLinearGradient(
+                    cx - 200, cy - 200,
+                    cx + 200, cy + 200
+                );
+                const base = silhouetteBrightness;
+                silGrad.addColorStop(0, `rgba(${base + 20}, ${base + 15}, ${base + 10}, ${silhouetteAlpha})`);
+                silGrad.addColorStop(0.3, `rgba(${base + 10}, ${base + 5}, ${base}, ${silhouetteAlpha})`);
+                silGrad.addColorStop(0.6, `rgba(${base}, ${base - 5}, ${base - 10}, ${silhouetteAlpha})`);
+                silGrad.addColorStop(1, `rgba(${base - 10}, ${base - 15}, ${base - 20}, ${silhouetteAlpha})`);
+
+                ctx.fillStyle = silGrad;
+                ctx.shadowColor = `rgba(255, 200, 150, ${(reveal / 100) * 0.15})`;
+                ctx.shadowBlur = glow + (reveal / 100) * 40;
+                ctx.fill();
+
+                // --- Edge glow on silhouette (dramatic reveal effect) ---
+                if (reveal > 20) {
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `rgba(255, 200, 150, ${(reveal / 100) * 0.2})`;
+                    ctx.lineWidth = 2 + (reveal / 100) * 3;
+                    ctx.stroke();
+
+                    // Secondary glow
+                    ctx.strokeStyle = `rgba(255, 220, 180, ${(reveal / 100) * 0.08})`;
+                    ctx.lineWidth = 5 + (reveal / 100) * 8;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = `rgba(255, 200, 150, ${(reveal / 100) * 0.1})`;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+
+                // --- Particles / sparkles that emerge with reveal ---
+                if (reveal > 30) {
+                    const particleCount = Math.floor((reveal - 30) / 100 * 80);
+                    ctx.save();
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 50 + Math.random() * 200;
+                        const px = cx + Math.cos(angle) * dist;
+                        const py = cy - 50 + Math.sin(angle) * dist * 0.6;
+                        const size = 1 + Math.random() * 3;
+                        const alpha = (Math.random() * 0.5 + 0.2) * (reveal / 100);
+
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = `rgba(255, 200, 150, ${alpha * 0.3})`;
+                        ctx.fillStyle = `rgba(255, 220, 180, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, size, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Cross sparkle
+                        if (Math.random() > 0.7) {
+                            ctx.shadowBlur = 0;
+                            ctx.strokeStyle = `rgba(255, 220, 180, ${alpha * 0.3})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(px - size * 2, py);
+                            ctx.lineTo(px + size * 2, py);
+                            ctx.moveTo(px, py - size * 2);
+                            ctx.lineTo(px, py + size * 2);
+                            ctx.stroke();
+                        }
+                    }
+                    ctx.restore();
+                }
+
+                // --- Light rays from behind silhouette (dramatic) ---
+                if (reveal > 40) {
+                    ctx.save();
+                    const rayCount = 12;
+                    const rayAlpha = ((reveal - 40) / 60) * 0.06;
+                    for (let i = 0; i < rayCount; i++) {
+                        const angle = (i / rayCount) * Math.PI * 2 + Math.sin(time * 0.001 + i) * 0.1;
+                        const len = 100 + Math.sin(time * 0.002 + i * 2) * 50;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - 120);
+                        ctx.lineTo(
+                            cx + Math.cos(angle) * len,
+                            cy - 120 + Math.sin(angle) * len * 0.7
+                        );
+                        ctx.strokeStyle = `rgba(255, 220, 180, ${rayAlpha})`;
+                        ctx.lineWidth = 1 + Math.sin(time * 0.003 + i) * 0.5;
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = `rgba(255, 200, 150, ${rayAlpha * 0.3})`;
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // --- Vignette (darkens edges) ---
+                const vignetteGrad = ctx.createRadialGradient(
+                    w / 2, h / 2, w * 0.2,
+                    w / 2, h / 2, w * 0.8
+                );
+                const vignetteAlpha = 0.3 + (1 - reveal / 100) * 0.4;
+                vignetteGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                vignetteGrad.addColorStop(0.5, 'rgba(0,0,0,0)');
+                vignetteGrad.addColorStop(1, `rgba(0,0,0,${vignetteAlpha * 0.6})`);
+
+                ctx.fillStyle = vignetteGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // --- Status update ---
+                const statusText = reveal === 0 ? '🌑 Hidden' :
+                    reveal < 30 ? '🌒 Emerging' :
+                    reveal < 60 ? '🌓 Revealing' :
+                    reveal < 90 ? '🌔 Almost revealed' :
+                    '✨ Fully revealed';
+                revealStatus.textContent = statusText;
+                revealPercent.textContent = `${Math.round(reveal)}% revealed`;
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Auto-reveal
+                if (isAutoRevealing) {
+                    revealAmount += autoDirection * 0.5;
+                    if (revealAmount >= 100) {
+                        revealAmount = 100;
+                        autoDirection = -1;
+                        autoBtn.textContent = '⏪ Reverse';
+                    } else if (revealAmount <= 0) {
+                        revealAmount = 0;
+                        autoDirection = 1;
+                        autoBtn.textContent = '▶️ Auto';
+                        isAutoRevealing = false;
+                    }
+                    revealSlider.value = revealAmount;
+                    revealLabel.textContent = `${Math.round(revealAmount)}%`;
+                }
+
+                // Draw everything
+                drawSilhouette(ctx, revealAmount, glowIntensity, ambience);
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function revealSilhouette() {
+                revealAmount = 100;
+                revealSlider.value = 100;
+                revealLabel.textContent = '100%';
+                hint.textContent = '✨ Silhouette fully revealed!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 2000);
+                if (isAutoRevealing) {
+                    isAutoRevealing = false;
+                    autoBtn.textContent = '▶️ Auto';
+                }
+            }
+
+            function resetSilhouette() {
+                revealAmount = 0;
+                revealSlider.value = 0;
+                revealLabel.textContent = '0%';
+                hint.textContent = '🌑 Returned to darkness';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 2000);
+                if (isAutoRevealing) {
+                    isAutoRevealing = false;
+                    autoBtn.textContent = '▶️ Auto';
+                }
+            }
+
+            function toggleAuto() {
+                if (isAutoRevealing) {
+                    isAutoRevealing = false;
+                    autoBtn.textContent = '▶️ Auto';
+                } else {
+                    isAutoRevealing = true;
+                    autoDirection = revealAmount < 100 ? 1 : -1;
+                    autoBtn.textContent = autoDirection === 1 ? '▶️ Revealing' : '⏪ Reversing';
+                }
+            }
+
+            // --- Slider handlers ---
+            revealSlider.addEventListener('input', function() {
+                revealAmount = parseFloat(this.value);
+                revealLabel.textContent = `${Math.round(revealAmount)}%`;
+                if (isAutoRevealing) {
+                    isAutoRevealing = false;
+                    autoBtn.textContent = '▶️ Auto';
+                }
+            });
+
+            glowSlider.addEventListener('input', function() {
+                glowIntensity = parseFloat(this.value);
+                glowLabel.textContent = `${Math.round(glowIntensity)}px`;
+            });
+
+            ambienceSlider.addEventListener('input', function() {
+                ambience = parseFloat(this.value);
+                ambienceLabel.textContent = `${Math.round(ambience)}%`;
+            });
+
+            // --- Button events ---
+            revealBtn.addEventListener('click', revealSilhouette);
+            resetBtn.addEventListener('click', resetSilhouette);
+            autoBtn.addEventListener('click', toggleAuto);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') revealSilhouette();
+                if (e.key === 'x' || e.key === 'X') resetSilhouette();
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAuto();
+                }
+                if (e.key === 'ArrowRight') {
+                    revealAmount = Math.min(100, revealAmount + 5);
+                    revealSlider.value = revealAmount;
+                    revealLabel.textContent = `${Math.round(revealAmount)}%`;
+                    if (isAutoRevealing) {
+                        isAutoRevealing = false;
+                        autoBtn.textContent = '▶️ Auto';
+                    }
+                }
+                if (e.key === 'ArrowLeft') {
+                    revealAmount = Math.max(0, revealAmount - 5);
+                    revealSlider.value = revealAmount;
+                    revealLabel.textContent = `${Math.round(revealAmount)}%`;
+                    if (isAutoRevealing) {
+                        isAutoRevealing = false;
+                        autoBtn.textContent = '▶️ Auto';
+                    }
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌑 Silhouette Reveal ready!');
+            console.log('Controls: R (reveal), X (reset), Space (auto-reveal)');
+            console.log('          Arrow Left/Right to adjust reveal');
+
+        })();
+    </script>
+</body>
+</html> 

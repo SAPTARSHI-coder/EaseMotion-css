@@ -1,0 +1,169 @@
+// ==========================================================================
+// EaseMotion CSS — Dark Tokens mixin
+// Issue #63802
+// --------------------------------------------------------------------------
+// Emits light and dark custom-property sets from one token map.
+//
+// The problem this solves is not "support dark mode" — it is the ordering
+// bug that almost every hand-written implementation has.
+//
+// The naive version is:
+//   :root { --bg: white; }
+//   @media (prefers-color-scheme: dark) { :root { --bg: black; } }
+//   [data-theme="dark"] { --bg: black; }
+//   [data-theme="light"] { --bg: white; }
+//
+// That looks complete and is broken: a user whose OS is set to dark, who
+// then picks "light" in the app, gets the media query applied because
+// `[data-theme="light"]` and the media-query `:root` have comparable
+// weight and source order decides. The manual choice loses to the OS.
+//
+// The fix is to nest the explicit-light override INSIDE the dark media
+// query, so it always comes later in the cascade than the rule it needs
+// to beat. That ordering is the whole point of this mixin.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:meta";
+
+// --------------------------------------------------------------------------
+// theme-tokens
+//
+// @param {Map} $light      Token name => value for the light theme.
+// @param {Map} $dark       Token name => value for the dark theme.
+// @param {String} $attr    Attribute used for the manual override.
+// @param {String} $prefix  Optional custom-property prefix.
+// --------------------------------------------------------------------------
+@mixin theme-tokens($light, $dark, $attr: "data-theme", $prefix: "") {
+    @if meta.type-of($light) != "map" or meta.type-of($dark) != "map" {
+        @error "theme-tokens(): $light and $dark must both be maps.";
+    }
+
+    // Every dark token must have a light counterpart, or the dark theme
+    // silently inherits a light value for it.
+    @each $name, $value in $dark {
+        @if not map.has-key($light, $name) {
+            @error "theme-tokens(): `#{$name}` exists in $dark but not in "
+                 + "$light, so it would fall back to an unset value in "
+                 + "light mode. Add it to both maps.";
+        }
+    }
+
+    :root {
+        @each $name, $value in $light {
+            --#{$prefix}#{$name}: #{$value};
+        }
+    }
+
+    // Explicit dark, independent of the OS.
+    [#{$attr}="dark"] {
+        @each $name, $value in $dark {
+            --#{$prefix}#{$name}: #{$value};
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            @each $name, $value in $dark {
+                --#{$prefix}#{$name}: #{$value};
+            }
+        }
+
+        // Nested deliberately: this must come AFTER the media-query :root
+        // rule above, or a user on a dark OS who chooses light gets dark
+        // anyway. Placing it outside the media query is the common bug.
+        [#{$attr}="light"] {
+            @each $name, $value in $light {
+                --#{$prefix}#{$name}: #{$value};
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// color-scheme-hint
+//
+// Tells the browser which schemes are supported, so form controls,
+// scrollbars and the canvas background match. Without it a dark page
+// still renders white scrollbars and light-styled checkboxes.
+// --------------------------------------------------------------------------
+@mixin color-scheme-hint($attr: "data-theme") {
+    :root {
+        color-scheme: light;
+    }
+
+    [#{$attr}="dark"] {
+        color-scheme: dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark;
+        }
+
+        [#{$attr}="light"] {
+            color-scheme: light;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// theme-transition
+//
+// Smooths a theme switch. Scoped to the properties that actually change,
+// never `transition: all` — a global transition makes every unrelated
+// hover on the page sluggish for the duration.
+//
+// Also disabled entirely under reduced motion: a full-page colour cross-
+// fade is a large, unavoidable motion event.
+// --------------------------------------------------------------------------
+@mixin theme-transition($duration: 200ms, $selector: "*") {
+    #{$selector},
+    #{$selector}::before,
+    #{$selector}::after {
+        transition:
+            background-color $duration ease-out,
+            border-color $duration ease-out,
+            color $duration ease-out,
+            fill $duration ease-out,
+            stroke $duration ease-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #{$selector},
+        #{$selector}::before,
+        #{$selector}::after {
+            transition: none;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// dark-only / light-only
+//
+// Style blocks that apply in one theme, honouring both the OS setting and
+// the manual override with the same ordering fix as above.
+// --------------------------------------------------------------------------
+@mixin dark-only($attr: "data-theme") {
+    [#{$attr}="dark"] & {
+        @content;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([#{$attr}="light"]) & {
+            @content;
+        }
+    }
+}
+
+@mixin light-only($attr: "data-theme") {
+    :root:not([#{$attr}="dark"]) & {
+        @content;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        [#{$attr}="light"] & {
+            @content;
+        }
+    }
+}

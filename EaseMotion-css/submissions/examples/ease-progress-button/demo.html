@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress Button Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Progress Button</h1>
+        <p class="subtitle">Button fills with color showing upload progress</p>
+
+        <!-- PROGRESS BUTTON COMPONENT -->
+        <div class="progress-button-container">
+            <button class="progress-btn" id="progressBtn">
+                <span class="progress-bg" id="progressBg"></span>
+                <span class="progress-text" id="progressText">Upload File</span>
+                <span class="progress-percent" id="progressPercent">0%</span>
+                <span class="progress-icon" id="progressIcon">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                    </svg>
+                </span>
+            </button>
+        </div>
+
+        <!-- Progress Controls -->
+        <div class="progress-controls">
+            <div class="control-group">
+                <label for="progressSlider">Progress:</label>
+                <input type="range" id="progressSlider" min="0" max="100" value="0" />
+                <span id="progressValue">0%</span>
+            </div>
+            <div class="button-group">
+                <button class="ctrl-btn" id="startBtn">▶ Start</button>
+                <button class="ctrl-btn" id="pauseBtn">⏸ Pause</button>
+                <button class="ctrl-btn" id="resetBtn">⟳ Reset</button>
+                <button class="ctrl-btn" id="simulateBtn">⚡ Simulate</button>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status-display">
+            <span class="status-label">State:</span>
+            <span class="status-value" id="statusValue">Idle</span>
+            <span class="status-label">Progress:</span>
+            <span class="status-value" id="progressDisplay">0%</span>
+        </div>
+
+        <!-- Action Feedback -->
+        <div class="action-feedback" id="actionFeedback">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const button = document.getElementById('progressBtn');
+            const progressBg = document.getElementById('progressBg');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressIcon = document.getElementById('progressIcon');
+            const progressSlider = document.getElementById('progressSlider');
+            const progressValue = document.getElementById('progressValue');
+            const statusValue = document.getElementById('statusValue');
+            const progressDisplay = document.getElementById('progressDisplay');
+            const feedback = document.getElementById('actionFeedback');
+            
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const simulateBtn = document.getElementById('simulateBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                colors: {
+                    idle: '#4facfe',
+                    progress: '#4facfe',
+                    complete: '#34c759',
+                    error: '#ff3b30'
+                },
+                text: {
+                    idle: 'Upload File',
+                    progress: 'Uploading...',
+                    complete: 'Complete!',
+                    error: 'Failed'
+                },
+                duration: 3000, // ms for full progress
+                onComplete: function() {
+                    console.log('✅ Upload complete!');
+                    showFeedback('✅ Upload complete!', 'success');
+                },
+                onError: function() {
+                    console.log('❌ Upload failed!');
+                    showFeedback('❌ Upload failed! Please try again.', 'error');
+                },
+                onReset: function() {
+                    console.log('🔄 Progress reset');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let state = 'idle'; // idle | progress | complete | error
+            let progress = 0;
+            let isAnimating = false;
+            let animationId = null;
+            let startTime = 0;
+
+            // ============================================
+            // HELPERS
+            // ============================================
+            function showFeedback(message, type) {
+                feedback.textContent = message;
+                feedback.className = 'action-feedback ' + type;
+                feedback.style.display = 'block';
+                clearTimeout(feedback._hideTimeout);
+                feedback._hideTimeout = setTimeout(() => {
+                    feedback.style.display = 'none';
+                    feedback.className = 'action-feedback';
+                }, 3000);
+            }
+
+            function updateStatus(text) {
+                statusValue.textContent = text;
+            }
+
+            function updateProgress(value) {
+                progress = Math.min(Math.max(value, 0), 100);
+                
+                // Update visual
+                progressBg.style.width = progress + '%';
+                progressPercent.textContent = Math.round(progress) + '%';
+                progressDisplay.textContent = Math.round(progress) + '%';
+                progressSlider.value = progress;
+                progressValue.textContent = Math.round(progress) + '%';
+                
+                // Update color based on progress
+                if (progress === 100) {
+                    progressBg.style.background = CONFIG.colors.complete;
+                } else if (state === 'error') {
+                    progressBg.style.background = CONFIG.colors.error;
+                } else {
+                    progressBg.style.background = CONFIG.colors.progress;
+                }
+            }
+
+            // ============================================
+            // BUTTON STATE MANAGEMENT
+            // ============================================
+            function setIdle() {
+                state = 'idle';
+                isAnimating = false;
+                
+                button.classList.remove('progress', 'complete', 'error');
+                progressBg.style.width = '0%';
+                progressText.textContent = CONFIG.text.idle;
+                progressPercent.textContent = '0%';
+                progressIcon.style.display = 'none';
+                progressBg.style.background = CONFIG.colors.idle;
+                
+                updateStatus('Idle');
+                updateProgress(0);
+                CONFIG.onReset();
+            }
+
+            function setProgress(value) {
+                if (state === 'complete' || state === 'error') return;
+                
+                state = 'progress';
+                isAnimating = true;
+                
+                button.classList.add('progress');
+                button.classList.remove('complete', 'error');
+                progressText.textContent = CONFIG.text.progress;
+                progressPercent.style.display = 'inline';
+                progressIcon.style.display = 'none';
+                
+                updateStatus('Uploading...');
+                updateProgress(value);
+            }
+
+            function setComplete() {
+                state = 'complete';
+                isAnimating = false;
+                
+                button.classList.remove('progress', 'error');
+                button.classList.add('complete');
+                progressText.textContent = CONFIG.text.complete;
+                progressPercent.style.display = 'none';
+                progressIcon.style.display = 'inline';
+                progressBg.style.background = CONFIG.colors.complete;
+                
+                updateStatus('Complete!');
+                updateProgress(100);
+                CONFIG.onComplete();
+            }
+
+            function setError() {
+                state = 'error';
+                isAnimating = false;
+                
+                button.classList.remove('progress', 'complete');
+                button.classList.add('error');
+                progressText.textContent = CONFIG.text.error;
+                progressPercent.style.display = 'none';
+                progressIcon.style.display = 'none';
+                progressBg.style.background = CONFIG.colors.error;
+                
+                updateStatus('Error!');
+                updateProgress(progress);
+                CONFIG.onError();
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animateProgress(timestamp) {
+                if (!isAnimating || state !== 'progress') return;
+                
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const duration = CONFIG.duration;
+                
+                // Calculate progress (ease-in-out)
+                const t = Math.min(elapsed / duration, 1);
+                const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                const value = eased * 100;
+                
+                updateProgress(value);
+                
+                // Check if complete
+                if (t >= 1) {
+                    setComplete();
+                    return;
+                }
+                
+                animationId = requestAnimationFrame(animateProgress);
+            }
+
+            function startAnimation() {
+                if (isAnimating) return;
+                if (state === 'complete' || state === 'error') {
+                    resetButton();
+                    return;
+                }
+                
+                startTime = 0;
+                isAnimating = true;
+                setProgress(progress);
+                animationId = requestAnimationFrame(animateProgress);
+            }
+
+            function pauseAnimation() {
+                if (isAnimating) {
+                    isAnimating = false;
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                    updateStatus('Paused');
+                }
+            }
+
+            function resumeAnimation() {
+                if (!isAnimating && state === 'progress') {
+                    startTime = 0;
+                    isAnimating = true;
+                    updateStatus('Uploading...');
+                    animationId = requestAnimationFrame(animateProgress);
+                }
+            }
+
+            function togglePause() {
+                if (state !== 'progress') return;
+                if (isAnimating) {
+                    pauseAnimation();
+                } else {
+                    resumeAnimation();
+                }
+            }
+
+            function resetButton() {
+                pauseAnimation();
+                setIdle();
+            }
+
+            // ============================================
+            // SIMULATE UPLOAD
+            // ============================================
+            function simulateUpload() {
+                if (state === 'progress' || state === 'complete') return;
+                resetButton();
+                startAnimation();
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Button click
+            button.addEventListener('click', () => {
+                if (state === 'idle') {
+                    simulateUpload();
+                } else if (state === 'progress') {
+                    togglePause();
+                } else if (state === 'complete' || state === 'error') {
+                    resetButton();
+                }
+            });
+
+            // Progress slider
+            progressSlider.addEventListener('input', (e) => {
+                if (state === 'complete' || state === 'error') {
+                    resetButton();
+                }
+                const value = parseFloat(e.target.value);
+                progress = value;
+                if (state === 'idle') {
+                    updateProgress(value);
+                } else if (state === 'progress') {
+                    // If sliding while animating, pause and set manual
+                    if (isAnimating) {
+                        pauseAnimation();
+                    }
+                    updateProgress(value);
+                }
+            });
+
+            // Control buttons
+            startBtn.addEventListener('click', simulateUpload);
+
+            pauseBtn.addEventListener('click', () => {
+                if (state === 'progress') {
+                    togglePause();
+                } else {
+                    showFeedback('ℹ️ No upload in progress', 'info');
+                }
+            });
+
+            resetBtn.addEventListener('click', () => {
+                resetButton();
+                showFeedback('🔄 Progress reset', 'info');
+            });
+
+            simulateBtn.addEventListener('click', () => {
+                simulateUpload();
+            });
+
+            // ============================================
+            // KEYBOARD ACCESSIBILITY
+            // ============================================
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    button.click();
+                }
+            });
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.ProgressButton = {
+                start: simulateUpload,
+                pause: pauseAnimation,
+                resume: resumeAnimation,
+                toggle: togglePause,
+                reset: resetButton,
+                setProgress: (value) => {
+                    if (state === 'complete' || state === 'error') {
+                        resetButton();
+                    }
+                    if (isAnimating) pauseAnimation();
+                    setProgress(value);
+                    updateProgress(value);
+                },
+                setComplete: setComplete,
+                setError: setError,
+                getState: () => state,
+                getProgress: () => progress,
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                },
+                // Convenience method for async operations
+                wrap: async (asyncFn, onProgress) => {
+                    try {
+                        startAnimation();
+                        const result = await asyncFn((p) => {
+                            if (onProgress) onProgress(p);
+                            updateProgress(p);
+                        });
+                        setComplete();
+                        return result;
+                    } catch (error) {
+                        setError();
+                        throw error;
+                    }
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setIdle();
+            progressSlider.value = 0;
+            progressValue.textContent = '0%';
+            
+            console.log('✅ Progress Button initialized!');
+            console.log('📖 API: window.ProgressButton');
+            console.log('📖 Usage:');
+            console.log('  - Click button to start upload');
+            console.log('  - Click again to pause/resume');
+            console.log('  - Use slider to manually set progress');
+
+        })();
+    </script>
+</body>
+</html>

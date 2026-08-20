@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mineral Veins · metallic veins spread through rock</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="mineral-container">
+      <div class="mineral-display" id="mineralDisplay">
+        <!-- Canvas for mineral veins -->
+        <canvas id="mineralCanvas"></canvas>
+        
+        <!-- Mineral Info -->
+        <div class="mineral-info">
+          <span class="info-label">⛏️ Veins</span>
+          <span class="info-value" id="veinCount">0</span>
+        </div>
+
+        <!-- Mineral Controls -->
+        <div class="mineral-controls">
+          <div class="control-group">
+            <label class="control-label">⛏️ Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="50">
+            <span class="control-value" id="growthValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">💎 Mineral</label>
+            <div class="mineral-options">
+              <button class="mineral-btn active" data-mineral="gold" title="Gold">🌟</button>
+              <button class="mineral-btn" data-mineral="silver" title="Silver">⚪</button>
+              <button class="mineral-btn" data-mineral="copper" title="Copper">🟠</button>
+              <button class="mineral-btn" data-mineral="iron" title="Iron">⚫</button>
+              <button class="mineral-btn" data-mineral="crystal" title="Crystal">💎</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mineral Text -->
+        <div class="mineral-text">
+          <span class="text-label">⛏️ Mineral Veins</span>
+          <span class="text-message" id="mineralMessage">Metallic veins spreading through rock</span>
+        </div>
+      </div>
+      
+      <div class="mineral-status">
+        <span id="mineralStatus">⛏️ Mineral veins spreading through the rock</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-grow" id="growBtn">⛏️ Grow</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>⛏️ mineral veins · 5 types · organic growth</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('mineralCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('mineralDisplay');
+      const veinCount = document.getElementById('veinCount');
+      const mineralStatus = document.getElementById('mineralStatus');
+      const mineralMessage = document.getElementById('mineralMessage');
+      const growBtn = document.getElementById('growBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const growthSlider = document.getElementById('growthSlider');
+      const growthValue = document.getElementById('growthValue');
+      const mineralBtns = document.querySelectorAll('.mineral-btn');
+
+      // State
+      let veins = [];
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+      let currentMineral = 'gold';
+      let growth = 50;
+
+      // Mineral configurations
+      const minerals = {
+        gold: { name: 'Gold', color: '#fbbf24', light: '#fcd34d', dark: '#d97706', glow: 'rgba(251,191,36,0.2)', streak: '#f59e0b' },
+        silver: { name: 'Silver', color: '#cbd5e1', light: '#e2e8f0', dark: '#94a3b8', glow: 'rgba(203,213,225,0.2)', streak: '#94a3b8' },
+        copper: { name: 'Copper', color: '#f97316', light: '#fb923c', dark: '#c2410c', glow: 'rgba(249,115,22,0.2)', streak: '#ea580c' },
+        iron: { name: 'Iron', color: '#64748b', light: '#94a3b8', dark: '#334155', glow: 'rgba(100,116,139,0.2)', streak: '#475569' },
+        crystal: { name: 'Crystal', color: '#a78bfa', light: '#c4b5fd', dark: '#7c3aed', glow: 'rgba(167,139,250,0.2)', streak: '#8b5cf6' }
+      };
+
+      // Vein class
+      class Vein {
+        constructor(x, y, angle, length, depth, maxDepth, mineral) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.angle = angle || Math.random() * Math.PI * 2;
+          this.length = length || 20 + Math.random() * 30;
+          this.depth = depth || 0;
+          this.maxDepth = maxDepth || 3 + Math.floor(Math.random() * 3);
+          this.mineral = mineral || currentMineral;
+          this.children = [];
+          this.growProgress = 0;
+          this.width = 1 + Math.random() * 2;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 0.5;
+          this.branches = 2 + Math.floor(Math.random() * 2);
+          this.veinPoints = [];
+          this.generated = false;
+          
+          // Generate vein path
+          this.generatePath();
+        }
+
+        generatePath() {
+          const points = 8 + Math.floor(Math.random() * 8);
+          this.veinPoints = [];
+          for (let i = 0; i < points; i++) {
+            const t = i / points;
+            const angleOffset = Math.sin(t * 3 + this.phase) * 0.3;
+            const dist = t * this.length;
+            const x = this.x + Math.cos(this.angle + angleOffset) * dist;
+            const y = this.y + Math.sin(this.angle + angleOffset) * dist;
+            this.veinPoints.push({ x, y, t });
+          }
+        }
+
+        update(growth) {
+          const growFactor = growth / 100;
+          this.growProgress += (growFactor - this.growProgress) * 0.05;
+          
+          // Generate children
+          if (this.depth < this.maxDepth && this.growProgress > 0.3) {
+            const childProgress = (this.growProgress - 0.3) / 0.7;
+            if (Math.random() < childProgress * 0.1) {
+              const numChildren = this.branches + Math.floor(Math.random() * 2);
+              for (let i = 0; i < numChildren; i++) {
+                if (this.children.length < this.branches * 2) {
+                  const childAngle = this.angle + (Math.random() - 0.5) * 1.2;
+                  const childLength = this.length * (0.5 + Math.random() * 0.3);
+                  const child = new Vein(
+                    this.veinPoints[Math.floor(Math.random() * this.veinPoints.length)].x,
+                    this.veinPoints[Math.floor(Math.random() * this.veinPoints.length)].y,
+                    childAngle,
+                    childLength,
+                    this.depth + 1,
+                    this.maxDepth,
+                    this.mineral
+                  );
+                  child.width = this.width * (0.5 + Math.random() * 0.3);
+                  this.children.push(child);
+                }
+              }
+            }
+          }
+          
+          // Update children
+          this.children.forEach(child => {
+            child.update(growth);
+          });
+        }
+
+        draw(ctx, mineral, growth) {
+          const growFactor = growth / 100;
+          const progress = Math.min(1, this.growProgress / growFactor);
+          if (progress < 0.01) return;
+          
+          const mineralData = minerals[mineral];
+          const drawPoints = Math.floor(this.veinPoints.length * progress);
+          if (drawPoints < 2) return;
+          
+          ctx.save();
+          
+          // Draw vein
+          ctx.shadowColor = mineralData.glow;
+          ctx.shadowBlur = 5;
+          
+          // Vein gradient
+          const grad = ctx.createLinearGradient(
+            this.veinPoints[0].x, this.veinPoints[0].y,
+            this.veinPoints[drawPoints - 1].x, this.veinPoints[drawPoints - 1].y
+          );
+          grad.addColorStop(0, mineralData.light);
+          grad.addColorStop(0.3, mineralData.color);
+          grad.addColorStop(0.7, mineralData.color);
+          grad.addColorStop(1, mineralData.dark);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = this.width * (0.5 + progress * 0.5);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          ctx.beginPath();
+          for (let i = 0; i < drawPoints; i++) {
+            const p = this.veinPoints[i];
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else {
+              const prev = this.veinPoints[i - 1];
+              const cpX = (prev.x + p.x) / 2;
+              const cpY = (prev.y + p.y) / 2;
+              ctx.quadraticCurveTo(cpX, cpY, p.x, p.y);
+            }
+          }
+          ctx.stroke();
+          
+          // Vein glow
+          ctx.shadowBlur = 15;
+          ctx.globalAlpha = 0.1;
+          ctx.strokeStyle = mineralData.light;
+          ctx.lineWidth = this.width * 0.3;
+          ctx.beginPath();
+          for (let i = 0; i < drawPoints; i++) {
+            const p = this.veinPoints[i];
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else {
+              const prev = this.veinPoints[i - 1];
+              const cpX = (prev.x + p.x) / 2;
+              const cpY = (prev.y + p.y) / 2;
+              ctx.quadraticCurveTo(cpX, cpY, p.x, p.y);
+            }
+          }
+          ctx.stroke();
+          
+          ctx.restore();
+          
+          // Draw children
+          this.children.forEach(child => {
+            child.draw(ctx, mineral, growth);
+          });
+        }
+      }
+
+      // Generate veins
+      function generateVeins() {
+        veins = [];
+        const count = 3 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < count; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const angle = Math.random() * Math.PI * 2;
+          const length = 30 + Math.random() * 50;
+          const vein = new Vein(x, y, angle, length, 0, 3 + Math.floor(Math.random() * 3), currentMineral);
+          vein.width = 1 + Math.random() * 3;
+          veins.push(vein);
+        }
+        veinCount.textContent = countVeins(veins);
+      }
+
+      // Count total veins
+      function countVeins(veinList) {
+        let count = 0;
+        veinList.forEach(v => {
+          count++;
+          if (v.children.length > 0) {
+            count += countVeins(v.children);
+          }
+        });
+        return count;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Rock gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(30, 35, 45, 0.3)');
+        grad.addColorStop(0.3, 'rgba(25, 30, 40, 0.4)');
+        grad.addColorStop(0.7, 'rgba(20, 25, 35, 0.5)');
+        grad.addColorStop(1, 'rgba(15, 20, 30, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Rock texture
+        for (let i = 0; i < 50; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 1 + Math.random() * 3;
+          const alpha = 0.02 + Math.random() * 0.04;
+          ctx.fillStyle = `rgba(50, 60, 80, ${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+        
+        // Rock cracks
+        for (let i = 0; i < 10; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          ctx.strokeStyle = `rgba(40, 50, 70, ${0.03 + Math.random() * 0.04})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(
+            x + (Math.random() - 0.5) * 30,
+            y + (Math.random() - 0.5) * 30,
+            x + (Math.random() - 0.5) * 40,
+            y + (Math.random() - 0.5) * 40
+          );
+          ctx.stroke();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateVeins();
+      }
+
+      // Animation loop
+      function animate() {
+        const growth = parseInt(growthSlider.value);
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw veins
+        veins.forEach(vein => {
+          vein.update(growth);
+          vein.draw(ctx, currentMineral, growth);
+        });
+        
+        // Update vein count
+        veinCount.textContent = countVeins(veins);
+        
+        // Update status
+        if (growth > 70) {
+          mineralStatus.textContent = '⛏️ Mineral veins spreading rapidly! ✨';
+          mineralStatus.style.color = '#fbbf24';
+        } else if (growth > 30) {
+          mineralStatus.textContent = '⛏️ Metallic veins growing through rock';
+          mineralStatus.style.color = '#818cf8';
+        } else {
+          mineralStatus.textContent = '⛏️ Mineral veins spreading through the rock';
+          mineralStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message
+        const mineralData = minerals[currentMineral];
+        mineralMessage.textContent = `${mineralData.name} veins spreading through rock`;
+        mineralMessage.style.color = mineralData.color;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set mineral
+      function setMineral(mineral) {
+        currentMineral = mineral;
+        mineralBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mineral === mineral);
+        });
+        const mineralData = minerals[mineral];
+        mineralStatus.textContent = `💎 Mineral: ${mineralData.name}`;
+        mineralStatus.style.color = mineralData.color;
+        generateVeins();
+        setTimeout(() => {
+          if (growth < 10) {
+            mineralStatus.textContent = '⛏️ Mineral veins spreading through the rock';
+            mineralStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetMineral() {
+        growthSlider.value = 50;
+        growthValue.textContent = '50%';
+        generateVeins();
+        mineralStatus.textContent = '🔄 Reset complete';
+        mineralStatus.style.color = '#94a3b8';
+        mineralMessage.textContent = 'Metallic veins spreading through rock';
+        mineralMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          mineralStatus.textContent = '⛏️ Mineral veins spreading through the rock';
+          mineralStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        growthValue.textContent = this.value + '%';
+      });
+
+      mineralBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setMineral(this.dataset.mineral);
+        });
+      });
+
+      if (growBtn) {
+        growBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          mineralStatus.textContent = '⛏️ Veins growing!';
+          mineralStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            mineralStatus.textContent = '⛏️ Mineral veins spreading through the rock';
+            mineralStatus.style.color = '#94a3b8';
+          }, 1500);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetMineral();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'g' || key === 'G') {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          mineralStatus.textContent = '⛏️ Veins growing!';
+          mineralStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            mineralStatus.textContent = '⛏️ Mineral veins spreading through the rock';
+            mineralStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetMineral();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('⛏️ Mineral Veins ready · shortcuts: [G] Grow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

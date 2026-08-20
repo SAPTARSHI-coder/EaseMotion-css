@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snail Trail · Leaves Sparkly Trail Behind</title>
+    <meta name="description" content="Interactive snail leaving a sparkly, shimmering trail behind with animated shell and antennae.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🐌 SNAIL TRAIL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="snailCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🐌 SNAIL TRAIL</span>
+            <small>sparkly trail · shimmer · glow</small>
+        </div>
+        <div class="hint">
+            <span>✨ snail leaves a sparkling, shimmering trail behind</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('snailCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Trail Particle Class ----
+            class TrailParticle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = 2 + Math.random() * 5;
+                    this.life = 1;
+                    this.decay = 0.003 + Math.random() * 0.005;
+                    this.hue = 40 + Math.random() * 30; // Gold/shimmer range
+                    this.sat = 60 + Math.random() * 40;
+                    this.light = 60 + Math.random() * 30;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobble = Math.random() * 0.02;
+                }
+
+                update() {
+                    this.life -= this.decay;
+                    this.x += Math.sin(this.phase + time * 0.02) * 0.1;
+                    this.y += Math.cos(this.phase * 0.7 + time * 0.015) * 0.1;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life * 0.8;
+                    const size = this.size * (0.3 + this.life * 0.7);
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Glow
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, size * 2
+                    );
+                    grad.addColorStop(0, `hsla(${this.hue}, ${this.sat}%, ${this.light + 20}%, ${alpha * 0.6})`);
+                    grad.addColorStop(0.5, `hsla(${this.hue + 20}, ${this.sat}%, ${this.light}%, ${alpha * 0.3})`);
+                    grad.addColorStop(1, `hsla(${this.hue + 40}, ${this.sat - 20}%, ${this.light - 20}%, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Core sparkle
+                    ctx.shadowColor = `hsla(${this.hue + 20}, 100%, 80%, ${alpha * 0.5})`;
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = `hsla(${this.hue + 10}, ${this.sat + 10}%, ${this.light + 20}%, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Star shape for some particles
+                    if (Math.random() < 0.3) {
+                        ctx.shadowBlur = 20;
+                        ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 90%, ${alpha * 0.3})`;
+                        const spikes = 4;
+                        const outer = size * 1.5;
+                        const inner = size * 0.6;
+                        ctx.beginPath();
+                        for (let i = 0; i < spikes * 2; i++) {
+                            const radius = i % 2 === 0 ? outer : inner;
+                            const angle = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+                            const x = this.x + Math.cos(angle) * radius;
+                            const y = this.y + Math.sin(angle) * radius;
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Snail Class ----
+            class Snail {
+                constructor() {
+                    this.x = 80;
+                    this.y = 80;
+                    this.size = 22;
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    this.speed = 0.4;
+                    
+                    // Trail
+                    this.trail = [];
+                    this.trailTimer = 0;
+                    this.trailInterval = 3;
+                    
+                    // Antennae
+                    this.antennaPhase = 0;
+                    this.antennaSpeed = 0.03;
+                    
+                    // Body wave
+                    this.bodyPhase = 0;
+                    this.bodySpeed = 0.04;
+                    
+                    // Random wandering
+                    this.wanderAngle = 0;
+                    this.wanderTimer = 0;
+                    this.wanderInterval = 60 + Math.random() * 80;
+                    
+                    // Set initial target
+                    this.setRandomTarget();
+                }
+
+                setRandomTarget() {
+                    const margin = 50;
+                    this.targetX = margin + Math.random() * (W - margin * 2);
+                    this.targetY = margin + Math.random() * (H - margin * 2);
+                    this.wanderAngle = Math.atan2(
+                        this.targetY - this.y,
+                        this.targetX - this.x
+                    );
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Wander behavior
+                    this.wanderTimer -= dt;
+                    if (this.wanderTimer <= 0) {
+                        this.wanderTimer = this.wanderInterval;
+                        this.setRandomTarget();
+                    }
+                    
+                    // Move toward target
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 5) {
+                        const moveSpeed = this.speed * 0.8 * dt;
+                        this.x += (dx / dist) * moveSpeed;
+                        this.y += (dy / dist) * moveSpeed;
+                        this.targetAngle = Math.atan2(dy, dx);
+                    } else {
+                        // Reached target, set new one
+                        this.setRandomTarget();
+                    }
+                    
+                    // Smooth angle
+                    let angleDiff = this.targetAngle - this.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    this.angle += angleDiff * 0.06 * dt;
+                    
+                    // Antennae
+                    this.antennaPhase += this.antennaSpeed * dt;
+                    
+                    // Body wave
+                    this.bodyPhase += this.bodySpeed * dt;
+                    
+                    // Trail
+                    this.trailTimer -= dt;
+                    if (this.trailTimer <= 0) {
+                        this.trailTimer = this.trailInterval;
+                        // Add multiple particles for sparkly trail
+                        for (let i = 0; i < 3; i++) {
+                            const offsetX = (Math.random() - 0.5) * 10;
+                            const offsetY = (Math.random() - 0.5) * 6;
+                            this.trail.push(new TrailParticle(
+                                this.x + offsetX,
+                                this.y + offsetY
+                            ));
+                        }
+                    }
+                    
+                    // Update trail particles
+                    this.trail = this.trail.filter(p => p.life > 0);
+                    for (let p of this.trail) {
+                        p.update();
+                    }
+                    
+                    // Limit trail size
+                    if (this.trail.length > 300) {
+                        this.trail.splice(0, this.trail.length - 300);
+                    }
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    
+                    // ---- Draw trail first (behind snail) ----
+                    for (let p of this.trail) {
+                        p.draw(ctx);
+                    }
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    
+                    // ---- Shadow ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // ---- Body (foot) ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    ctx.shadowBlur = 5;
+                    
+                    const bodyWave = Math.sin(this.bodyPhase) * 2;
+                    ctx.fillStyle = '#c4a882';
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        0,
+                        size * 0.15 + bodyWave * 0.1,
+                        size * 0.8,
+                        size * 0.2,
+                        0,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // ---- Shell ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                    ctx.shadowBlur = 10;
+                    
+                    // Shell spiral
+                    const shellGrad = ctx.createRadialGradient(
+                        -size * 0.1, -size * 0.1, 0,
+                        0, -size * 0.2, size * 0.9
+                    );
+                    shellGrad.addColorStop(0, '#f5e6c8');
+                    shellGrad.addColorStop(0.3, '#e8d5b8');
+                    shellGrad.addColorStop(0.6, '#d4b896');
+                    shellGrad.addColorStop(0.8, '#c4a882');
+                    shellGrad.addColorStop(1, '#a8886a');
+                    ctx.fillStyle = shellGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, -size * 0.15, size * 0.75, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Shell spiral line
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(139, 115, 85, 0.3)';
+                    ctx.lineWidth = 1.5;
+                    for (let i = 0; i < 3; i++) {
+                        const t = i / 3;
+                        const r = size * 0.7 * (1 - t * 0.6);
+                        const startAngle = t * Math.PI * 2 + this.bodyPhase * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(0, -size * 0.15, r, startAngle, startAngle + Math.PI * 1.5);
+                        ctx.stroke();
+                    }
+                    
+                    // Shell highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        -size * 0.2,
+                        -size * 0.35,
+                        size * 0.25,
+                        size * 0.2,
+                        -0.3,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // ---- Head ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = '#c4a882';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.65, size * 0.05, size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Antennae ----
+                    ctx.shadowBlur = 2;
+                    ctx.strokeStyle = '#c4a882';
+                    ctx.lineWidth = 2;
+                    
+                    const antPhase = this.antennaPhase;
+                    for (let side = -1; side <= 1; side += 2) {
+                        const antX = size * 0.7;
+                        const antY = side * size * 0.05;
+                        ctx.beginPath();
+                        ctx.moveTo(antX, antY);
+                        ctx.quadraticCurveTo(
+                            antX + size * 0.3,
+                            antY - side * size * 0.3 + Math.sin(antPhase + side) * size * 0.08,
+                            antX + size * 0.5,
+                            antY - side * size * 0.4 + Math.sin(antPhase * 0.7 + side * 2) * size * 0.1
+                        );
+                        ctx.stroke();
+                        
+                        // Antenna tip
+                        ctx.fillStyle = '#c4a882';
+                        ctx.beginPath();
+                        ctx.arc(
+                            antX + size * 0.5,
+                            antY - side * size * 0.4 + Math.sin(antPhase * 0.7 + side * 2) * size * 0.1,
+                            size * 0.04,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Eyes ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.75, -size * 0.05, size * 0.06, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.75, size * 0.13, size * 0.06, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.78, -size * 0.03, size * 0.03, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.78, size * 0.15, size * 0.03, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Snail ----
+            let snail;
+
+            function createSnail() {
+                snail = new Snail();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Garden/forest floor gradient
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#1a3a2a');
+                grad.addColorStop(0.3, '#0d2a1a');
+                grad.addColorStop(0.6, '#0a1a12');
+                grad.addColorStop(0.8, '#0d1a15');
+                grad.addColorStop(1, '#050a08');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Light rays through canopy
+                for (let i = 0; i < 4; i++) {
+                    const x = 50 + i * 160 + Math.sin(time * 0.005 + i) * 20;
+                    const grad2 = ctx.createLinearGradient(x, 0, x + 20, H);
+                    grad2.addColorStop(0, `rgba(200, 255, 200, ${0.008 + Math.sin(time * 0.01 + i) * 0.006})`);
+                    grad2.addColorStop(0.5, `rgba(200, 255, 200, ${0.004})`);
+                    grad2.addColorStop(1, 'rgba(200, 255, 200, 0)');
+                    ctx.fillStyle = grad2;
+                    ctx.fillRect(x, 0, 20, H);
+                }
+                
+                // Moss/ground texture dots
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % H;
+                    const size = 1 + (i % 3);
+                    ctx.fillStyle = `hsla(${120 + i * 5}, 40%, ${20 + i % 10}%, ${0.05 + (i % 5) * 0.02})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (snail) {
+                    snail.update();
+                    snail.draw(ctx);
+                }
+                
+                // Ambient sparkles (floating particles)
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 20) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 2) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const hue = (i * 30 + time * 5 + 40) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 80%, 80%, ${0.008 + Math.sin(time * 0.015 + i) * 0.006})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetSnail() {
+                createSnail();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Click handler ----
+            function handleCanvasClick(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                if (snail) {
+                    snail.targetX = Math.min(W - 20, Math.max(20, x));
+                    snail.targetY = Math.min(H - 20, Math.max(20, y));
+                    snail.wanderTimer = 0; // Reset wander timer to focus on click target
+                }
+            }
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetSnail);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', handleCanvasClick, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSnail();
+                }
+            });
+
+            // ---- Initialize ----
+            createSnail();
+            animate();
+
+            console.log('🐌 Snail Trail · Click to guide the snail!');
+        })();
+    </script>
+</body>
+</html>

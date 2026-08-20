@@ -1,0 +1,507 @@
+/* ==========================================================================
+   ease-view-morph-card — EaseMotion CSS
+   Demonstrates: View Transitions API card morph (expand / collapse)
+   Minimal JavaScript — only document.startViewTransition() + classList toggle.
+   Issue #61968
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design Tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+  --morph-bg:          #0f172a;
+  --morph-card-bg:     #1e293b;
+  --morph-card-border: #334155;
+  --morph-card-hover:  #263347;
+
+  --morph-text-primary:   #f1f5f9;
+  --morph-text-secondary: #94a3b8;
+  --morph-text-muted:     #64748b;
+
+  --morph-accent:         #6366f1;
+  --morph-accent-light:   #818cf8;
+  --morph-accent-glow:    rgba(99, 102, 241, 0.25);
+
+  --morph-tag-bg:     rgba(99, 102, 241, 0.15);
+  --morph-tag-color:  #a5b4fc;
+
+  --morph-overlay-bg: rgba(0, 0, 0, 0.6);
+
+  --morph-radius-card:     16px;
+  --morph-radius-expanded: 20px;
+  --morph-radius-sm:       8px;
+
+  --morph-shadow-card:     0 4px 24px rgba(0, 0, 0, 0.4);
+  --morph-shadow-expanded: 0 24px 80px rgba(0, 0, 0, 0.7);
+
+  --morph-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* View Transition timing — tweak here to adjust the morph feel */
+  --morph-duration: 0.6s;
+  --morph-easing:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Base Reset
+   -------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--morph-font);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--morph-bg);
+  color: var(--morph-text-primary);
+  line-height: 1.6;
+  padding: 3rem 1.5rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--morph-accent-light);
+  outline-offset: 3px;
+  border-radius: var(--morph-radius-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Page Layout
+   -------------------------------------------------------------------------- */
+
+.page-header {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 3rem;
+}
+
+.page-header h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, var(--morph-text-primary) 0%, var(--morph-accent-light) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.page-header p {
+  color: var(--morph-text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.page-header p code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--morph-accent-light);
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+.demo-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 280px;
+  position: relative;
+}
+
+.demo-hint {
+  text-align: center;
+  margin-top: 2.5rem;
+  color: var(--morph-text-muted);
+  font-size: 0.9rem;
+}
+
+.demo-hint kbd {
+  display: inline-block;
+  background: var(--morph-card-bg);
+  border: 1px solid var(--morph-card-border);
+  border-radius: 4px;
+  padding: 0.1em 0.45em;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  color: var(--morph-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Info Panel (below demo)
+   -------------------------------------------------------------------------- */
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+  max-width: 760px;
+  margin: 3.5rem auto 0;
+}
+
+.info-card {
+  background: var(--morph-card-bg);
+  border: 1px solid var(--morph-card-border);
+  border-radius: var(--morph-radius-sm);
+  padding: 1.25rem;
+}
+
+.info-card h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--morph-accent-light);
+  margin-bottom: 0.5rem;
+}
+
+.info-card p {
+  font-size: 0.9rem;
+  color: var(--morph-text-secondary);
+  line-height: 1.6;
+}
+
+.info-card code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--morph-accent-light);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   .ease-morph-card — Base (collapsed) state
+   -------------------------------------------------------------------------- */
+
+.ease-morph-card {
+  /* View Transitions API — unique name for this element */
+  view-transition-name: ease-morph-card-1;
+
+  /* Dimensions */
+  width: 300px;
+  height: 200px;
+
+  /* Appearance */
+  background: var(--morph-card-bg);
+  border: 1px solid var(--morph-card-border);
+  border-radius: var(--morph-radius-card);
+  box-shadow: var(--morph-shadow-card);
+
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  position: relative;
+
+  /* Interaction */
+  cursor: pointer;
+
+  /* Micro-animation on hover (does not interfere with view-transition) */
+  transition:
+    transform 240ms var(--morph-easing),
+    box-shadow 240ms var(--morph-easing),
+    border-color 240ms var(--morph-easing);
+}
+
+.ease-morph-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--morph-accent);
+  border-color: var(--morph-accent);
+}
+
+.ease-morph-card:focus-visible {
+  outline: 2px solid var(--morph-accent-light);
+  outline-offset: 3px;
+}
+
+/* Card gradient cover art */
+.ease-morph-card .card-cover {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    hsl(240 60% 20%) 0%,
+    hsl(260 50% 16%) 50%,
+    hsl(220 70% 12%) 100%
+  );
+  z-index: 0;
+}
+
+.ease-morph-card .card-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 80% at 80% 20%,
+    var(--morph-accent-glow) 0%,
+    transparent 70%
+  );
+  opacity: 0.8;
+}
+
+/* Decorative icon / logo mark */
+.ease-morph-card .card-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  z-index: 2;
+  transition: background 240ms var(--morph-easing);
+}
+
+.ease-morph-card:hover .card-icon {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+/* Text content */
+.ease-morph-card .card-body {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
+}
+
+.ease-morph-card .card-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--morph-tag-bg);
+  color: var(--morph-tag-color);
+  border-radius: 20px;
+  padding: 0.15em 0.6em;
+  margin-bottom: 0.4rem;
+}
+
+.ease-morph-card .card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--morph-text-primary);
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+
+.ease-morph-card .card-subtitle {
+  font-size: 0.78rem;
+  color: var(--morph-text-muted);
+  display: none; /* hidden in card state; shown when expanded */
+}
+
+/* --------------------------------------------------------------------------
+   .ease-morph-card.expanded — Expanded (full-screen) state
+   -------------------------------------------------------------------------- */
+
+.ease-morph-card.expanded {
+  position: fixed;
+  inset: 2rem;
+  width: auto;
+  height: auto;
+  z-index: 50;
+  cursor: default;
+
+  border-radius: var(--morph-radius-expanded);
+  box-shadow: var(--morph-shadow-expanded);
+  border-color: rgba(99, 102, 241, 0.4);
+
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+
+.ease-morph-card.expanded .card-cover {
+  height: 260px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ease-morph-card.expanded .card-icon {
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
+}
+
+.ease-morph-card.expanded .card-body {
+  padding: 1.75rem 2rem;
+  background: none;
+  flex: 1;
+}
+
+.ease-morph-card.expanded .card-tag {
+  font-size: 0.75rem;
+  padding: 0.2em 0.8em;
+  margin-bottom: 0.75rem;
+}
+
+.ease-morph-card.expanded .card-title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  margin-bottom: 0.5rem;
+}
+
+.ease-morph-card.expanded .card-subtitle {
+  display: block;
+  font-size: 1rem;
+  color: var(--morph-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+/* Extra content blocks — visible only in expanded state */
+.ease-morph-card .card-expanded-content {
+  display: none;
+}
+
+.ease-morph-card.expanded .card-expanded-content {
+  display: block;
+}
+
+.ease-morph-card .expanded-detail {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--morph-radius-sm);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--morph-text-secondary);
+  line-height: 1.7;
+}
+
+.ease-morph-card .expanded-detail strong {
+  color: var(--morph-text-primary);
+  font-weight: 600;
+}
+
+/* Close button — visible only in expanded state */
+.ease-morph-card .card-close-btn {
+  display: none;
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  width: 36px;
+  height: 36px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: var(--morph-text-primary);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  transition: background 200ms ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-family: inherit;
+}
+
+.ease-morph-card.expanded .card-close-btn {
+  display: flex;
+}
+
+.ease-morph-card .card-close-btn:hover {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   Backdrop overlay — body.has-expanded-card
+   -------------------------------------------------------------------------- */
+
+body.has-expanded-card::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--morph-overlay-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 40;
+  pointer-events: none;
+
+  /* Fade in with the same timing as the view transition */
+  animation: morph-overlay-in var(--morph-duration) var(--morph-easing) both;
+}
+
+@keyframes morph-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* When collapsing, the class is removed before the VT starts,
+   so the overlay fades out naturally as the pseudo-element is destroyed. */
+
+/* --------------------------------------------------------------------------
+   View Transitions — morph animation for the card element
+   -------------------------------------------------------------------------- */
+
+::view-transition-old(ease-morph-card-1),
+::view-transition-new(ease-morph-card-1) {
+  animation-duration: var(--morph-duration);
+  animation-timing-function: var(--morph-easing);
+  overflow: clip;
+  /* Let the browser handle the geometry (position + size) interpolation */
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility — reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(ease-morph-card-1),
+  ::view-transition-new(ease-morph-card-1) {
+    animation: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .ease-morph-card.expanded {
+    inset: 0;
+    border-radius: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print
+   -------------------------------------------------------------------------- */
+
+@media print {
+  body.has-expanded-card::before {
+    display: none;
+  }
+
+  .ease-morph-card.expanded {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .ease-morph-card .card-close-btn {
+    display: none !important;
+  }
+}

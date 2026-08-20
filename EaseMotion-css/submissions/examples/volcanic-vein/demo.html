@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volcanic Vein</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="volcanic-app">
+
+    <section class="volcanic-card">
+
+      <div class="header">
+        <div>
+          <span class="eyebrow">GEOLOGICAL MOTION</span>
+          <h1>🌋 Volcanic Vein</h1>
+          <p>
+            Watch magma travel through a living network of volcanic cracks.
+          </p>
+        </div>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          <span id="statusText">DORMANT</span>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="volcanicCanvas"></canvas>
+
+        <div class="overlay-stats">
+          <div class="stat">
+            <span>ACTIVE VEINS</span>
+            <strong id="veinCount">0</strong>
+          </div>
+
+          <div class="stat">
+            <span>HEAT</span>
+            <strong id="heatValue">35%</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+
+        <div class="control">
+          <div class="control-header">
+            <label for="heatSlider">🔥 Volcanic Heat</label>
+            <span id="heatLabel">35%</span>
+          </div>
+
+          <input
+            id="heatSlider"
+            class="heat-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="35"
+          />
+        </div>
+
+        <div class="actions">
+          <button id="eruptBtn" class="btn erupt">
+            🌋 Trigger Eruption
+          </button>
+
+          <button id="resetBtn" class="btn reset">
+            ↻ Reset Terrain
+          </button>
+        </div>
+
+      </div>
+
+      <div class="message">
+        <span>🔥</span>
+        <span id="messageText">
+          Click anywhere on the terrain to create magma.
+        </span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("volcanicCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const heatSlider = document.getElementById("heatSlider");
+    const heatLabel = document.getElementById("heatLabel");
+    const heatValue = document.getElementById("heatValue");
+    const veinCount = document.getElementById("veinCount");
+    const statusText = document.getElementById("statusText");
+    const messageText = document.getElementById("messageText");
+
+    let width = 0;
+    let height = 0;
+    let heat = 35;
+
+    const veins = [];
+    const embers = [];
+
+    const MAX_VEINS = 18;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      const ratio = window.devicePixelRatio || 1;
+
+      width = rect.width;
+      height = rect.height;
+
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    class Vein {
+      constructor(x, y, angle = Math.random() * Math.PI * 2) {
+        this.points = [{ x, y }];
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+
+        this.speed = 0.35 + Math.random() * 0.7;
+        this.life = 1;
+        this.age = 0;
+        this.branchTimer = 0;
+      }
+
+      update() {
+        const heatFactor = 0.4 + heat / 70;
+
+        this.age++;
+        this.branchTimer++;
+
+        this.angle += (Math.random() - 0.5) * 0.16;
+
+        this.x += Math.cos(this.angle) * this.speed * heatFactor;
+        this.y += Math.sin(this.angle) * this.speed * heatFactor;
+
+        this.points.push({
+          x: this.x,
+          y: this.y
+        });
+
+        if (this.points.length > 110) {
+          this.points.shift();
+        }
+
+        if (
+          this.branchTimer > 30 &&
+          Math.random() < heat / 5000 &&
+          veins.length < MAX_VEINS
+        ) {
+          this.branchTimer = 0;
+
+          veins.push(
+            new Vein(
+              this.x,
+              this.y,
+              this.angle + (Math.random() > 0.5 ? 0.7 : -0.7)
+            )
+          );
+        }
+
+        if (
+          this.x < -40 ||
+          this.x > width + 40 ||
+          this.y < -40 ||
+          this.y > height + 40
+        ) {
+          this.life -= 0.012;
+        }
+
+        if (this.age > 500) {
+          this.life -= 0.006;
+        }
+      }
+
+      draw() {
+        if (this.points.length < 2) return;
+
+        ctx.save();
+
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        ctx.beginPath();
+
+        this.points.forEach((point, index) => {
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        });
+
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = `rgba(255, ${80 + heat}, 10, ${this.life})`;
+
+        ctx.strokeStyle = `rgba(255, 90, 15, ${0.28 * this.life})`;
+        ctx.lineWidth = 9;
+
+        ctx.stroke();
+
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = `rgba(255, 170, 45, ${0.9 * this.life})`;
+        ctx.lineWidth = 3;
+
+        ctx.stroke();
+
+        ctx.shadowBlur = 4;
+        ctx.strokeStyle = `rgba(255, 245, 170, ${this.life})`;
+        ctx.lineWidth = 1;
+
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+
+    class Ember {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        this.vx = (Math.random() - 0.5) * 1.2;
+        this.vy = -Math.random() * 1.5 - 0.2;
+
+        this.life = 1;
+        this.size = Math.random() * 2 + 0.5;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.vy += 0.008;
+        this.life -= 0.012;
+      }
+
+      draw() {
+        ctx.save();
+
+        ctx.globalAlpha = this.life;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "rgba(255,100,20,0.9)";
+
+        ctx.fillStyle = "#ffb347";
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    function drawTerrain() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+
+      gradient.addColorStop(0, "#17110f");
+      gradient.addColorStop(0.5, "#0d0b0a");
+      gradient.addColorStop(1, "#050505");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.save();
+
+      ctx.globalAlpha = 0.15;
+
+      for (let i = 0; i < 180; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+
+        ctx.fillStyle = "#66544a";
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+      ctx.restore();
+    }
+
+    function createVein(x, y) {
+      if (veins.length >= MAX_VEINS) {
+        veins.shift();
+      }
+
+      veins.push(new Vein(x, y));
+
+      for (let i = 0; i < 10; i++) {
+        embers.push(new Ember(x, y));
+      }
+
+      messageText.textContent = "Magma vein created beneath the terrain.";
+    }
+
+    function erupt() {
+      const x = width * (0.2 + Math.random() * 0.6);
+      const y = height * (0.2 + Math.random() * 0.6);
+
+      createVein(x, y);
+
+      for (let i = 0; i < 25; i++) {
+        embers.push(new Ember(x, y));
+      }
+
+      messageText.textContent = "Eruption detected — magma network expanding!";
+    }
+
+    function resetTerrain() {
+      veins.length = 0;
+      embers.length = 0;
+
+      messageText.textContent =
+        "Terrain cooled. Click anywhere to create magma.";
+    }
+
+    function updateStatus() {
+      veinCount.textContent = veins.length;
+
+      heatLabel.textContent = `${heat}%`;
+      heatValue.textContent = `${heat}%`;
+
+      let state = "DORMANT";
+
+      if (heat > 90) state = "ERUPTION";
+      else if (heat > 70) state = "INTENSE";
+      else if (heat > 45) state = "ACTIVE";
+      else if (heat > 20) state = "WARM";
+
+      statusText.textContent = state;
+    }
+
+    function animate() {
+      drawTerrain();
+
+      veins.forEach(vein => vein.update());
+
+      for (let i = veins.length - 1; i >= 0; i--) {
+        if (veins[i].life <= 0) {
+          veins.splice(i, 1);
+        }
+      }
+
+      veins.forEach(vein => vein.draw());
+
+      if (heat > 45 && Math.random() < heat / 500) {
+        if (veins.length) {
+          const vein =
+            veins[Math.floor(Math.random() * veins.length)];
+
+          if (vein.points.length) {
+            const point =
+              vein.points[
+                Math.floor(Math.random() * vein.points.length)
+              ];
+
+            embers.push(new Ember(point.x, point.y));
+          }
+        }
+      }
+
+      for (let i = embers.length - 1; i >= 0; i--) {
+        embers[i].update();
+        embers[i].draw();
+
+        if (embers[i].life <= 0) {
+          embers.splice(i, 1);
+        }
+      }
+
+      updateStatus();
+
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("click", event => {
+      const rect = canvas.getBoundingClientRect();
+
+      createVein(
+        event.clientX - rect.left,
+        event.clientY - rect.top
+      );
+    });
+
+    heatSlider.addEventListener("input", event => {
+      heat = Number(event.target.value);
+      updateStatus();
+    });
+
+    document.getElementById("eruptBtn").addEventListener("click", erupt);
+
+    document.getElementById("resetBtn").addEventListener(
+      "click",
+      resetTerrain
+    );
+
+    window.addEventListener("keydown", event => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        erupt();
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        resetTerrain();
+      }
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+
+    createVein(width * 0.45, height * 0.55);
+
+    animate();
+  </script>
+</body>
+</html>

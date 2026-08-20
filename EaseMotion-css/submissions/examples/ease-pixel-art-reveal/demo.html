@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Reveal · Block by Block</title>
+    <meta name="description" content="Interactive pixel art reveal where artwork appears block by block with satisfying animation effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 PIXEL REVEAL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="pixelCanvas" width="320" height="320"></canvas>
+            <div class="scanline-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="reveal-btn" id="revealBtn">✨ REVEAL ART</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 PIXEL ART REVEAL</span>
+            <small>block by block animation</small>
+        </div>
+        <div class="hint">
+            <span>⬛ pixels appear one by one · click to reveal</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 320, H = 320;
+            
+            const revealBtn = document.getElementById('revealBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            // ---- Pixel Art Data (32x32 grid) ----
+            // Simple pixel art: A cute character/design
+            // 0 = empty, 1-5 = colors
+            const COLORS = [
+                '#1a1a2e', // 0: background
+                '#ff6b6b', // 1: red
+                '#feca57', // 2: yellow
+                '#48dbfb', // 3: blue
+                '#1dd1a1', // 4: green
+                '#ff9ff3', // 5: pink
+                '#54a0ff', // 6: light blue
+                '#5f27cd', // 7: purple
+                '#ff9f43', // 8: orange
+                '#00d2d3', // 9: cyan
+                '#ffffff'  // 10: white
+            ];
+
+            // Pixel art pattern (32x32)
+            // A cute pixel art character (like a small creature or icon)
+            const PIXEL_ART = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            ];
+
+            const GRID_SIZE = 32;
+            const BLOCK_SIZE = W / GRID_SIZE; // 10px
+
+            // ---- State ----
+            let revealed = [];
+            let revealIndex = 0;
+            let totalPixels = 0;
+            let isRevealing = false;
+            let revealInterval = null;
+            let speed = 5;
+
+            // ---- Initialize revealed array ----
+            function initRevealed() {
+                revealed = [];
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    revealed[r] = [];
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        revealed[r][c] = false;
+                    }
+                }
+                revealIndex = 0;
+                totalPixels = 0;
+                // Count total non-empty pixels
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (PIXEL_ART[r][c] !== 0) totalPixels++;
+                    }
+                }
+            }
+            initRevealed();
+
+            // ---- Draw the pixel art (current state) ----
+            function drawPixelArt() {
+                ctx.clearRect(0, 0, W, H);
+                
+                // Draw background grid (subtle)
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, W, H);
+                
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        const colorIndex = PIXEL_ART[r][c];
+                        if (colorIndex === 0) continue;
+                        
+                        const x = c * BLOCK_SIZE;
+                        const y = r * BLOCK_SIZE;
+                        
+                        if (revealed[r][c]) {
+                            // Draw full pixel
+                            ctx.fillStyle = COLORS[colorIndex];
+                            ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                            
+                            // Add subtle pixel highlight
+                            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                            ctx.fillRect(x + 1, y + 1, BLOCK_SIZE - 2, 2);
+                        } else {
+                            // Draw placeholder (dark pixel)
+                            ctx.fillStyle = '#2a2a3e';
+                            ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                            // Grid line
+                            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                            ctx.strokeRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                        }
+                    }
+                }
+                
+                // Draw grid lines on top
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i <= GRID_SIZE; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * BLOCK_SIZE, 0);
+                    ctx.lineTo(i * BLOCK_SIZE, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * BLOCK_SIZE);
+                    ctx.lineTo(W, i * BLOCK_SIZE);
+                    ctx.stroke();
+                }
+            }
+
+            // ---- Reveal next pixel ----
+            function revealNextPixel() {
+                if (revealIndex >= totalPixels) {
+                    stopReveal();
+                    return;
+                }
+                
+                // Find next unrevealed pixel
+                let found = false;
+                for (let r = 0; r < GRID_SIZE && !found; r++) {
+                    for (let c = 0; c < GRID_SIZE && !found; c++) {
+                        if (PIXEL_ART[r][c] !== 0 && !revealed[r][c]) {
+                            revealed[r][c] = true;
+                            revealIndex++;
+                            found = true;
+                            
+                            // Draw the updated pixel
+                            const x = c * BLOCK_SIZE;
+                            const y = r * BLOCK_SIZE;
+                            const colorIndex = PIXEL_ART[r][c];
+                            
+                            ctx.fillStyle = COLORS[colorIndex];
+                            ctx.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
+                            
+                            // Add highlight
+                            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                            ctx.fillRect(x + 1, y + 1, BLOCK_SIZE - 2, 2);
+                            
+                            // Play subtle sound for each pixel
+                            playPixelSound(colorIndex);
+                            
+                            // Add sparkle effect at reveal position
+                            createSparkle(x + BLOCK_SIZE/2, y + BLOCK_SIZE/2, COLORS[colorIndex]);
+                        }
+                    }
+                }
+                
+                // Update progress
+                const progress = Math.round((revealIndex / totalPixels) * 100);
+                revealBtn.textContent = `✨ ${progress}%`;
+            }
+
+            // ---- Create sparkle on reveal ----
+            function createSparkle(x, y, color) {
+                const sparkle = document.createElement('div');
+                const size = 4 + Math.random() * 6;
+                sparkle.style.cssText = `
+                    position: fixed;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 9999;
+                    left: ${x + canvas.getBoundingClientRect().left}px;
+                    top: ${y + canvas.getBoundingClientRect().top}px;
+                    box-shadow: 0 0 20px ${color}, 0 0 40px ${color};
+                    transform: scale(0);
+                    opacity: 1;
+                    transition: all 0.3s ease-out;
+                `;
+                document.body.appendChild(sparkle);
+                
+                requestAnimationFrame(() => {
+                    sparkle.style.transform = `scale(1)`;
+                    sparkle.style.opacity = '0';
+                });
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) sparkle.remove();
+                }, 400);
+            }
+
+            // ---- Pixel sound ----
+            function playPixelSound(colorIndex) {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    // Map color to frequency
+                    const freqMap = {
+                        1: 523, 2: 587, 3: 659, 4: 698, 5: 784,
+                        6: 880, 7: 988, 8: 1047, 9: 1175, 10: 1319
+                    };
+                    const freq = freqMap[colorIndex] || 523 + Math.random() * 200;
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } catch (e) {}
+            }
+
+            // ---- Start reveal ----
+            function startReveal() {
+                if (isRevealing) return;
+                
+                // Reset if all revealed
+                if (revealIndex >= totalPixels) {
+                    resetReveal();
+                    // Small delay before starting
+                    setTimeout(() => startReveal(), 100);
+                    return;
+                }
+                
+                isRevealing = true;
+                revealBtn.textContent = '⏳ REVEALING...';
+                revealBtn.disabled = true;
+                
+                const interval = Math.max(10, 60 - speed * 5);
+                revealInterval = setInterval(revealNextPixel, interval);
+            }
+
+            // ---- Stop reveal ----
+            function stopReveal() {
+                if (revealInterval) {
+                    clearInterval(revealInterval);
+                    revealInterval = null;
+                }
+                isRevealing = false;
+                revealBtn.textContent = '✨ REVEAL ART';
+                revealBtn.disabled = false;
+                
+                if (revealIndex >= totalPixels) {
+                    revealBtn.textContent = '🎉 COMPLETE!';
+                    // Play completion sound
+                    playCompletionSound();
+                }
+            }
+
+            // ---- Reset reveal ----
+            function resetReveal() {
+                stopReveal();
+                initRevealed();
+                drawPixelArt();
+                revealBtn.textContent = '✨ REVEAL ART';
+                revealBtn.disabled = false;
+            }
+
+            // ---- Completion sound ----
+            function playCompletionSound() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    const notes = [523, 659, 784, 1047];
+                    notes.forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.15);
+                    });
+                } catch (e) {}
+            }
+
+            // ---- Speed control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+                if (isRevealing) {
+                    // Restart with new speed
+                    stopReveal();
+                    startReveal();
+                }
+            });
+
+            // ---- Event Listeners ----
+            revealBtn.addEventListener('click', startReveal);
+            resetBtn.addEventListener('click', resetReveal);
+
+            // ---- Keyboard shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (isRevealing) {
+                        stopReveal();
+                    } else {
+                        startReveal();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetReveal();
+                }
+            });
+
+            // ---- Initial draw ----
+            drawPixelArt();
+
+            console.log('🎨 Pixel Art Reveal · click Reveal or press Enter/Space to start');
+        })();
+    </script>
+</body>
+</html>

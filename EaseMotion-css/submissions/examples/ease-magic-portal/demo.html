@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Portal – Swirling Portal with Particles</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🌀 Magic Portal</h1>
+    <p class="subtitle">Swirling portal with enchanting particles</p>
+
+    <div class="portal-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="portal-status" id="portalStatus">🌀 Active</span>
+        <span class="particle-count" id="particleCount">✦ 0 particles</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn burst" id="burstBtn">💥 Burst</button>
+      <button class="ctrl-btn color" id="colorBtn">🎨 Color</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Particles</span>
+      <input type="range" id="countSlider" min="50" max="500" value="200" step="10" />
+      <span class="slider-value" id="countValue">200</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Size</span>
+      <input type="range" id="sizeSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="sizeValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Vortex</span>
+      <input type="range" id="vortexSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="vortexValue">50%</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🌀 Portal swirling with magical energy</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Space</kbd> Pause · <kbd>B</kbd> Burst · <kbd>C</kbd> Color · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const portalStatus = document.getElementById('portalStatus');
+      const particleCount = document.getElementById('particleCount');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const burstBtn = document.getElementById('burstBtn');
+      const colorBtn = document.getElementById('colorBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const vortexSlider = document.getElementById('vortexSlider');
+      const vortexValue = document.getElementById('vortexValue');
+
+      // State
+      let particles = [];
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let colorScheme = 0;
+      let burstActive = false;
+      let burstTimer = null;
+
+      // Color schemes
+      const COLOR_SCHEMES = [
+        { name: 'Mystic', colors: ['#6c5ce7', '#a29bfe', '#fd79a8', '#fdcb6e', '#00cec9'] },
+        { name: 'Fire', colors: ['#ff6b6b', '#ff4757', '#ff6348', '#ff9f43', '#feca57'] },
+        { name: 'Ice', colors: ['#74b9ff', '#0984e3', '#00cec9', '#81ecec', '#dfe6e9'] },
+        { name: 'Nature', colors: ['#00b894', '#55efc4', '#fdcb6e', '#e17055', '#6c5ce7'] },
+        { name: 'Royal', colors: ['#6c5ce7', '#a29bfe', '#fd79a8', '#fdcb6e', '#00cec9'] },
+        { name: 'Neon', colors: ['#ff00ff', '#00ffff', '#ff00aa', '#00ffaa', '#ffaa00'] },
+        { name: 'Galaxy', colors: ['#2d3436', '#6c5ce7', '#fd79a8', '#00cec9', '#fdcb6e'] },
+        { name: 'Sunset', colors: ['#ff6b6b', '#ff9f43', '#feca57', '#fd79a8', '#6c5ce7'] }
+      ];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Particle class -----
+      class Particle {
+        constructor() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          const radius = Math.min(w, h) * 0.35;
+          
+          this.angle = Math.random() * Math.PI * 2;
+          this.distance = Math.random() * radius;
+          this.radius = radius;
+          this.size = 1 + Math.random() * 4;
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.orbitSpeed = 0.005 + Math.random() * 0.015;
+          this.verticalOffset = (Math.random() - 0.5) * 60;
+          this.phase = Math.random() * Math.PI * 2;
+          this.trail = [];
+          this.trailLength = 5 + Math.floor(Math.random() * 10);
+          this.colorIndex = Math.floor(Math.random() * 5);
+          this.opacity = 0.3 + Math.random() * 0.7;
+          this.pulseSpeed = 0.02 + Math.random() * 0.03;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+          this.twinkle = 0.5 + Math.random() * 0.5;
+          
+          // Random burst state
+          this.burstSpeed = 0;
+          this.burstAngle = 0;
+          this.burstDistance = 0;
+          this.isBursting = false;
+        }
+
+        update(speedMult = 1, vortexStrength = 0.5, sizeMult = 1) {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+
+          if (this.isBursting) {
+            // Burst mode
+            this.distance += this.burstSpeed;
+            this.angle += this.burstAngle * 0.02;
+            if (this.distance > Math.min(w, h) * 0.6) {
+              this.isBursting = false;
+              this.distance = this.radius * (0.3 + Math.random() * 0.7);
+            }
+          } else {
+            // Normal orbit
+            this.angle += this.orbitSpeed * speedMult * 0.5;
+            
+            // Vortex effect
+            const vortexPull = vortexStrength * 0.3;
+            const targetDist = this.radius * (0.3 + 0.7 * (1 - vortexPull));
+            this.distance += (targetDist - this.distance) * 0.01 * speedMult;
+            
+            // Vertical oscillation
+            this.verticalOffset = Math.sin(this.angle * 2 + this.phase) * 20 * (1 + vortexStrength * 0.5);
+          }
+
+          // Calculate position
+          const x = cx + Math.cos(this.angle) * this.distance;
+          const y = cy + Math.sin(this.angle) * this.distance + this.verticalOffset;
+
+          // Store position
+          this.x = x;
+          this.y = y;
+
+          // Update trail
+          this.trail.push({ x, y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+
+          // Update pulse
+          this.twinkle = 0.5 + 0.5 * Math.sin(time * this.pulseSpeed + this.pulseOffset);
+        }
+
+        draw(ctx, colors, sizeMult = 1) {
+          const size = this.size * sizeMult * (0.5 + 0.5 * this.twinkle);
+          const alpha = this.opacity * (0.6 + 0.4 * this.twinkle);
+          const color = colors[this.colorIndex % colors.length];
+
+          // Draw trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.3;
+              const trailSize = size * t * 0.3;
+              ctx.fillStyle = color.replace(')', `, ${trailAlpha})`).replace('rgb', 'rgba');
+              ctx.beginPath();
+              ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const glowSize = size * 4;
+          const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+          gradient.addColorStop(0, color.replace(')', `, ${alpha * 0.6})`).replace('rgb', 'rgba'));
+          gradient.addColorStop(0.5, color.replace(')', `, ${alpha * 0.2})`).replace('rgb', 'rgba'));
+          gradient.addColorStop(1, color.replace(')', `, 0)`).replace('rgb', 'rgba'));
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          const coreGradient = ctx.createRadialGradient(
+            this.x - size * 0.2, this.y - size * 0.2, 0,
+            this.x, this.y, size
+          );
+          coreGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.9})`);
+          coreGradient.addColorStop(0.3, color.replace(')', `, ${alpha * 0.8})`).replace('rgb', 'rgba'));
+          coreGradient.addColorStop(1, color.replace(')', `, ${alpha * 0.2})`).replace('rgb', 'rgba'));
+          ctx.fillStyle = coreGradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sparkle
+          if (this.twinkle > 0.8) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${(this.twinkle - 0.8) * 2 * alpha * 0.5})`;
+            const sparkleSize = size * 0.3;
+            for (let i = 0; i < 4; i++) {
+              const angle = i * Math.PI / 2 + time * 0.5;
+              ctx.beginPath();
+              ctx.arc(
+                this.x + Math.cos(angle) * sparkleSize * 2,
+                this.y + Math.sin(angle) * sparkleSize * 2,
+                sparkleSize * 0.5,
+                0, Math.PI * 2
+              );
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // ----- Create particles -----
+      function createParticles(count) {
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle());
+        }
+        particleCount.textContent = `✦ ${particles.length} particles`;
+      }
+
+      // ----- Update particles -----
+      function updateParticles() {
+        const speedMult = parseInt(speedSlider.value) / 5;
+        const sizeMult = parseInt(sizeSlider.value) / 5;
+        const vortexStrength = parseInt(vortexSlider.value) / 100;
+        
+        particles.forEach(p => p.update(speedMult, vortexStrength, sizeMult));
+      }
+
+      // ----- Draw portal -----
+      function drawPortal() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.38;
+        const colors = COLOR_SCHEMES[colorScheme].colors;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background with vignette
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Portal rings
+        const ringCount = 3;
+        for (let i = 0; i < ringCount; i++) {
+          const ringRadius = radius * (0.6 + i * 0.2);
+          const ringWidth = 2 + i * 1.5;
+          const alpha = 0.15 - i * 0.04;
+          const rotation = time * (0.1 + i * 0.05);
+          const color = colors[i % colors.length];
+          
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(rotation);
+          
+          // Outer glow
+          const glowGradient = ctx.createRadialGradient(0, 0, ringRadius - ringWidth, 0, 0, ringRadius + ringWidth);
+          glowGradient.addColorStop(0, color.replace(')', `, ${alpha * 0.1})`).replace('rgb', 'rgba'));
+          glowGradient.addColorStop(0.5, color.replace(')', `, ${alpha})`).replace('rgb', 'rgba'));
+          glowGradient.addColorStop(1, color.replace(')', `, 0)`).replace('rgb', 'rgba'));
+          ctx.fillStyle = glowGradient;
+          ctx.beginPath();
+          ctx.arc(0, 0, ringRadius + ringWidth, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Ring line
+          ctx.strokeStyle = color.replace(')', `, ${alpha * 0.8})`).replace('rgb', 'rgba');
+          ctx.lineWidth = ringWidth;
+          ctx.shadowColor = color.replace(')', `, ${alpha * 0.5})`).replace('rgb', 'rgba');
+          ctx.shadowBlur = 20;
+          
+          // Dashed ring
+          ctx.setLineDash([10, 15 + i * 5]);
+          ctx.lineDashOffset = -time * (20 + i * 10);
+          ctx.beginPath();
+          ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          ctx.restore();
+        }
+
+        // Portal center glow
+        const centerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 0.4);
+        centerGlow.addColorStop(0, `rgba(255, 255, 255, 0.15)`);
+        centerGlow.addColorStop(0.5, `rgba(150, 100, 255, 0.08)`);
+        centerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = centerGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw particles
+        const sizeMult = parseInt(sizeSlider.value) / 5;
+        particles.forEach(p => p.draw(ctx, colors, sizeMult));
+
+        // Portal rim glow (outer)
+        const rimGlow = ctx.createRadialGradient(cx, cy, radius * 0.85, cx, cy, radius * 1.2);
+        rimGlow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        rimGlow.addColorStop(0.5, `rgba(150, 100, 255, 0.05)`);
+        rimGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = rimGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sparkle stars in background
+        for (let i = 0; i < 30; i++) {
+          const seed = i * 137.508;
+          const x = (seed * 0.618) % w;
+          const y = (seed * 0.381) % h;
+          const size = 0.5 + (seed % 3) * 0.5;
+          const alpha = 0.1 + (seed % 100) / 100 * 0.2;
+          const twinkle = 0.5 + 0.5 * Math.sin(time * 0.5 + seed);
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * twinkle})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size * twinkle, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+
+        if (!isPaused) {
+          updateParticles();
+        }
+
+        drawPortal();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        portalStatus.textContent = isPaused ? '⏸ Paused' : '🌀 Active';
+        status.textContent = isPaused ? '⏸ Portal paused' : '🌀 Portal swirling with magical energy';
+      }
+
+      // ----- Burst particles -----
+      function burstParticles() {
+        if (burstActive) {
+          clearTimeout(burstTimer);
+          burstActive = false;
+        }
+
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        particles.forEach(p => {
+          p.isBursting = true;
+          p.burstSpeed = 2 + Math.random() * 5;
+          p.burstAngle = Math.atan2(p.y - cy, p.x - cx) + (Math.random() - 0.5) * 0.5;
+          p.burstDistance = p.distance;
+        });
+
+        burstActive = true;
+        status.textContent = '💥 Portal burst! Particles scattering!';
+        portalStatus.textContent = '💥 Bursting';
+
+        burstTimer = setTimeout(() => {
+          burstActive = false;
+          portalStatus.textContent = '🌀 Active';
+          status.textContent = '🌀 Particles returning to orbit';
+        }, 1500);
+      }
+
+      // ----- Change color scheme -----
+      function changeColor() {
+        colorScheme = (colorScheme + 1) % COLOR_SCHEMES.length;
+        const scheme = COLOR_SCHEMES[colorScheme];
+        status.textContent = `🎨 Color scheme: ${scheme.name}`;
+        
+        // Update particle colors
+        particles.forEach(p => {
+          p.colorIndex = Math.floor(Math.random() * scheme.colors.length);
+        });
+      }
+
+      // ----- Reset portal -----
+      function resetPortal() {
+        const count = parseInt(countSlider.value);
+        createParticles(count);
+        isPaused = false;
+        toggleBtn.textContent = '⏸ Pause';
+        portalStatus.textContent = '🌀 Active';
+        status.textContent = '↺ Portal reset';
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', togglePause);
+      burstBtn.addEventListener('click', burstParticles);
+      colorBtn.addEventListener('click', changeColor);
+      resetBtn.addEventListener('click', resetPortal);
+
+      countSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        countValue.textContent = val;
+        createParticles(val);
+        status.textContent = `✦ Particle count: ${val}`;
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + '×';
+      });
+
+      vortexSlider.addEventListener('input', (e) => {
+        vortexValue.textContent = e.target.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'b' || e.key === 'B') {
+          e.preventDefault();
+          burstParticles();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          changeColor();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetPortal();
+        }
+      });
+
+      // Click on canvas to burst
+      canvas.addEventListener('click', burstParticles);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          const count = parseInt(countSlider.value);
+          createParticles(count);
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        const count = parseInt(countSlider.value);
+        createParticles(count);
+        startAnimation();
+        status.textContent = '🌀 Portal swirling with magical energy — click to burst!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

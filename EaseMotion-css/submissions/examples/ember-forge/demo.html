@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ember Forge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="forge-wrapper">
+
+    <section class="forge-display" id="forgeDisplay">
+
+      <canvas id="forgeCanvas"></canvas>
+
+      <div class="forge-header">
+        <div>
+          <span class="eyebrow">🔥 EASEMOTION</span>
+          <h1>Ember Forge</h1>
+        </div>
+
+        <div class="temperature-card">
+          <span class="temperature-label">TEMPERATURE</span>
+          <span class="temperature-value" id="temperatureValue">0%</span>
+          <span class="temperature-state" id="temperatureState">Cold</span>
+        </div>
+      </div>
+
+      <div class="forge-center">
+
+        <div class="anvil">
+          <div class="anvil-top"></div>
+          <div class="anvil-body"></div>
+          <div class="anvil-foot left"></div>
+          <div class="anvil-foot right"></div>
+        </div>
+
+        <div class="metal" id="metal">
+          <div class="metal-core"></div>
+          <div class="metal-highlight"></div>
+        </div>
+
+        <div class="hammer" id="hammer">
+          <div class="hammer-head"></div>
+          <div class="hammer-handle"></div>
+        </div>
+
+      </div>
+
+      <div class="forge-message">
+        <span class="message-title">🔥 FORGE STATUS</span>
+        <span class="message-text" id="forgeMessage">
+          Heat the metal and strike it
+        </span>
+      </div>
+
+      <div class="controls">
+
+        <div class="control-group">
+          <div class="control-heading">
+            <label for="heatSlider">🌡️ Heat</label>
+            <span id="heatValue">0%</span>
+          </div>
+
+          <input
+            type="range"
+            id="heatSlider"
+            min="0"
+            max="100"
+            value="0"
+          >
+        </div>
+
+        <div class="control-group">
+          <div class="control-heading">
+            <label for="forceSlider">🔨 Hammer Force</label>
+            <span id="forceValue">50%</span>
+          </div>
+
+          <input
+            type="range"
+            id="forceSlider"
+            min="0"
+            max="100"
+            value="50"
+          >
+        </div>
+
+        <div class="control-actions">
+          <button class="forge-button strike" id="strikeButton">
+            🔨 Strike Metal
+          </button>
+
+          <button class="forge-button cool" id="coolButton">
+            ❄️ Cool
+          </button>
+
+          <button class="forge-button reset" id="resetButton">
+            ⟳ Reset
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("forgeCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const heatSlider = document.getElementById("heatSlider");
+    const forceSlider = document.getElementById("forceSlider");
+
+    const heatValue = document.getElementById("heatValue");
+    const forceValue = document.getElementById("forceValue");
+
+    const temperatureValue =
+      document.getElementById("temperatureValue");
+
+    const temperatureState =
+      document.getElementById("temperatureState");
+
+    const forgeMessage =
+      document.getElementById("forgeMessage");
+
+    const metal =
+      document.getElementById("metal");
+
+    const hammer =
+      document.getElementById("hammer");
+
+    const strikeButton =
+      document.getElementById("strikeButton");
+
+    const coolButton =
+      document.getElementById("coolButton");
+
+    const resetButton =
+      document.getElementById("resetButton");
+
+    let width = 0;
+    let height = 0;
+
+    let targetHeat = 0;
+    let currentHeat = 0;
+
+    let targetForce = 50;
+    let currentForce = 50;
+
+    let impact = 0;
+    let deformation = 0;
+
+    const sparks = [];
+    const flames = [];
+    const ripples = [];
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      width = canvas.width = rect.width * devicePixelRatio;
+      height = canvas.height = rect.height * devicePixelRatio;
+
+      ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+      );
+
+      width = rect.width;
+      height = rect.height;
+    }
+
+    function lerp(a, b, amount) {
+      return a + (b - a) * amount;
+    }
+
+    function getTemperatureState(value) {
+      if (value <= 20) return "Cold";
+      if (value <= 50) return "Warm";
+      if (value <= 80) return "Hot";
+      return "Molten";
+    }
+
+    function createSpark(x, y, force) {
+      const angle =
+        Math.random() * Math.PI * 2;
+
+      const speed =
+        2 + Math.random() * (3 + force * 0.05);
+
+      sparks.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2,
+        life: 1,
+        size: 1 + Math.random() * 2
+      });
+    }
+
+    function createImpact() {
+      const centerX = width / 2;
+      const centerY = height * 0.58;
+
+      const count =
+        8 + Math.floor(currentForce / 15);
+
+      for (let i = 0; i < count; i++) {
+        createSpark(centerX, centerY, currentForce);
+      }
+
+      ripples.push({
+        x: centerX,
+        y: centerY,
+        radius: 8,
+        life: 1
+      });
+
+      impact = 1;
+      deformation = currentForce * 0.15;
+    }
+
+    function strike() {
+      if (currentHeat < 10) {
+        forgeMessage.textContent =
+          "The metal is too cold to forge";
+        return;
+      }
+
+      createImpact();
+
+      forgeMessage.textContent =
+        "🔥 Impact! The metal is being forged";
+    }
+
+    function coolMetal() {
+      targetHeat = Math.max(0, targetHeat - 25);
+
+      forgeMessage.textContent =
+        "❄️ Cooling the forged metal";
+    }
+
+    function resetForge() {
+      targetHeat = 0;
+      targetForce = 50;
+
+      impact = 0;
+      deformation = 0;
+
+      sparks.length = 0;
+      ripples.length = 0;
+
+      heatSlider.value = 0;
+      forceSlider.value = 50;
+
+      forgeMessage.textContent =
+        "Heat the metal and strike it";
+    }
+
+    function drawBackground() {
+      const gradient =
+        ctx.createLinearGradient(0, 0, 0, height);
+
+      gradient.addColorStop(0, "#08090d");
+      gradient.addColorStop(0.55, "#171014");
+      gradient.addColorStop(1, "#24150f");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawGlow() {
+      const intensity = currentHeat / 100;
+
+      const glow =
+        ctx.createRadialGradient(
+          width / 2,
+          height * 0.58,
+          10,
+          width / 2,
+          height * 0.58,
+          180 + intensity * 100
+        );
+
+      glow.addColorStop(
+        0,
+        `rgba(255,90,20,${0.15 + intensity * 0.25})`
+      );
+
+      glow.addColorStop(
+        1,
+        "rgba(255,70,10,0)"
+      );
+
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawSparks() {
+      sparks.forEach((spark, index) => {
+
+        spark.x += spark.vx;
+        spark.y += spark.vy;
+
+        spark.vy += 0.08;
+        spark.life -= 0.025;
+
+        ctx.globalAlpha =
+          Math.max(0, spark.life);
+
+        ctx.fillStyle = "#ffb347";
+
+        ctx.beginPath();
+        ctx.arc(
+          spark.x,
+          spark.y,
+          spark.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        if (spark.life <= 0) {
+          sparks.splice(index, 1);
+        }
+      });
+
+      ctx.globalAlpha = 1;
+    }
+
+    function drawRipples() {
+      ripples.forEach((ripple, index) => {
+
+        ripple.radius += 3;
+        ripple.life -= 0.035;
+
+        ctx.strokeStyle =
+          `rgba(255,150,60,${ripple.life})`;
+
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          ripple.x,
+          ripple.y,
+          ripple.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.stroke();
+
+        if (ripple.life <= 0) {
+          ripples.splice(index, 1);
+        }
+      });
+    }
+
+    function drawFlames() {
+      const baseY = height * 0.72;
+
+      for (let i = 0; i < 25; i++) {
+
+        const x =
+          width * 0.2 +
+          Math.random() * width * 0.6;
+
+        const flameHeight =
+          20 +
+          Math.random() * 50 +
+          currentHeat * 0.3;
+
+        ctx.globalAlpha = 0.15 + Math.random() * 0.2;
+
+        ctx.fillStyle = "#ff6a1a";
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, baseY);
+
+        ctx.quadraticCurveTo(
+          x - 10,
+          baseY - flameHeight * 0.5,
+          x,
+          baseY - flameHeight
+        );
+
+        ctx.quadraticCurveTo(
+          x + 10,
+          baseY - flameHeight * 0.5,
+          x,
+          baseY
+        );
+
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
+    function updateUI() {
+
+      currentHeat =
+        lerp(currentHeat, targetHeat, 0.05);
+
+      currentForce =
+        lerp(currentForce, targetForce, 0.08);
+
+      impact =
+        lerp(impact, 0, 0.12);
+
+      deformation =
+        lerp(deformation, 0, 0.08);
+
+      const state =
+        getTemperatureState(currentHeat);
+
+      heatValue.textContent =
+        `${Math.round(currentHeat)}%`;
+
+      forceValue.textContent =
+        `${Math.round(currentForce)}%`;
+
+      temperatureValue.textContent =
+        `${Math.round(currentHeat)}%`;
+
+      temperatureState.textContent =
+        state;
+
+      metal.style.setProperty(
+        "--heat",
+        currentHeat
+      );
+
+      metal.style.setProperty(
+        "--deformation",
+        `${deformation}px`
+      );
+
+      hammer.style.setProperty(
+        "--impact",
+        impact
+      );
+    }
+
+    function animate() {
+
+      ctx.clearRect(0, 0, width, height);
+
+      updateUI();
+
+      drawBackground();
+      drawGlow();
+      drawFlames();
+      drawRipples();
+      drawSparks();
+
+      requestAnimationFrame(animate);
+    }
+
+    heatSlider.addEventListener("input", () => {
+      targetHeat = Number(heatSlider.value);
+    });
+
+    forceSlider.addEventListener("input", () => {
+      targetForce = Number(forceSlider.value);
+    });
+
+    strikeButton.addEventListener(
+      "click",
+      strike
+    );
+
+    coolButton.addEventListener(
+      "click",
+      coolMetal
+    );
+
+    resetButton.addEventListener(
+      "click",
+      resetForge
+    );
+
+    document.addEventListener("keydown", (event) => {
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        strike();
+      }
+
+      if (event.key.toLowerCase() === "c") {
+        coolMetal();
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        resetForge();
+      }
+    });
+
+    canvas.addEventListener("click", strike);
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+    animate();
+  </script>
+
+</body>
+</html>

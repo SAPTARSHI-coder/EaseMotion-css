@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Reveal Tall Container Bug Fix Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+    }
+    .hero {
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e1b4b, #0f172a);
+      text-align: center;
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      color: #94a3b8;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .scroll-indicator {
+      margin-top: 40px;
+      color: #8b5cf6;
+      font-weight: 600;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+    .section-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+    
+    /* VERY TALL CONTAINER (Taller than Viewport - e.g., 140vh) */
+    .tall-container {
+      height: 140vh;
+      background: #1e293b;
+      border: 2px dashed #475569;
+      border-radius: 12px;
+      margin-bottom: 100px;
+      padding: 40px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .tall-header {
+      border-bottom: 1px solid #334155;
+      padding-bottom: 15px;
+    }
+    .tall-header h2 {
+      margin: 0;
+      color: #fb7185;
+    }
+    .tall-footer {
+      border-top: 1px solid #334155;
+      padding-top: 15px;
+      text-align: right;
+      color: #64748b;
+    }
+    .tag {
+      background: #e11d48;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO SECTION -->
+  <div class="hero">
+    <h1>Scroll Reveal Tall Container Fix</h1>
+    <p>
+      <strong>Issue Fixed:</strong> In the original implementation, the observer utilized a hardcoded `threshold: 0.15`. If an element's height was larger than the viewport, 15% of it could never fit in the viewport at once, keeping the element permanently hidden (`opacity: 0`).
+      <br><br>
+      Scroll down to see the tall dashed container. The reveal animation will trigger successfully as soon as it enters the viewport.
+    </p>
+    <div class="scroll-indicator">↓↓ Scroll Down ↓↓</div>
+  </div>
+
+  <!-- CONTENT SECTION WITH TALL CONTAINERS -->
+  <div class="section-wrap">
+    
+    <!-- This container is 140vh tall. With 0.15 threshold, it would stay invisible! -->
+    <div class="tall-container reveal-hn reveal-up-hn">
+      <div class="tall-header">
+        <span class="tag">FIXED BEHAVIOR</span>
+        <h2>Super Tall Container (140vh Height)</h2>
+        <p style="color: #cbd5e1; margin-top: 10px;">
+          Because this box is 140% of the viewport height, a 15% intersection threshold requires 21% of the viewport to be occupied by it, which works but is problematic when combined with other elements or offsets. If the container is 300vh, 15% is 45vh. In landscape or mobile views, it completely breaks!
+          <br><br>
+          Our updated script fixes this by lowering the threshold to 0.01 (1%), ensuring it reveals smoothly when the top edges intersect.
+        </p>
+      </div>
+      
+      <div style="background: #0f172a; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #334155; margin: 40px 0;">
+        <h3 style="color: #38bdf8; margin: 0 0 10px 0;">Mid-Container Content</h3>
+        <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">Scroll further to see the bottom of this tall section.</p>
+      </div>
+
+      <div class="tall-footer">
+        <span>End of Section 1 (140vh)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REVEAL SCRIPT WITH THE FIX -->
+  <script>
+    (function () {
+      'use strict';
+
+      const revealClass = 'reveal-hn';
+      const activeClass = 'reveal-active-hn';
+
+      function isCentered(el) {
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        return rect.top < vh * 0.85 && rect.bottom > 0;
+      }
+
+      // Check if user prefers reduced motion
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) return;
+
+      const supportsObserver = 'IntersectionObserver' in window;
+
+      if (supportsObserver) {
+        // FIXED: Lowered threshold from 0.15 to 0.01 to support tall elements
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add(activeClass);
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.01 }
+        );
+
+        const ready = function () {
+          const els = document.querySelectorAll('.' + revealClass);
+          Array.prototype.forEach.call(els, function (el) {
+            if (isCentered(el)) {
+              el.classList.add(activeClass);
+            } else {
+              observer.observe(el);
+            }
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', ready);
+        } else {
+          ready();
+        }
+      } else {
+        // Fallback for browsers without observer
+        const readyFallback = function () {
+          const els = document.querySelectorAll('.' + revealClass);
+          Array.prototype.forEach.call(els, function (el) {
+            el.classList.add(activeClass);
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', readyFallback);
+        } else {
+          readyFallback();
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

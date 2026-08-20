@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Verification Input — EaseMotion CSS</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="demo-wrapper">
+
+      <!-- Card -->
+      <div class="otp-card">
+        <div class="otp-card__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="11" width="14" height="10" rx="2"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+        </div>
+
+        <h1 class="otp-card__title">Verify your identity</h1>
+        <p class="otp-card__subtitle">
+          Enter the 6-digit code sent to
+          <strong>ni***@gmail.com</strong>
+        </p>
+
+        <!-- Status live region for screen readers -->
+        <div
+          class="otp-sr-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          id="otp-status"
+        ></div>
+
+        <!-- OTP input group -->
+        <form
+          class="otp-form"
+          id="otp-form"
+          autocomplete="off"
+          novalidate
+          aria-label="One-time password entry"
+        >
+          <div class="otp-group" id="otp-group" role="group" aria-label="6-digit code">
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 1" autocomplete="one-time-code" />
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 2" />
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 3" />
+
+            <!-- Visual separator -->
+            <span class="otp-sep" aria-hidden="true">—</span>
+
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 4" />
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 5" />
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]"
+                   maxlength="1" aria-label="Digit 6" />
+          </div>
+
+          <!-- Success checkmark (hidden until correct) -->
+          <div class="otp-success" id="otp-success" aria-hidden="true">
+            <svg class="otp-success__icon" viewBox="0 0 52 52"
+                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle class="otp-success__circle" cx="26" cy="26" r="25" fill="none"/>
+              <path  class="otp-success__check"  fill="none"
+                     d="M14 27 l8 8 l16 -16"/>
+            </svg>
+            <p class="otp-success__text">Verified!</p>
+          </div>
+
+          <button class="otp-submit" type="submit" id="otp-submit">
+            Verify Code
+          </button>
+        </form>
+
+        <!-- Resend row -->
+        <p class="otp-resend">
+          Didn't receive a code?
+          <button class="otp-resend__btn" type="button" id="resend-btn">
+            Resend
+          </button>
+          <span class="otp-resend__timer" id="resend-timer" aria-live="polite">
+            in <span id="resend-countdown">30</span>s
+          </span>
+        </p>
+      </div>
+
+      <!-- Demo hint card -->
+      <div class="demo-hint">
+        <p class="demo-hint__title">Try these to see each state:</p>
+        <ul class="demo-hint__list">
+          <li>Type any 6 digits → auto-advance between boxes</li>
+          <li>Submit <strong>123456</strong> → success burst + checkmark</li>
+          <li>Submit any <em>other</em> 6 digits → shake + error glow</li>
+          <li>Paste a 6-digit number → fills all boxes instantly</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <script>
+    (function () {
+      const CORRECT_CODE = '123456';
+
+      const form      = document.getElementById('otp-form');
+      const group     = document.getElementById('otp-group');
+      const boxes     = Array.from(group.querySelectorAll('.otp-box'));
+      const submitBtn = document.getElementById('otp-submit');
+      const statusEl  = document.getElementById('otp-status');
+      const successEl = document.getElementById('otp-success');
+
+      /* ── helpers ── */
+      function announce(msg) {
+        statusEl.textContent = '';
+        // brief delay so screen readers re-fire
+        requestAnimationFrame(() => { statusEl.textContent = msg; });
+      }
+
+      function getValue() {
+        return boxes.map(b => b.value).join('');
+      }
+
+      function clearBoxes() {
+        boxes.forEach(b => { b.value = ''; b.removeAttribute('data-filled'); });
+        boxes[0].focus();
+      }
+
+      function triggerShake() {
+        group.classList.remove('otp-group--error');
+        // force reflow so animation replays
+        void group.offsetWidth;
+        group.classList.add('otp-group--error');
+        boxes.forEach(b => b.classList.add('otp-box--error'));
+        setTimeout(() => {
+          group.classList.remove('otp-group--error');
+          boxes.forEach(b => b.classList.remove('otp-box--error'));
+        }, 650);
+      }
+
+      function triggerSuccess() {
+        group.classList.add('otp-group--success');
+        boxes.forEach(b => b.classList.add('otp-box--success'));
+        successEl.classList.add('otp-success--visible');
+        successEl.removeAttribute('aria-hidden');
+        submitBtn.disabled = true;
+        submitBtn.style.display = 'none';
+        announce('Code verified successfully!');
+      }
+
+      /* ── keyboard navigation ── */
+      boxes.forEach((box, i) => {
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace') {
+            if (box.value === '' && i > 0) {
+              boxes[i - 1].value = '';
+              boxes[i - 1].removeAttribute('data-filled');
+              boxes[i - 1].focus();
+            } else {
+              box.value = '';
+              box.removeAttribute('data-filled');
+            }
+            e.preventDefault();
+          }
+
+          if (e.key === 'ArrowLeft' && i > 0)  { boxes[i - 1].focus(); e.preventDefault(); }
+          if (e.key === 'ArrowRight' && i < boxes.length - 1) { boxes[i + 1].focus(); e.preventDefault(); }
+        });
+
+        box.addEventListener('input', (e) => {
+          // keep only the last digit typed (handles quick typing)
+          const raw = e.target.value.replace(/\D/g, '');
+          box.value = raw ? raw[raw.length - 1] : '';
+
+          if (box.value) {
+            box.setAttribute('data-filled', '');
+            if (i < boxes.length - 1) {
+              boxes[i + 1].focus();
+            } else {
+              box.blur(); // last digit — dismiss mobile keyboard
+            }
+          } else {
+            box.removeAttribute('data-filled');
+          }
+        });
+
+        box.addEventListener('focus', () => {
+          box.select();
+        });
+
+        /* ── paste handler (on any box) ── */
+        box.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData)
+            .getData('text')
+            .replace(/\D/g, '')
+            .slice(0, 6);
+          text.split('').forEach((ch, idx) => {
+            if (boxes[idx]) {
+              boxes[idx].value = ch;
+              boxes[idx].setAttribute('data-filled', '');
+            }
+          });
+          // focus the box after the last pasted digit (or last box)
+          const nextIndex = Math.min(text.length, boxes.length - 1);
+          boxes[nextIndex].focus();
+        });
+      });
+
+      /* ── form submit ── */
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = getValue();
+
+        if (code.length < 6) {
+          triggerShake();
+          announce('Please enter all 6 digits.');
+          boxes[code.length]?.focus();
+          return;
+        }
+
+        if (code === CORRECT_CODE) {
+          triggerSuccess();
+        } else {
+          triggerShake();
+          announce('Incorrect code. Please try again.');
+          clearBoxes();
+        }
+      });
+
+      /* ── resend timer ── */
+      const resendBtn     = document.getElementById('resend-btn');
+      const resendTimer   = document.getElementById('resend-timer');
+      const countdownEl   = document.getElementById('resend-countdown');
+      let   resendSeconds = 30;
+      let   interval      = null;
+
+      resendBtn.disabled = true;
+
+      function startTimer() {
+        resendSeconds = 30;
+        resendBtn.disabled  = true;
+        resendTimer.style.display = '';
+        countdownEl.textContent = resendSeconds;
+
+        interval = setInterval(() => {
+          resendSeconds--;
+          countdownEl.textContent = resendSeconds;
+          if (resendSeconds <= 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            resendTimer.style.display = 'none';
+          }
+        }, 1000);
+      }
+
+      resendBtn.addEventListener('click', () => {
+        clearBoxes();
+        // reset success state if showing
+        group.classList.remove('otp-group--success');
+        boxes.forEach(b => b.classList.remove('otp-box--success'));
+        successEl.classList.remove('otp-success--visible');
+        successEl.setAttribute('aria-hidden', 'true');
+        submitBtn.disabled = false;
+        submitBtn.style.display = '';
+        announce('A new code has been sent.');
+        startTimer();
+      });
+
+      startTimer();
+    })();
+    </script>
+  </body>
+</html>

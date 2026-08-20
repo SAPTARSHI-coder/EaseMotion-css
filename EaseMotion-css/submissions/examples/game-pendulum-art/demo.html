@@ -1,0 +1,581 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pendulum Art · 🎨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>🎨 Pendulum Art</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">⏱️ Time</span>
+                    <span id="timeDisplay">00:00</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🔄 Rotations</span>
+                    <span id="rotationCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🎨 Colors</span>
+                    <span id="colorCount">1</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label>Length</label>
+                    <input type="range" id="lengthSlider" min="50" max="250" value="150">
+                    <span id="lengthValue">150</span>
+                </div>
+                <div class="control-group">
+                    <label>Speed</label>
+                    <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1.5">
+                    <span id="speedValue">1.5</span>
+                </div>
+                <div class="control-group">
+                    <label>Damping</label>
+                    <input type="range" id="dampingSlider" min="0.98" max="1" step="0.001" value="0.998">
+                    <span id="dampingValue">0.998</span>
+                </div>
+                <div class="control-group color-group">
+                    <label>Color</label>
+                    <input type="color" id="colorPicker" value="#ff6b6b">
+                    <button id="addColorBtn" class="btn-small">+ Add</button>
+                </div>
+                <div class="control-group">
+                    <label>Trail</label>
+                    <input type="range" id="trailSlider" min="10" max="500" step="10" value="200">
+                    <span id="trailValue">200</span>
+                </div>
+                <div class="control-group">
+                    <label>Pendulums</label>
+                    <input type="range" id="pendulumCountSlider" min="1" max="5" step="1" value="1">
+                    <span id="pendulumCountValue">1</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="startBtn" class="btn-primary">▶️ Start</button>
+                <button id="pauseBtn" class="btn-secondary" style="display:none">⏸️ Pause</button>
+                <button id="clearBtn" class="btn-secondary">🗑️ Clear</button>
+                <button id="saveBtn" class="btn-secondary">💾 Save</button>
+                <button id="shareBtn" class="btn-secondary">📤 Share</button>
+                <button id="presetBtn" class="btn-secondary">🎯 Presets</button>
+            </div>
+
+            <!-- Presets Dropdown -->
+            <div id="presetDropdown" class="preset-dropdown" style="display:none">
+                <button class="preset-option" data-preset="spiral">🌀 Spiral</button>
+                <button class="preset-option" data-preset="flower">🌸 Flower</button>
+                <button class="preset-option" data-preset="chaos">🌀 Chaos</button>
+                <button class="preset-option" data-preset="butterfly">🦋 Butterfly</button>
+                <button class="preset-option" data-preset="galaxy">🌌 Galaxy</button>
+            </div>
+
+            <!-- Overlays -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>🎨 Pendulum Art</h2>
+                    <p>Create mesmerizing geometric art with swinging pendulums</p>
+                    <p class="sub-text">Adjust parameters • Watch patterns emerge • Save your art</p>
+                    <button id="startBtnOverlay" class="btn-primary">🎨 Start Creating</button>
+                </div>
+            </div>
+
+            <div id="shareOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>📤 Share Your Art</h2>
+                    <p>Copy the link or save the image</p>
+                    <div class="share-options">
+                        <button id="copyLinkBtn" class="btn-secondary">📋 Copy Link</button>
+                        <button id="downloadImageBtn" class="btn-secondary">💾 Download PNG</button>
+                        <button id="closeShareBtn" class="btn-secondary">✖️ Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== PENDULUM ART GAME ==========
+        class PendulumArt {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Canvas setup for retina
+                this.width = 800;
+                this.height = 600;
+                
+                // State
+                this.isRunning = false;
+                this.isPaused = false;
+                this.time = 0;
+                this.rotations = 0;
+                this.frame = 0;
+                this.lastRotation = 0;
+                
+                // Pendulum parameters
+                this.length = 150;
+                this.speed = 1.5;
+                this.damping = 0.998;
+                this.trailLength = 200;
+                this.pendulumCount = 1;
+                this.currentColor = '#ff6b6b';
+                this.colors = ['#ff6b6b', '#ffd93d', '#6c5ce7', '#4ecdc4', '#ff9f43'];
+                this.colorIndex = 0;
+                
+                // Pendulums
+                this.pendulums = [];
+                this.trails = [];
+                this.points = [];
+                
+                // Presets
+                this.presets = {
+                    spiral: { length: 150, speed: 1.8, damping: 0.999, pendulums: 2, colors: ['#ff6b6b', '#4ecdc4'] },
+                    flower: { length: 120, speed: 2.2, damping: 0.998, pendulums: 3, colors: ['#ffd93d', '#ff6b6b', '#6c5ce7'] },
+                    chaos: { length: 180, speed: 2.5, damping: 0.997, pendulums: 4, colors: ['#ff6b6b', '#ffd93d', '#6c5ce7', '#4ecdc4'] },
+                    butterfly: { length: 100, speed: 1.2, damping: 0.999, pendulums: 2, colors: ['#fd79a8', '#a29bfe'] },
+                    galaxy: { length: 200, speed: 1.0, damping: 0.9995, pendulums: 5, colors: ['#6c5ce7', '#fd79a8', '#4ecdc4', '#ffd93d', '#ff6b6b'] }
+                };
+                
+                // Mouse tracking for drawing
+                this.mouseX = this.width / 2;
+                this.mouseY = this.height / 2;
+                this.isMouseDown = false;
+                
+                // Share data
+                this.shareData = null;
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.pendulums = [];
+                this.trails = [];
+                this.points = [];
+                this.time = 0;
+                this.rotations = 0;
+                this.frame = 0;
+                
+                // Create initial pendulum
+                for (let i = 0; i < this.pendulumCount; i++) {
+                    const angle = (i / this.pendulumCount) * Math.PI * 2;
+                    this.addPendulum(angle);
+                }
+                
+                // Clear canvas
+                this.ctx.fillStyle = '#0f0c29';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                
+                this.updateUI();
+            }
+            
+            addPendulum(angleOffset) {
+                const pivotX = this.width / 2;
+                const pivotY = 100;
+                const angle = Math.PI / 4 + angleOffset || 0;
+                
+                this.pendulums.push({
+                    pivotX: pivotX + (Math.random() - 0.5) * 20,
+                    pivotY: pivotY + (Math.random() - 0.5) * 20,
+                    length: this.length + (Math.random() - 0.5) * 20,
+                    angle: angle + (Math.random() - 0.5) * 0.2,
+                    angularVelocity: 0,
+                    speed: this.speed * (0.8 + Math.random() * 0.4),
+                    damping: this.damping * (0.99 + Math.random() * 0.01),
+                    color: this.colors[this.colorIndex % this.colors.length],
+                    trail: []
+                });
+                
+                this.colorIndex++;
+            }
+            
+            updateUI() {
+                document.getElementById('lengthValue').textContent = this.length;
+                document.getElementById('speedValue').textContent = this.speed.toFixed(1);
+                document.getElementById('dampingValue').textContent = this.damping.toFixed(3);
+                document.getElementById('trailValue').textContent = this.trailLength;
+                document.getElementById('pendulumCountValue').textContent = this.pendulumCount;
+                document.getElementById('colorCount').textContent = this.colors.length;
+            }
+            
+            update() {
+                if (!this.isRunning || this.isPaused) return;
+                
+                this.frame++;
+                this.time += 0.016; // ~60fps
+                
+                // Update each pendulum
+                for (let p of this.pendulums) {
+                    // Physics: simple harmonic motion
+                    const gravity = 9.8;
+                    const angularAcceleration = -(gravity / p.length) * Math.sin(p.angle);
+                    p.angularVelocity += angularAcceleration * 0.016 * p.speed;
+                    p.angularVelocity *= p.damping;
+                    p.angle += p.angularVelocity;
+                    
+                    // Calculate position
+                    const x = p.pivotX + p.length * Math.sin(p.angle);
+                    const y = p.pivotY + p.length * Math.cos(p.angle);
+                    
+                    // Track rotation
+                    const rotation = p.angle / (Math.PI * 2);
+                    if (Math.abs(rotation - this.lastRotation) > 0.5) {
+                        this.rotations++;
+                        this.lastRotation = rotation;
+                    }
+                    
+                    // Add point to trail
+                    p.trail.push({ x, y, color: p.color });
+                    if (p.trail.length > this.trailLength) {
+                        p.trail.shift();
+                    }
+                    
+                    // Draw pendulum
+                    this.drawPendulum(p, x, y);
+                }
+                
+                // Update time display
+                const minutes = Math.floor(this.time / 60);
+                const seconds = Math.floor(this.time % 60);
+                document.getElementById('timeDisplay').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('rotationCount').textContent = this.rotations;
+            }
+            
+            drawPendulum(pendulum, x, y) {
+                const ctx = this.ctx;
+                
+                // Draw trail
+                if (pendulum.trail.length > 1) {
+                    for (let i = 1; i < pendulum.trail.length; i++) {
+                        const alpha = i / pendulum.trail.length;
+                        const width = alpha * 2;
+                        ctx.beginPath();
+                        ctx.moveTo(pendulum.trail[i - 1].x, pendulum.trail[i - 1].y);
+                        ctx.lineTo(pendulum.trail[i].x, pendulum.trail[i].y);
+                        ctx.strokeStyle = pendulum.trail[i].color + Math.floor(alpha * 200).toString(16).padStart(2, '0');
+                        ctx.lineWidth = width;
+                        ctx.stroke();
+                    }
+                }
+                
+                // Draw pendulum arm
+                ctx.beginPath();
+                ctx.moveTo(pendulum.pivotX, pendulum.pivotY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // Draw pivot
+                ctx.beginPath();
+                ctx.arc(pendulum.pivotX, pendulum.pivotY, 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+                
+                // Draw bob with glow
+                const gradient = ctx.createRadialGradient(x - 3, y - 3, 2, x, y, 12);
+                gradient.addColorStop(0, pendulum.color);
+                gradient.addColorStop(1, pendulum.color + '40');
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.shadowColor = pendulum.color;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(x - 2, y - 3, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+            }
+            
+            render() {
+                // Background is drawn once, trails accumulate
+                // Only redraw trails on clear
+            }
+            
+            clearCanvas() {
+                this.ctx.fillStyle = '#0f0c29';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                for (let p of this.pendulums) {
+                    p.trail = [];
+                }
+                this.rotations = 0;
+                this.time = 0;
+                document.getElementById('timeDisplay').textContent = '00:00';
+                document.getElementById('rotationCount').textContent = '0';
+            }
+            
+            gameLoop() {
+                this.update();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            setupEventListeners() {
+                // Start/Stop
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    if (!this.isRunning) {
+                        this.isRunning = true;
+                        this.isPaused = false;
+                        document.getElementById('startBtn').textContent = '⏹️ Stop';
+                        document.getElementById('pauseBtn').style.display = 'inline-block';
+                        document.getElementById('pauseBtn').textContent = '⏸️ Pause';
+                        document.getElementById('startOverlay').style.display = 'none';
+                    } else {
+                        this.isRunning = false;
+                        this.isPaused = false;
+                        document.getElementById('startBtn').textContent = '▶️ Start';
+                        document.getElementById('pauseBtn').style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('startBtnOverlay').addEventListener('click', () => {
+                    this.isRunning = true;
+                    this.isPaused = false;
+                    document.getElementById('startBtn').textContent = '⏹️ Stop';
+                    document.getElementById('pauseBtn').style.display = 'inline-block';
+                    document.getElementById('pauseBtn').textContent = '⏸️ Pause';
+                    document.getElementById('startOverlay').style.display = 'none';
+                });
+                
+                // Pause
+                document.getElementById('pauseBtn').addEventListener('click', () => {
+                    this.isPaused = !this.isPaused;
+                    document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️ Resume' : '⏸️ Pause';
+                });
+                
+                // Clear
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearCanvas();
+                });
+                
+                // Save
+                document.getElementById('saveBtn').addEventListener('click', () => {
+                    this.saveArt();
+                });
+                
+                // Share
+                document.getElementById('shareBtn').addEventListener('click', () => {
+                    document.getElementById('shareOverlay').style.display = 'flex';
+                });
+                
+                document.getElementById('closeShareBtn').addEventListener('click', () => {
+                    document.getElementById('shareOverlay').style.display = 'none';
+                });
+                
+                document.getElementById('copyLinkBtn').addEventListener('click', () => {
+                    this.copyShareLink();
+                });
+                
+                document.getElementById('downloadImageBtn').addEventListener('click', () => {
+                    this.downloadImage();
+                });
+                
+                // Presets
+                document.getElementById('presetBtn').addEventListener('click', () => {
+                    const dropdown = document.getElementById('presetDropdown');
+                    dropdown.style.display = dropdown.style.display === 'none' ? 'flex' : 'none';
+                });
+                
+                document.querySelectorAll('.preset-option').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.applyPreset(btn.dataset.preset);
+                        document.getElementById('presetDropdown').style.display = 'none';
+                    });
+                });
+                
+                // Sliders
+                document.getElementById('lengthSlider').addEventListener('input', (e) => {
+                    this.length = parseInt(e.target.value);
+                    document.getElementById('lengthValue').textContent = this.length;
+                    this.updatePendulums();
+                });
+                
+                document.getElementById('speedSlider').addEventListener('input', (e) => {
+                    this.speed = parseFloat(e.target.value);
+                    document.getElementById('speedValue').textContent = this.speed.toFixed(1);
+                    this.updatePendulums();
+                });
+                
+                document.getElementById('dampingSlider').addEventListener('input', (e) => {
+                    this.damping = parseFloat(e.target.value);
+                    document.getElementById('dampingValue').textContent = this.damping.toFixed(3);
+                    this.updatePendulums();
+                });
+                
+                document.getElementById('trailSlider').addEventListener('input', (e) => {
+                    this.trailLength = parseInt(e.target.value);
+                    document.getElementById('trailValue').textContent = this.trailLength;
+                    for (let p of this.pendulums) {
+                        while (p.trail.length > this.trailLength) {
+                            p.trail.shift();
+                        }
+                    }
+                });
+                
+                document.getElementById('pendulumCountSlider').addEventListener('input', (e) => {
+                    this.pendulumCount = parseInt(e.target.value);
+                    document.getElementById('pendulumCountValue').textContent = this.pendulumCount;
+                    this.resetPendulums();
+                });
+                
+                // Color picker
+                document.getElementById('colorPicker').addEventListener('input', (e) => {
+                    this.currentColor = e.target.value;
+                    if (this.pendulums.length > 0) {
+                        this.pendulums[this.pendulums.length - 1].color = this.currentColor;
+                    }
+                });
+                
+                document.getElementById('addColorBtn').addEventListener('click', () => {
+                    if (!this.colors.includes(this.currentColor)) {
+                        this.colors.push(this.currentColor);
+                        document.getElementById('colorCount').textContent = this.colors.length;
+                    }
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.isRunning) {
+                            document.getElementById('pauseBtn').click();
+                        } else {
+                            document.getElementById('startBtn').click();
+                        }
+                    }
+                    if (e.key === 'c' || e.key === 'C') {
+                        document.getElementById('clearBtn').click();
+                    }
+                    if (e.key === 's' || e.key === 'S') {
+                        document.getElementById('saveBtn').click();
+                    }
+                });
+            }
+            
+            updatePendulums() {
+                for (let p of this.pendulums) {
+                    p.length = this.length + (Math.random() - 0.5) * 20;
+                    p.speed = this.speed * (0.8 + Math.random() * 0.4);
+                    p.damping = this.damping * (0.99 + Math.random() * 0.01);
+                }
+            }
+            
+            resetPendulums() {
+                this.pendulums = [];
+                this.colorIndex = 0;
+                for (let i = 0; i < this.pendulumCount; i++) {
+                    this.addPendulum((i / this.pendulumCount) * Math.PI * 2);
+                }
+                this.clearCanvas();
+            }
+            
+            applyPreset(name) {
+                const preset = this.presets[name];
+                if (!preset) return;
+                
+                this.length = preset.length;
+                this.speed = preset.speed;
+                this.damping = preset.damping;
+                this.pendulumCount = preset.pendulums;
+                this.colors = [...preset.colors];
+                
+                document.getElementById('lengthSlider').value = this.length;
+                document.getElementById('lengthValue').textContent = this.length;
+                document.getElementById('speedSlider').value = this.speed;
+                document.getElementById('speedValue').textContent = this.speed.toFixed(1);
+                document.getElementById('dampingSlider').value = this.damping;
+                document.getElementById('dampingValue').textContent = this.damping.toFixed(3);
+                document.getElementById('pendulumCountSlider').value = this.pendulumCount;
+                document.getElementById('pendulumCountValue').textContent = this.pendulumCount;
+                document.getElementById('colorCount').textContent = this.colors.length;
+                
+                this.resetPendulums();
+            }
+            
+            saveArt() {
+                const dataURL = this.canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `pendulum-art-${Date.now()}.png`;
+                link.href = dataURL;
+                link.click();
+            }
+            
+            downloadImage() {
+                this.saveArt();
+                document.getElementById('shareOverlay').style.display = 'none';
+            }
+            
+            copyShareLink() {
+                const dataURL = this.canvas.toDataURL('image/png');
+                const blob = this.dataURLToBlob(dataURL);
+                const file = new File([blob], `pendulum-art-${Date.now()}.png`, { type: 'image/png' });
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Pendulum Art',
+                        text: 'Check out my pendulum art!',
+                        files: [file]
+                    }).catch(() => {});
+                } else {
+                    // Fallback: copy image to clipboard
+                    navigator.clipboard.write([
+                        new ClipboardItem({
+                            'image/png': blob
+                        })
+                    ]).then(() => {
+                        alert('Image copied to clipboard!');
+                    }).catch(() => {
+                        // Fallback: copy data URL
+                        navigator.clipboard.writeText(dataURL).then(() => {
+                            alert('Image data URL copied to clipboard!');
+                        });
+                    });
+                }
+                
+                document.getElementById('shareOverlay').style.display = 'none';
+            }
+            
+            dataURLToBlob(dataURL) {
+                const arr = dataURL.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            }
+            
+            // Animation for drawing patterns
+            drawPattern() {
+                // This is handled in the update loop
+            }
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new PendulumArt();
+        });
+    </script>
+</body>
+</html>

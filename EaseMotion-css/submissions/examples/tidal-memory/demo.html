@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidal Memory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="tidal-app">
+  <div class="header">
+    <span>🌊</span>
+    <div>
+      <h1>Tidal Memory</h1>
+      <p>Let memories drift with the tide</p>
+    </div>
+  </div>
+
+  <div class="ocean" id="ocean">
+    <canvas id="canvas"></canvas>
+
+    <div class="ocean-overlay">
+      <div class="counter">
+        <span>💭 Memories</span>
+        <strong id="count">0</strong>
+      </div>
+
+      <div class="message" id="message">
+        Click the ocean to create a memory
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Tide State</label>
+      <div class="states">
+        <button class="state active" data-state="calm">🌊 Calm</button>
+        <button class="state" data-state="rising">🌅 Rising</button>
+        <button class="state" data-state="high">🌊 High</button>
+        <button class="state" data-state="ebb">🌙 Ebb</button>
+      </div>
+    </div>
+
+    <div class="control">
+      <label>Tide Intensity <span id="intensityValue">50%</span></label>
+      <input id="intensity" type="range" min="0" max="100" value="50">
+    </div>
+
+    <div class="actions">
+      <button id="add">💭 Create Memory</button>
+      <button id="reset">↻ Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const ocean = document.getElementById("ocean");
+const count = document.getElementById("count");
+const message = document.getElementById("message");
+const intensity = document.getElementById("intensity");
+const intensityValue = document.getElementById("intensityValue");
+
+let memories = [];
+let particles = [];
+let tide = "calm";
+let tideIntensity = 0.5;
+let time = 0;
+
+const states = {
+  calm: { speed: 0.4, wave: 8 },
+  rising: { speed: 0.7, wave: 14 },
+  high: { speed: 1.1, wave: 22 },
+  ebb: { speed: 0.25, wave: 5 }
+};
+
+function resize() {
+  canvas.width = ocean.clientWidth;
+  canvas.height = ocean.clientHeight;
+}
+
+function createParticles() {
+  particles = [];
+
+  for (let i = 0; i < 35; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.4 + 0.1
+    });
+  }
+}
+
+function createMemory(x, y) {
+  if (memories.length >= 50) return;
+
+  memories.push({
+    x,
+    y,
+    baseY: y,
+    size: Math.random() * 12 + 8,
+    phase: Math.random() * Math.PI * 2,
+    speed: Math.random() * 0.5 + 0.2,
+    life: 1
+  });
+
+  count.textContent = memories.length;
+  message.textContent = "A new memory is drifting...";
+}
+
+function drawWaves() {
+  const state = states[tide];
+  const waveHeight = state.wave * tideIntensity;
+
+  for (let layer = 0; layer < 3; layer++) {
+    ctx.beginPath();
+
+    const base = canvas.height * (0.65 + layer * 0.1);
+
+    for (let x = 0; x <= canvas.width; x += 8) {
+      const y =
+        base +
+        Math.sin(x * 0.012 + time * state.speed + layer) *
+        waveHeight;
+
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.closePath();
+
+    ctx.globalAlpha = 0.16;
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    p.y -= p.speed;
+
+    if (p.y < 0) {
+      p.y = canvas.height;
+      p.x = Math.random() * canvas.width;
+    }
+
+    const alpha = 0.2 + Math.sin(time * 2 + p.phase) * 0.15;
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(
+      p.x + Math.sin(time + p.phase) * 4,
+      p.y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1;
+}
+
+function drawMemories() {
+  memories.forEach(memory => {
+    memory.phase += 0.015 * memory.speed;
+
+    const x =
+      memory.x +
+      Math.sin(memory.phase) * 20 * tideIntensity;
+
+    const y =
+      memory.baseY -
+      Math.sin(memory.phase * 0.7) * 18;
+
+    const glow = 10 + Math.sin(memory.phase) * 5;
+
+    ctx.shadowBlur = glow;
+    ctx.shadowColor = "#ffffff";
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+
+    ctx.beginPath();
+    ctx.arc(x, y, memory.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+  });
+}
+
+function animate() {
+  time += 0.01;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawWaves();
+  drawParticles();
+  drawMemories();
+
+  requestAnimationFrame(animate);
+}
+
+ocean.addEventListener("click", e => {
+  const rect = ocean.getBoundingClientRect();
+  createMemory(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+document.getElementById("add").addEventListener("click", () => {
+  createMemory(
+    canvas.width * 0.3 + Math.random() * canvas.width * 0.4,
+    canvas.height * 0.35 + Math.random() * canvas.height * 0.3
+  );
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  memories = [];
+  count.textContent = "0";
+  message.textContent = "The ocean is calm again...";
+});
+
+document.querySelectorAll(".state").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".state")
+      .forEach(b => b.classList.remove("active"));
+
+    button.classList.add("active");
+    tide = button.dataset.state;
+    message.textContent = `${button.textContent} tide is flowing...`;
+  });
+});
+
+intensity.addEventListener("input", () => {
+  tideIntensity = intensity.value / 100;
+  intensityValue.textContent = `${intensity.value}%`;
+});
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") {
+    e.preventDefault();
+    document.getElementById("add").click();
+  }
+
+  if (e.key.toLowerCase() === "r") {
+    document.getElementById("reset").click();
+  }
+});
+
+window.addEventListener("resize", resize);
+
+resize();
+createParticles();
+animate();
+</script>
+
+</body>
+</html>

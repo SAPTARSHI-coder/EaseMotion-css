@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix #60878 — Password Strength Meter ARIA Semantics | EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Fix #60878 — Password Strength Meter ARIA Semantics</h1>
+        <p>
+          Type in either field, or use the buttons below each panel to change
+          strength. Turn on a screen reader (or check the accessibility tree
+          in DevTools) to hear the difference.
+        </p>
+      </div>
+      <button class="toggle-btn" id="theme-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <div class="panels">
+      <!-- ============================================================ -->
+      <!-- BEFORE: current markup, no semantic roles/values             -->
+      <!-- ============================================================ -->
+      <section class="panel">
+        <span class="badge bug">❌ Before (Bug)</span>
+        <p class="panel-note">
+          The bar is a plain, unlabeled <code>&lt;div&gt;</code>. Screen
+          readers announce nothing when strength changes.
+        </p>
+
+        <div class="demo-box">
+          <label for="pw-before" class="field-label">Password</label>
+          <input
+            id="pw-before"
+            class="pw-input"
+            type="password"
+            placeholder="Type a password…"
+            data-target="before"
+          />
+
+          <div class="ease-password-strength">
+            <div class="ease-password-strength-bar" id="bar-before"></div>
+            <div class="ease-password-strength-label">
+              <span>Strength</span>
+              <span id="text-before">Empty</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-buttons" data-target="before">
+          <button type="button" data-level="weak">Weak</button>
+          <button type="button" data-level="medium">Medium</button>
+          <button type="button" data-level="strong">Strong</button>
+        </div>
+
+        <pre class="code-peek"><code>&lt;div class="ease-password-strength"&gt;
+  &lt;div class="ease-password-strength-bar is-weak"&gt;&lt;/div&gt;
+  &lt;div class="ease-password-strength-label"&gt;
+    &lt;span&gt;Strength&lt;/span&gt;
+    &lt;span&gt;Weak&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- AFTER: role="progressbar" + live ARIA values                 -->
+      <!-- ============================================================ -->
+      <section class="panel">
+        <span class="badge fix">✅ After (Fix)</span>
+        <p class="panel-note">
+          The bar exposes <code>role="progressbar"</code> with live
+          <code>aria-valuenow</code>/<code>aria-valuetext</code>, and the
+          label is an <code>aria-live</code> region.
+        </p>
+
+        <div class="demo-box">
+          <label for="pw-after" class="field-label">Password</label>
+          <input
+            id="pw-after"
+            class="pw-input"
+            type="password"
+            placeholder="Type a password…"
+            data-target="after"
+          />
+
+          <div class="ease-password-strength">
+            <div
+              class="ease-password-strength-bar"
+              id="bar-after"
+              role="progressbar"
+              aria-label="Password strength"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Empty"
+            ></div>
+            <div class="ease-password-strength-label">
+              <span id="label-caption-after">Strength</span>
+              <span id="text-after" aria-live="polite">Empty</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-buttons" data-target="after">
+          <button type="button" data-level="weak">Weak</button>
+          <button type="button" data-level="medium">Medium</button>
+          <button type="button" data-level="strong">Strong</button>
+        </div>
+
+        <pre class="code-peek"><code>&lt;div
+  class="ease-password-strength-bar is-weak"
+  role="progressbar"
+  aria-label="Password strength"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="25"
+  aria-valuetext="Weak"
+&gt;&lt;/div&gt;
+&lt;div class="ease-password-strength-label"&gt;
+  &lt;span&gt;Strength&lt;/span&gt;
+  &lt;span aria-live="polite"&gt;Weak&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // --------------------------------------------------------------------
+    // Demo wiring only. Illustrates how a real implementation would keep
+    // the ARIA values (aria-valuenow / aria-valuetext) in sync with the
+    // visual state whenever strength changes — whether from typing or
+    // (in this demo) the preset buttons.
+    // --------------------------------------------------------------------
+    const LEVELS = {
+      weak: { className: "is-weak", value: 25, label: "Weak" },
+      medium: { className: "is-medium", value: 60, label: "Medium" },
+      strong: { className: "is-strong", value: 100, label: "Strong" },
+    };
+
+    function applyLevel(target, levelKey) {
+      const bar = document.getElementById(`bar-${target}`);
+      const text = document.getElementById(`text-${target}`);
+      const level = LEVELS[levelKey];
+
+      bar.classList.remove("is-weak", "is-medium", "is-strong");
+
+      if (level) {
+        bar.classList.add(level.className);
+        text.textContent = level.label;
+
+        // Only the "after" bar carries these attributes, but setting them
+        // unconditionally is harmless for "before" (they're simply ignored
+        // since that markup has no role="progressbar").
+        bar.setAttribute("aria-valuenow", level.value);
+        bar.setAttribute("aria-valuetext", level.label);
+      } else {
+        text.textContent = "Empty";
+        bar.setAttribute("aria-valuenow", 0);
+        bar.setAttribute("aria-valuetext", "Empty");
+      }
+    }
+
+    // Preset buttons
+    document.querySelectorAll(".demo-buttons").forEach((group) => {
+      const target = group.dataset.target;
+      group.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => applyLevel(target, btn.dataset.level));
+      });
+    });
+
+    // Simple live typing → strength mapping (length-based, for demo purposes)
+    function strengthFromPassword(pw) {
+      if (!pw) return null;
+      if (pw.length < 6) return "weak";
+      if (pw.length < 10) return "medium";
+      return "strong";
+    }
+
+    document.querySelectorAll(".pw-input").forEach((input) => {
+      input.addEventListener("input", () => {
+        applyLevel(input.dataset.target, strengthFromPassword(input.value));
+      });
+    });
+
+    // Dark mode toggle
+    const btn = document.getElementById("theme-toggle");
+    const html = document.documentElement;
+
+    btn.addEventListener("click", function () {
+      const isDark = html.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        html.removeAttribute("data-theme");
+        btn.textContent = "🌙 Dark Mode";
+      } else {
+        html.setAttribute("data-theme", "dark");
+        btn.textContent = "☀️ Light Mode";
+      }
+    });
+  </script>
+</body>
+</html>

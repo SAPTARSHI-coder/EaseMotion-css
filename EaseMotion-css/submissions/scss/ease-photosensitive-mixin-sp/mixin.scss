@@ -1,0 +1,257 @@
+// ============================================================
+// EaseMotion Photosensitive-Safe Animation Mixin
+// submissions/scss/ease-photosensitive-mixin-sp/mixin.scss
+// Contributor suffix: sp
+// Resolves: Issue #44487
+// ============================================================
+//
+// Import in your project:
+//
+//   @use 'path/to/mixin' as psm;
+//   .badge { @include psm.photosensitive-pulse(); }
+//
+// Guidelines referenced:
+//   - WCAG 2.3.1 Three Flashes or Below Threshold
+//   - Max ~3 flashes per second (≥ 333ms between state changes)
+//   - Prefer opacity floors ≥ 0.55 and limited iteration counts
+// ============================================================
+
+// ── Configurable guardrails ───────────────────────────────────
+
+$psm-flash-interval-min: 0.5s !default;  // caps effective rate at ~2 Hz
+$psm-duration-floor: 1s !default;         // minimum full animation cycle
+$psm-max-iterations: 3 !default;          // never infinite in mixin output
+$psm-opacity-floor: 0.55 !default;        // minimum opacity in keyframes
+$psm-opacity-ceiling: 1 !default;
+$psm-max-scale-delta: 0.35 !default;      // max scale increase from 1.0
+$psm-reduced-motion-fallback: true !default;
+
+// ── Validation helpers ────────────────────────────────────────
+
+/// Clamp duration so cycles are not faster than the flash floor.
+@function psm-safe-duration($duration) {
+  @if $duration < $psm-duration-floor {
+    @return $psm-duration-floor;
+  }
+  @return $duration;
+}
+
+/// Replace `infinite` with a finite cap; clamp high iteration counts.
+@function psm-safe-iterations($iterations) {
+  @if $iterations == infinite {
+    @return $psm-max-iterations;
+  }
+  @if $iterations > $psm-max-iterations {
+    @return $psm-max-iterations;
+  }
+  @return $iterations;
+}
+
+/// Ensure opacity never drops below the photosensitive floor.
+@function psm-safe-opacity($value) {
+  @if $value < $psm-opacity-floor {
+    @return $psm-opacity-floor;
+  }
+  @if $value > $psm-opacity-ceiling {
+    @return $psm-opacity-ceiling;
+  }
+  @return $value;
+}
+
+/// Limit scale pulses so elements do not balloon rapidly.
+@function psm-safe-scale($scale) {
+  $max-scale: 1 + $psm-max-scale-delta;
+  @if $scale > $max-scale {
+    @return $max-scale;
+  }
+  @return $scale;
+}
+
+// ── Reduced-motion fallback ───────────────────────────────────
+
+@mixin psm-reduced-motion-fallback {
+  @if $psm-reduced-motion-fallback {
+    @media (prefers-reduced-motion: reduce) {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
+// ── Core mixin ────────────────────────────────────────────────
+
+/// Wrap any named @keyframes animation with photosensitive-safe defaults.
+/// Duration, iterations, and reduced-motion fallback are enforced automatically.
+@mixin photosensitive-safe-animation(
+  $name,
+  $duration: 2s,
+  $easing: ease-in-out,
+  $delay: 0s,
+  $iterations: 2,
+  $fill-mode: both
+) {
+  $safe-duration: psm-safe-duration($duration);
+  $safe-iterations: psm-safe-iterations($iterations);
+
+  animation-name: $name;
+  animation-duration: $safe-duration;
+  animation-timing-function: $easing;
+  animation-delay: $delay;
+  animation-iteration-count: $safe-iterations;
+  animation-fill-mode: $fill-mode;
+
+  @include psm-reduced-motion-fallback;
+}
+
+// ── Safe keyframe generators ──────────────────────────────────
+
+/// Capped-opacity pulse — opacity never drops below $min-opacity.
+@mixin psm-keyframes-pulse($name, $min-opacity: $psm-opacity-floor) {
+  $safe-min: psm-safe-opacity($min-opacity);
+
+  @keyframes #{$name} {
+    0%,
+    100% {
+      opacity: $psm-opacity-ceiling;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: $safe-min;
+      transform: scale(psm-safe-scale(1.08));
+    }
+  }
+}
+
+/// Safer ping ring — slower expand, softer fade, limited scale.
+@mixin psm-keyframes-ping(
+  $name,
+  $min-opacity: 0.72,
+  $max-scale: 1.35
+) {
+  $safe-min: psm-safe-opacity($min-opacity);
+  $safe-scale: psm-safe-scale($max-scale);
+
+  @keyframes #{$name} {
+    0% {
+      opacity: $psm-opacity-ceiling;
+      transform: scale(1);
+    }
+
+    70% {
+      opacity: $safe-min;
+      transform: scale($safe-scale);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale($safe-scale);
+    }
+  }
+}
+
+/// Gentle attention shake — small rotation, no opacity strobing.
+@mixin psm-keyframes-attention($name, $angle: 4deg) {
+  @keyframes #{$name} {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+
+    25% {
+      transform: rotate($angle);
+    }
+
+    75% {
+      transform: rotate(-$angle);
+    }
+  }
+}
+
+/// Capped fade flash — for alerts that must blink but stay seizure-safe.
+@mixin psm-keyframes-soft-flash($name, $min-opacity: 0.78) {
+  $safe-min: psm-safe-opacity($min-opacity);
+
+  @keyframes #{$name} {
+    0%,
+    100% {
+      opacity: $psm-opacity-ceiling;
+      background-color: inherit;
+    }
+
+    50% {
+      opacity: $safe-min;
+    }
+  }
+}
+
+// ── Convenience recipes ───────────────────────────────────────
+
+/// One-line safe pulse: generates keyframes + applies mixin.
+@mixin photosensitive-pulse(
+  $name: psm-safe-pulse,
+  $duration: 2.4s,
+  $iterations: 2,
+  $min-opacity: $psm-opacity-floor
+) {
+  @include psm-keyframes-pulse($name, $min-opacity);
+  @include photosensitive-safe-animation($name, $duration, ease-in-out, 0s, $iterations);
+}
+
+/// One-line safe ping for notification badges.
+@mixin photosensitive-ping(
+  $name: psm-safe-ping,
+  $duration: 2.4s,
+  $iterations: 2
+) {
+  @include psm-keyframes-ping($name);
+  @include photosensitive-safe-animation($name, $duration, ease-out, 0s, $iterations);
+}
+
+/// One-line gentle shake for form errors (finite iterations).
+@mixin photosensitive-attention(
+  $name: psm-safe-attention,
+  $duration: 1.2s,
+  $iterations: 2,
+  $angle: 4deg
+) {
+  @include psm-keyframes-attention($name, $angle);
+  @include photosensitive-safe-animation($name, $duration, ease-in-out, 0s, $iterations);
+}
+
+/// One-line soft flash for inline alerts (opacity-capped).
+@mixin photosensitive-soft-flash(
+  $name: psm-safe-flash,
+  $duration: 1.8s,
+  $iterations: 2,
+  $min-opacity: 0.78
+) {
+  @include psm-keyframes-soft-flash($name, $min-opacity);
+  @include photosensitive-safe-animation($name, $duration, ease-in-out, 0s, $iterations);
+}
+
+// ── Demo output classes (used by demo.html) ──────────────────
+
+@include psm-keyframes-pulse(psm-kf-pulse);
+@include psm-keyframes-ping(psm-kf-ping);
+@include psm-keyframes-attention(psm-kf-attention);
+@include psm-keyframes-soft-flash(psm-kf-flash);
+
+.psm-demo-pulse-safe {
+  @include photosensitive-safe-animation(psm-kf-pulse, 2.4s, ease-in-out, 0s, 2);
+}
+
+.psm-demo-ping-safe {
+  @include photosensitive-safe-animation(psm-kf-ping, 2.4s, ease-out, 0s, 2);
+}
+
+.psm-demo-attention-safe {
+  @include photosensitive-safe-animation(psm-kf-attention, 1.2s, ease-in-out, 0s, 2);
+}
+
+.psm-demo-flash-safe {
+  @include photosensitive-safe-animation(psm-kf-flash, 1.8s, ease-in-out, 0s, 2);
+}

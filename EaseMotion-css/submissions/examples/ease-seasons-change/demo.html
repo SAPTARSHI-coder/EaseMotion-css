@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seasons Change · Tree Cycles Through Seasons</title>
+    <meta name="description" content="Interactive tree that cycles through four seasons with changing colors, leaves, and atmospheric effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌳 SEASONS CHANGE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="seasonsCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="cycle-btn" id="cycleBtn">🍃 CYCLE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Leaves</label>
+                <input type="range" id="leavesSlider" min="50" max="300" value="150">
+                <span id="leavesLabel">150</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌳 SEASONS CHANGE</span>
+            <small>spring · summer · fall · winter</small>
+        </div>
+        <div class="hint">
+            <span>🍃 click to cycle through the seasons</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('seasonsCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const cycleBtn = document.getElementById('cycleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const leavesSlider = document.getElementById('leavesSlider');
+            const leavesLabel = document.getElementById('leavesLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let maxLeaves = 150;
+            let time = 0;
+            let seasonIndex = 0;
+            let transitionProgress = 0;
+            let isTransitioning = false;
+
+            // ---- Seasons ----
+            const seasons = [
+                { name: 'Spring', color: '#4a8a5a', leafColor: '#5aaa6a', bgColor: '#1a3a2a', flowerColor: '#ff6bcd' },
+                { name: 'Summer', color: '#3a7a4a', leafColor: '#4a9a5a', bgColor: '#1a3a2a', flowerColor: '#ffd700' },
+                { name: 'Fall', color: '#8a6a3a', leafColor: '#cc8833', bgColor: '#2a1a0a', flowerColor: '#ff6b35' },
+                { name: 'Winter', color: '#5a6a7a', leafColor: '#8a9aaa', bgColor: '#0a1a2a', flowerColor: '#aaccee' }
+            ];
+
+            // ---- Leaves ----
+            let leaves = [];
+
+            // ---- Leaf Class ----
+            class Leaf {
+                constructor(x, y) {
+                    this.x = x || Math.random() * W;
+                    this.y = y || Math.random() * H;
+                    this.size = 2 + Math.random() * 4;
+                    this.speed = 0.3 + Math.random() * 0.5;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.color = '#4a9a5a';
+                    this.falling = false;
+                    this.fallSpeed = 0.5 + Math.random() * 1;
+                    this.wobble = 0.02 + Math.random() * 0.03;
+                    this.life = 1;
+                }
+
+                update(season) {
+                    const dt = 0.02 * (speed / 5);
+                    const isWinter = season === 'Winter';
+                    const isFall = season === 'Fall';
+                    
+                    if (isWinter || isFall) {
+                        // Leaves fall
+                        this.falling = true;
+                        this.y += this.fallSpeed * dt * 2;
+                        this.x += Math.sin(this.phase + time * 0.01) * this.wobble * dt * 5;
+                        this.phase += this.wobble;
+                        
+                        if (this.y > H + 20) {
+                            this.y = -20;
+                            this.x = Math.random() * W;
+                        }
+                    } else {
+                        // Leaves stay on tree
+                        this.falling = false;
+                        this.x += Math.sin(time * 0.01 + this.phase) * 0.1 * dt;
+                        this.y += Math.cos(time * 0.01 + this.phase) * 0.1 * dt;
+                    }
+                }
+
+                draw(ctx, season) {
+                    const isWinter = season === 'Winter';
+                    const isFall = season === 'Fall';
+                    const alpha = isWinter ? 0.1 : (isFall ? 0.6 + Math.random() * 0.2 : 0.8);
+                    
+                    if (isWinter && Math.random() > 0.3) return;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha * 0.6;
+                    
+                    if (isFall) {
+                        const hues = [30, 40, 50, 60];
+                        const hue = hues[Math.floor(Math.random() * hues.length)];
+                        ctx.fillStyle = `hsla(${hue}, 80%, ${50 + Math.random() * 20}%, ${alpha})`;
+                    } else if (isWinter) {
+                        ctx.fillStyle = `rgba(200, 220, 240, ${alpha * 0.3})`;
+                    } else {
+                        ctx.fillStyle = `hsla(${120 + Math.random() * 20}, 60%, ${50 + Math.random() * 20}%, ${alpha})`;
+                    }
+                    
+                    ctx.shadowColor = 'rgba(100, 200, 100, 0.02)';
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Leaves ----
+            function createLeaves(count) {
+                leaves = [];
+                for (let i = 0; i < count; i++) {
+                    const x = Math.random() * W;
+                    const y = Math.random() * H;
+                    leaves.push(new Leaf(x, y));
+                }
+            }
+
+            // ---- Draw Tree ----
+            function drawTree(ctx, season) {
+                const cx = W / 2;
+                const cy = H - 80;
+                const seasonName = season.name;
+                
+                ctx.save();
+                
+                // Tree shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+                
+                // Trunk
+                const trunkGrad = ctx.createLinearGradient(cx - 15, cy, cx + 15, cy);
+                trunkGrad.addColorStop(0, '#4a3a2a');
+                trunkGrad.addColorStop(0.5, '#5a4a3a');
+                trunkGrad.addColorStop(1, '#3a2a1a');
+                ctx.fillStyle = trunkGrad;
+                ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(cx - 12, cy - 100, 24, 100);
+                
+                // Branches
+                ctx.shadowBlur = 5;
+                ctx.strokeStyle = '#4a3a2a';
+                ctx.lineWidth = 6;
+                const branches = [
+                    { x: 0, y: -60, angle: -0.6, len: 80 },
+                    { x: 0, y: -60, angle: 0.6, len: 80 },
+                    { x: 0, y: -40, angle: -0.3, len: 60 },
+                    { x: 0, y: -40, angle: 0.3, len: 60 },
+                    { x: 0, y: -80, angle: -0.4, len: 50 },
+                    { x: 0, y: -80, angle: 0.4, len: 50 }
+                ];
+                
+                for (let b of branches) {
+                    ctx.beginPath();
+                    ctx.moveTo(cx + b.x, cy + b.y);
+                    const endX = cx + b.x + Math.sin(b.angle) * b.len;
+                    const endY = cy + b.y - Math.cos(b.angle) * b.len;
+                    ctx.quadraticCurveTo(
+                        cx + b.x + Math.sin(b.angle * 0.7) * b.len * 0.5,
+                        cy + b.y - Math.cos(b.angle * 0.7) * b.len * 0.5 - 10,
+                        endX,
+                        endY
+                    );
+                    ctx.stroke();
+                    
+                    // Sub-branches
+                    for (let s = -1; s <= 1; s += 2) {
+                        if (Math.random() < 0.4) {
+                            ctx.beginPath();
+                            ctx.moveTo(endX, endY);
+                            const sAngle = b.angle + s * 0.4;
+                            const sLen = b.len * 0.6;
+                            ctx.quadraticCurveTo(
+                                endX + Math.sin(sAngle * 0.7) * sLen * 0.5,
+                                endY - Math.cos(sAngle * 0.7) * sLen * 0.5,
+                                endX + Math.sin(sAngle) * sLen,
+                                endY - Math.cos(sAngle) * sLen
+                            );
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Canopy
+                ctx.shadowBlur = 0;
+                const leafColor = season.leafColor;
+                const isWinter = seasonName === 'Winter';
+                const isFall = seasonName === 'Fall';
+                
+                if (!isWinter) {
+                    const numClusters = isFall ? 20 : 30;
+                    for (let i = 0; i < numClusters; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = 40 + Math.random() * 60;
+                        const x = cx + Math.cos(angle) * radius;
+                        const y = cy - 60 + Math.sin(angle) * radius * 0.7 - 20;
+                        const size = 20 + Math.random() * 30;
+                        
+                        const grad = ctx.createRadialGradient(
+                            x - size * 0.2, y - size * 0.2, 0,
+                            x, y, size
+                        );
+                        if (isFall) {
+                            const hue = 30 + Math.random() * 40;
+                            grad.addColorStop(0, `hsla(${hue}, 80%, 70%, 0.6)`);
+                            grad.addColorStop(0.5, `hsla(${hue + 10}, 70%, 50%, 0.5)`);
+                            grad.addColorStop(1, `hsla(${hue + 20}, 60%, 30%, 0.3)`);
+                        } else {
+                            const hue = 110 + Math.random() * 30;
+                            grad.addColorStop(0, `hsla(${hue}, 70%, 70%, 0.5)`);
+                            grad.addColorStop(0.5, `hsla(${hue}, 60%, 50%, 0.4)`);
+                            grad.addColorStop(1, `hsla(${hue}, 50%, 30%, 0.2)`);
+                        }
+                        ctx.fillStyle = grad;
+                        ctx.shadowColor = isFall ? 'rgba(200, 150, 50, 0.05)' : 'rgba(100, 200, 100, 0.05)';
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                // Flowers (Spring only)
+                if (seasonName === 'Spring') {
+                    for (let i = 0; i < 15; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = 30 + Math.random() * 50;
+                        const x = cx + Math.cos(angle) * radius;
+                        const y = cy - 50 + Math.sin(angle) * radius * 0.6 - 20;
+                        const size = 3 + Math.random() * 4;
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = `rgba(255, 107, 205, ${0.2 + Math.random() * 0.3})`;
+                        ctx.beginPath();
+                        for (let p = 0; p < 5; p++) {
+                            const a = (p / 5) * Math.PI * 2;
+                            const px = x + Math.cos(a) * size;
+                            const py = y + Math.sin(a) * size;
+                            if (p === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+                
+                // Snow (Winter only)
+                if (isWinter) {
+                    for (let i = 0; i < 30; i++) {
+                        const x = Math.random() * W;
+                        const y = Math.random() * (H - 50);
+                        const size = 1 + Math.random() * 3;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.2})`;
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground(season) {
+                const bgColor = season.bgColor;
+                const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H);
+                const colors = {
+                    'Spring': ['#1a3a2a', '#2a4a3a', '#1a2a1a'],
+                    'Summer': ['#1a3a2a', '#2a5a3a', '#1a2a1a'],
+                    'Fall': ['#2a1a0a', '#3a2a1a', '#1a0a0a'],
+                    'Winter': ['#0a1a2a', '#1a2a3a', '#0a0a1a']
+                };
+                const c = colors[season.name] || ['#0d1a2a', '#0a1520', '#080e18'];
+                grad.addColorStop(0, c[0]);
+                grad.addColorStop(0.5, c[1]);
+                grad.addColorStop(1, c[2]);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Ground
+                const groundColors = {
+                    'Spring': 'rgba(30, 60, 30, 0.2)',
+                    'Summer': 'rgba(30, 60, 30, 0.3)',
+                    'Fall': 'rgba(60, 40, 20, 0.2)',
+                    'Winter': 'rgba(40, 50, 60, 0.1)'
+                };
+                ctx.fillStyle = groundColors[season.name] || 'rgba(20, 40, 60, 0.1)';
+                ctx.fillRect(0, H - 30, W, 30);
+            }
+
+            // ---- Cycle Season ----
+            function cycleSeason() {
+                seasonIndex = (seasonIndex + 1) % seasons.length;
+                const season = seasons[seasonIndex];
+                // Update leaf colors
+                for (let l of leaves) {
+                    l.color = season.leafColor;
+                }
+            }
+
+            // ---- Reset ----
+            function resetSeasons() {
+                seasonIndex = 0;
+                createLeaves(maxLeaves);
+                for (let l of leaves) {
+                    l.color = seasons[0].leafColor;
+                }
+                time = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                const season = seasons[seasonIndex];
+                drawBackground(season);
+                drawTree(ctx, season);
+                
+                // Draw leaves
+                for (let l of leaves) {
+                    l.draw(ctx, season.name);
+                }
+                
+                // Season info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '18px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                const icons = ['🌸', '🌿', '🍂', '❄️'];
+                ctx.fillText(`${icons[seasonIndex]} ${season.name}`, W/2, 20);
+                ctx.font = '13px monospace';
+                ctx.fillText(`Leaves: ${leaves.length}`, W/2, 48);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                const season = seasons[seasonIndex].name;
+                
+                // Update leaves
+                for (let l of leaves) {
+                    l.update(season);
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            leavesSlider.addEventListener('input', function() {
+                maxLeaves = parseInt(this.value);
+                leavesLabel.textContent = maxLeaves;
+                createLeaves(maxLeaves);
+            });
+
+            // ---- Event Listeners ----
+            cycleBtn.addEventListener('click', cycleSeason);
+            resetBtn.addEventListener('click', resetSeasons);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    cycleSeason();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSeasons();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to cycle ----
+            canvas.addEventListener('click', function(e) {
+                cycleSeason();
+            });
+
+            // ---- Initialize ----
+            createLeaves(maxLeaves);
+            render();
+            animate();
+
+            console.log('🌳 Seasons Change · Click Cycle or press Space to change the season!');
+        })();
+    </script>
+</body>
+</html>

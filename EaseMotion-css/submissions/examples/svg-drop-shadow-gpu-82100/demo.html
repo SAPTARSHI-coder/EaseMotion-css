@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Drop Shadow GPU Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">GPU COMPUTE BENCHMARK</span>
+
+      <h1>SVG Drop-Shadow Filter</h1>
+
+      <p>
+        A controlled SVG rendering workload for measuring filter rendering,
+        frame rate, stylesheet size, and execution time.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <section class="controls">
+      <button id="runBenchmark">
+        Run SVG Benchmark
+      </button>
+
+      <span id="message">
+        Ready to measure SVG filter rendering.
+      </span>
+    </section>
+
+    <section class="workload" id="workload">
+      <svg
+        class="shadow-svg"
+        viewBox="0 0 800 400"
+        role="img"
+        aria-label="SVG drop shadow rendering workload"
+      >
+        <defs>
+          <filter
+            id="dropShadow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="12"
+              stdDeviation="12"
+              flood-opacity="0.5"
+            />
+          </filter>
+        </defs>
+
+        <g id="svgObjects">
+          <rect
+            x="100"
+            y="90"
+            width="180"
+            height="130"
+            rx="24"
+            filter="url(#dropShadow)"
+          />
+
+          <circle
+            cx="400"
+            cy="150"
+            r="72"
+            filter="url(#dropShadow)"
+          />
+
+          <rect
+            x="520"
+            y="90"
+            width="180"
+            height="130"
+            rx="24"
+            filter="url(#dropShadow)"
+          />
+
+          <circle
+            cx="250"
+            cy="310"
+            r="52"
+            filter="url(#dropShadow)"
+          />
+
+          <circle
+            cx="550"
+            cy="310"
+            r="52"
+            filter="url(#dropShadow)"
+          />
+        </g>
+      </svg>
+    </section>
+
+    <section class="info-grid">
+      <article>
+        <span>01</span>
+        <h2>SVG Filter</h2>
+        <p>
+          The workload uses an SVG
+          <code>feDropShadow</code>
+          filter across multiple vector objects.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Frame Timing</h2>
+        <p>
+          Animation frames are measured through
+          <code>requestAnimationFrame</code>.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Performance Budget</h2>
+        <p>
+          FPS, CSS bundle size, and execution time are checked against
+          predefined thresholds.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const workload = document.getElementById("workload");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering SVG filter workload";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const rotation = elapsed / 80;
+
+          workload.style.transform =
+            `translate3d(0, 0, 0) rotate(${rotation}deg)`;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent = passed
+        ? "Performance budget passed"
+        : "Performance budget failed";
+
+      message.textContent = passed
+        ? "SVG benchmark completed successfully."
+        : "One or more performance thresholds failed.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      workload.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

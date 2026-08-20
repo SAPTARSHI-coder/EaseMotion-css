@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glacier Melt – Ice Melts and Reforms</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🧊 Glacier Melt</h1>
+    <p class="subtitle">Ice melts and reforms with fluid animation</p>
+
+    <div class="glacier-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="ice-status" id="iceStatus">🧊 Frozen</span>
+        <span class="melt-level" id="meltLevel">0% melted</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn melt" id="meltBtn">🔥 Melt</button>
+      <button class="ctrl-btn freeze" id="freezeBtn">❄️ Freeze</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">🔄 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Melt Level</span>
+      <input type="range" id="meltSlider" min="0" max="100" value="0" />
+      <span class="slider-value" id="meltSliderValue">0%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🧊 Glacier is frozen solid</div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <span class="stat-item">Ice: <strong id="statIce">100%</strong></span>
+      <span class="stat-item">Water: <strong id="statWater">0%</strong></span>
+      <span class="stat-item">Drops: <strong id="statDrops">0</strong></span>
+    </div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>M</kbd> Melt · <kbd>F</kbd> Freeze · <kbd>T</kbd> Toggle · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const iceStatus = document.getElementById('iceStatus');
+      const meltLevel = document.getElementById('meltLevel');
+      const meltBtn = document.getElementById('meltBtn');
+      const freezeBtn = document.getElementById('freezeBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const meltSlider = document.getElementById('meltSlider');
+      const meltSliderValue = document.getElementById('meltSliderValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const status = document.getElementById('status');
+      const statIce = document.getElementById('statIce');
+      const statWater = document.getElementById('statWater');
+      const statDrops = document.getElementById('statDrops');
+
+      // State
+      let meltProgress = 0; // 0 = fully frozen, 100 = fully melted
+      let targetMelt = 0;
+      let drops = [];
+      let particles = [];
+      let isAnimating = false;
+      let animationId = null;
+      let time = 0;
+      let dropCount = 0;
+
+      // Constants
+      const MAX_DROPS = 50;
+      const GLACIER_BASE = 0.85; // 85% of canvas height
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Drop class -----
+      class Drop {
+        constructor(x, y, size = 3 + Math.random() * 5) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.speed = 1 + Math.random() * 2;
+          this.opacity = 0.6 + Math.random() * 0.4;
+          this.wobble = (Math.random() - 0.5) * 0.3;
+          this.alive = true;
+          this.splashSize = 2 + Math.random() * 4;
+          this.type = Math.random() > 0.3 ? 'drop' : 'splash';
+        }
+
+        update() {
+          this.y += this.speed;
+          this.x += Math.sin(this.y * 0.05) * this.wobble;
+          
+          if (this.y > canvas.height) {
+            this.alive = false;
+            if (this.type === 'drop') {
+              // Create splash
+              for (let i = 0; i < 3; i++) {
+                const splash = new Drop(
+                  this.x + (Math.random() - 0.5) * 20,
+                  canvas.height - 10 - Math.random() * 20,
+                  1 + Math.random() * 3
+                );
+                splash.type = 'splash';
+                splash.speed = 0.5 + Math.random() * 1;
+                splash.x = this.x + (Math.random() - 0.5) * 15;
+                splash.y = canvas.height - 10 - Math.random() * 15;
+                splash.size = 1 + Math.random() * 3;
+                drops.push(splash);
+              }
+            }
+          }
+          
+          // Shrink over time for splashes
+          if (this.type === 'splash') {
+            this.size *= 0.995;
+            this.opacity *= 0.995;
+            if (this.size < 0.5 || this.opacity < 0.05) {
+              this.alive = false;
+            }
+          }
+        }
+
+        draw(ctx) {
+          const alpha = this.opacity * (this.type === 'splash' ? 0.7 : 1);
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, this.size * 2
+          );
+          gradient.addColorStop(0, `rgba(180, 220, 255, ${alpha * 0.8})`);
+          gradient.addColorStop(0.5, `rgba(100, 180, 255, ${alpha * 0.4})`);
+          gradient.addColorStop(1, `rgba(100, 180, 255, 0)`);
+          
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `rgba(200, 235, 255, ${alpha * 0.6})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Draw glacier -----
+      function drawGlacier(melt) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const baseY = h * GLACIER_BASE;
+        const meltFactor = melt / 100;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, h);
+        bgGradient.addColorStop(0, '#0a1628');
+        bgGradient.addColorStop(0.5, '#0d1a30');
+        bgGradient.addColorStop(1, '#050a15');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Ground
+        const groundGradient = ctx.createLinearGradient(0, baseY + 10, 0, h);
+        groundGradient.addColorStop(0, 'rgba(30, 50, 70, 0.3)');
+        groundGradient.addColorStop(1, 'rgba(10, 20, 30, 0.5)');
+        ctx.fillStyle = groundGradient;
+        ctx.fillRect(0, baseY + 10, w, h - baseY - 10);
+
+        // Draw glacier with melting effect
+        const glacierWidth = w * 0.7;
+        const centerX = w / 2;
+        const maxHeight = baseY - 20;
+        const currentHeight = maxHeight * (1 - meltFactor * 0.85);
+
+        // Glacier ice - main body with jagged top
+        ctx.save();
+        
+        // Create glacier path
+        ctx.beginPath();
+        
+        // Top edge (jagged, melting)
+        const topY = baseY - currentHeight;
+        const segments = 20;
+        const jaggedness = 8 + meltFactor * 15;
+        
+        ctx.moveTo(centerX - glacierWidth/2, topY + 10 + Math.random() * 5);
+        
+        for (let i = 0; i <= segments; i++) {
+          const t = i / segments;
+          const x = centerX - glacierWidth/2 + t * glacierWidth;
+          const yOffset = Math.sin(t * 15 + time) * (3 + meltFactor * 8);
+          const yOffset2 = Math.sin(t * 7 + time * 0.7) * (2 + meltFactor * 5);
+          const y = topY + yOffset + yOffset2 + (meltFactor * 10 * Math.sin(t * 10 + time * 0.5));
+          
+          // Add jaggedness based on melt
+          const jag = meltFactor > 0.3 ? 
+            (Math.sin(t * 25 + time * 1.5) * jaggedness * (0.3 + meltFactor * 0.7)) : 0;
+          
+          if (i === 0 || i === segments) {
+            ctx.lineTo(x, y + jag * 0.5);
+          } else {
+            ctx.lineTo(x, y + jag);
+          }
+        }
+
+        // Bottom edge
+        const bottomY = baseY + 5 + meltFactor * 10;
+        ctx.lineTo(centerX + glacierWidth/2, bottomY);
+        ctx.lineTo(centerX - glacierWidth/2, bottomY);
+        ctx.closePath();
+
+        // Fill with ice gradient
+        const iceGradient = ctx.createLinearGradient(0, topY, 0, bottomY);
+        const iceColor = 180 - meltFactor * 80;
+        const iceColor2 = 220 - meltFactor * 120;
+        iceGradient.addColorStop(0, `rgba(${iceColor + 20}, ${iceColor + 40}, 255, ${0.95 - meltFactor * 0.3})`);
+        iceGradient.addColorStop(0.3, `rgba(${iceColor}, ${iceColor + 30}, 255, ${0.9 - meltFactor * 0.2})`);
+        iceGradient.addColorStop(0.7, `rgba(${iceColor - 20}, ${iceColor + 10}, 240, ${0.8 - meltFactor * 0.2})`);
+        iceGradient.addColorStop(1, `rgba(${iceColor - 40}, ${iceColor - 10}, 220, ${0.7 - meltFactor * 0.3})`);
+        
+        ctx.fillStyle = iceGradient;
+        ctx.fill();
+
+        // Ice details (cracks, crevasses)
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 + meltFactor * 0.03})`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 8 + meltFactor * 10; i++) {
+          const seed = i * 137.508;
+          const x = centerX - glacierWidth/2 + (seed * 0.618) % glacierWidth;
+          const y = topY + 20 + (seed * 0.381) % (currentHeight - 40);
+          const angle = seed * 0.1;
+          const length = 10 + (seed % 30) * (1 + meltFactor);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length * 0.5);
+          ctx.stroke();
+        }
+
+        // Surface reflection
+        const reflectGradient = ctx.createLinearGradient(0, topY, 0, topY + currentHeight * 0.3);
+        reflectGradient.addColorStop(0, `rgba(255, 255, 255, ${0.1 - meltFactor * 0.05})`);
+        reflectGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = reflectGradient;
+        ctx.fillRect(centerX - glacierWidth/2 + 10, topY, glacierWidth - 20, currentHeight * 0.3);
+
+        // Meltwater drips
+        if (meltFactor > 0.05) {
+          const dripCount = Math.floor(5 + meltFactor * 20);
+          for (let i = 0; i < dripCount; i++) {
+            const seed = i * 73.189;
+            const x = centerX - glacierWidth/2 + 15 + (seed * 0.718) % (glacierWidth - 30);
+            const dripY = baseY - 10 - (seed % 20) * meltFactor * 0.5;
+            const size = 1 + (seed % 4) * (0.5 + meltFactor * 0.5);
+            const alpha = 0.2 + (seed % 100) / 100 * 0.3 * meltFactor;
+            
+            const dripGradient = ctx.createRadialGradient(x, dripY, 0, x, dripY, size * 2);
+            dripGradient.addColorStop(0, `rgba(180, 220, 255, ${alpha * 0.8})`);
+            dripGradient.addColorStop(1, `rgba(180, 220, 255, 0)`);
+            ctx.fillStyle = dripGradient;
+            ctx.beginPath();
+            ctx.arc(x, dripY, size * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+
+        // Water pool at base
+        if (meltFactor > 0.05) {
+          const poolWidth = glacierWidth * (0.3 + meltFactor * 0.6);
+          const poolHeight = 5 + meltFactor * 25;
+          const poolX = centerX - poolWidth/2;
+          const poolY = baseY + 5;
+
+          const poolGradient = ctx.createRadialGradient(
+            centerX, poolY + poolHeight/2, 0,
+            centerX, poolY + poolHeight/2, poolWidth/2
+          );
+          const waterAlpha = 0.1 + meltFactor * 0.4;
+          poolGradient.addColorStop(0, `rgba(100, 180, 255, ${waterAlpha})`);
+          poolGradient.addColorStop(0.5, `rgba(60, 140, 220, ${waterAlpha * 0.7})`);
+          poolGradient.addColorStop(1, `rgba(40, 100, 180, ${waterAlpha * 0.3})`);
+          
+          ctx.fillStyle = poolGradient;
+          ctx.beginPath();
+          ctx.ellipse(centerX, poolY + poolHeight/2, poolWidth/2, poolHeight/2, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Water ripples
+          for (let i = 0; i < 3 + meltFactor * 5; i++) {
+            const seed = i * 97.31;
+            const rx = centerX + (seed - 50) * 0.3 * poolWidth/2;
+            const ry = poolY + poolHeight/2 + (seed % 20 - 10) * 0.5;
+            const radius = 3 + (seed % 15) * (0.5 + meltFactor);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.02 + meltFactor * 0.03})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.ellipse(rx, ry, radius, radius * 0.3, seed * 0.1, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        // Draw drops
+        drops.forEach(drop => drop.draw(ctx));
+
+        // Update ice status
+        if (meltFactor > 0.8) {
+          iceStatus.textContent = '💧 Melted';
+          status.textContent = '💧 Glacier has melted into water';
+        } else if (meltFactor > 0.5) {
+          iceStatus.textContent = '🌊 Melting';
+          status.textContent = '🌊 Glacier is melting rapidly';
+        } else if (meltFactor > 0.2) {
+          iceStatus.textContent = '🧊 Thawing';
+          status.textContent = '🧊 Glacier is beginning to thaw';
+        } else if (meltFactor > 0.05) {
+          iceStatus.textContent = '🧊 Slight melt';
+          status.textContent = '🧊 A little melting at the edges';
+        } else {
+          iceStatus.textContent = '🧊 Frozen';
+          status.textContent = '🧊 Glacier is frozen solid';
+        }
+      }
+
+      // ----- Update simulation -----
+      function updateSimulation() {
+        const speed = parseInt(speedSlider.value) * 0.5;
+        const meltTarget = parseFloat(meltSlider.value);
+        
+        // Smoothly interpolate meltProgress toward target
+        const diff = meltTarget - meltProgress;
+        const step = Math.min(Math.abs(diff) * 0.05 * speed, Math.abs(diff) * 0.8);
+        meltProgress += Math.sign(diff) * Math.min(step, Math.abs(diff));
+        meltProgress = Math.max(0, Math.min(100, meltProgress));
+
+        // Update drops
+        const meltFactor = meltProgress / 100;
+        if (meltFactor > 0.1 && drops.length < MAX_DROPS && Math.random() < meltFactor * 0.1) {
+          const w = canvas.width;
+          const baseY = canvas.height * GLACIER_BASE;
+          const glacierWidth = w * 0.7;
+          const centerX = w / 2;
+          const x = centerX - glacierWidth/2 + 15 + Math.random() * (glacierWidth - 30);
+          const y = baseY - 5 - Math.random() * 10;
+          drops.push(new Drop(x, y, 2 + Math.random() * 4));
+          dropCount++;
+        }
+
+        // Update existing drops
+        drops = drops.filter(drop => {
+          drop.update();
+          return drop.alive;
+        });
+
+        // Limit drops
+        if (drops.length > MAX_DROPS) {
+          drops = drops.slice(-MAX_DROPS);
+        }
+
+        // Update stats
+        const icePercent = 100 - meltProgress;
+        statIce.textContent = Math.round(icePercent) + '%';
+        statWater.textContent = Math.round(meltProgress) + '%';
+        statDrops.textContent = dropCount;
+        meltLevel.textContent = Math.round(meltProgress) + '% melted';
+        meltSliderValue.textContent = Math.round(meltProgress) + '%';
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.02;
+        updateSimulation();
+        drawGlacier(meltProgress);
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Set melt level -----
+      function setMeltLevel(value, updateSlider = true) {
+        const clamped = Math.max(0, Math.min(100, value));
+        if (updateSlider) {
+          meltSlider.value = clamped;
+        }
+        meltProgress = clamped;
+        targetMelt = clamped;
+        meltSliderValue.textContent = Math.round(clamped) + '%';
+        meltLevel.textContent = Math.round(clamped) + '% melted';
+      }
+
+      // ----- Melt -----
+      function melt() {
+        const target = Math.min(100, meltProgress + 20);
+        meltSlider.value = target;
+        status.textContent = '🔥 Heating up the glacier...';
+        setTimeout(() => {
+          status.textContent = '🔥 Glacier is melting';
+        }, 500);
+      }
+
+      // ----- Freeze -----
+      function freeze() {
+        const target = Math.max(0, meltProgress - 20);
+        meltSlider.value = target;
+        status.textContent = '❄️ Freezing the glacier...';
+        setTimeout(() => {
+          status.textContent = '❄️ Glacier is reforming';
+        }, 500);
+      }
+
+      // ----- Toggle -----
+      function toggleMelt() {
+        const current = parseFloat(meltSlider.value);
+        const target = current > 50 ? 0 : 100;
+        meltSlider.value = target;
+        status.textContent = target > 50 ? '🔥 Melting glacier...' : '❄️ Freezing glacier...';
+      }
+
+      // ----- Reset -----
+      function resetGlacier() {
+        meltSlider.value = 0;
+        setMeltLevel(0);
+        drops = [];
+        dropCount = 0;
+        status.textContent = '↺ Glacier reset to frozen state';
+        statDrops.textContent = '0';
+      }
+
+      // ----- Event Listeners -----
+      meltBtn.addEventListener('click', melt);
+      freezeBtn.addEventListener('click', freeze);
+      toggleBtn.addEventListener('click', toggleMelt);
+      resetBtn.addEventListener('click', resetGlacier);
+
+      meltSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        setMeltLevel(val, false);
+        status.textContent = `🎚️ Melt level set to ${Math.round(val)}%`;
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'm' || e.key === 'M') {
+          e.preventDefault();
+          melt();
+        }
+        if (e.key === 'f' || e.key === 'F') {
+          e.preventDefault();
+          freeze();
+        }
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleMelt();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetGlacier();
+        }
+      });
+
+      // Click on canvas to toggle
+      canvas.addEventListener('click', toggleMelt);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        setMeltLevel(0);
+        startAnimation();
+        status.textContent = '🧊 Glacier is frozen solid — click Melt to begin';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

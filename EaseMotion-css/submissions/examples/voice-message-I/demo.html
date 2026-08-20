@@ -1,0 +1,329 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaseMotion - Voice Message Recording UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 ease-voice-message</h1>
+        <p>Voice message recording UI with waveform animation, timer, and recording indicator</p>
+
+        <!-- Recording Control -->
+        <div class="recording-section">
+            <div class="recording-controls">
+                <button class="record-btn" id="recordBtn" aria-label="Start recording">
+                    <span class="mic-icon">🎤</span>
+                    <span class="record-label" id="recordLabel">Tap to Record</span>
+                </button>
+            </div>
+
+            <!-- Recording Status -->
+            <div class="recording-status" id="recordingStatus">
+                <div class="recording-indicator">
+                    <span class="recording-dot"></span>
+                    <span class="recording-text">Recording...</span>
+                </div>
+                <div class="waveform-container">
+                    <div class="waveform" id="waveform">
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                    </div>
+                </div>
+                <div class="recording-timer" id="recordingTimer">00:00</div>
+                <div class="recording-actions">
+                    <button class="stop-btn" id="stopBtn">⏹ Stop</button>
+                    <button class="cancel-btn" id="cancelBtn">✕ Cancel</button>
+                </div>
+            </div>
+
+            <!-- Playback -->
+            <div class="playback-section" id="playbackSection" style="display: none;">
+                <div class="playback-controls">
+                    <button class="play-btn" id="playBtn">▶ Play</button>
+                    <div class="playback-timer" id="playbackTimer">00:00 / 00:00</div>
+                    <button class="delete-btn" id="deleteBtn">🗑 Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recorded Messages List -->
+        <div class="messages-section">
+            <h3>Recorded Messages</h3>
+            <div class="messages-list" id="messagesList">
+                <span class="empty-message">No voice messages yet. Tap the microphone to start recording.</span>
+            </div>
+        </div>
+
+        <!-- Usage Code -->
+        <div class="code-section">
+            <h2>Usage</h2>
+            <pre>&lt;div class="recording-controls"&gt;
+    &lt;button class="record-btn" id="recordBtn"&gt;
+        &lt;span class="mic-icon"&gt;🎤&lt;/span&gt;
+        &lt;span class="record-label"&gt;Tap to Record&lt;/span&gt;
+    &lt;/button&gt;
+&lt;/div&gt;
+&lt;div class="recording-status" id="recordingStatus"&gt;
+    &lt;div class="recording-indicator"&gt;
+        &lt;span class="recording-dot"&gt;&lt;/span&gt;
+        &lt;span class="recording-text"&gt;Recording...&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class="waveform" id="waveform"&gt;
+        &lt;span class="bar"&gt;&lt;/span&gt;
+        &lt;span class="bar"&gt;&lt;/span&gt;
+        &lt;span class="bar"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class="recording-timer" id="recordingTimer"&gt;00:00&lt;/div&gt;
+    &lt;div class="recording-actions"&gt;
+        &lt;button class="stop-btn" id="stopBtn"&gt;⏹ Stop&lt;/button&gt;
+        &lt;button class="cancel-btn" id="cancelBtn"&gt;✕ Cancel&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+        </div>
+
+        <div class="info">
+            <h3>🎤 Voice Message Features</h3>
+            <ul>
+                <li>🎤 Microphone icon with recording dot (ease-ping)</li>
+                <li>📊 Animated waveform bars during recording</li>
+                <li>⏱️ Recording timer display</li>
+                <li>⏹️ Stop and cancel controls</li>
+                <li>▶️ Playback for recorded messages</li>
+                <li>📋 Recorded messages list</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Voice Message Recording UI
+        class VoiceMessageRecorder {
+            constructor() {
+                this.isRecording = false;
+                this.isPlaying = false;
+                this.timerInterval = null;
+                this.seconds = 0;
+                this.recordedMessages = [];
+                this.currentRecording = null;
+
+                // DOM Elements
+                this.recordBtn = document.getElementById('recordBtn');
+                this.recordLabel = document.getElementById('recordLabel');
+                this.recordingStatus = document.getElementById('recordingStatus');
+                this.recordingTimer = document.getElementById('recordingTimer');
+                this.waveform = document.getElementById('waveform');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.cancelBtn = document.getElementById('cancelBtn');
+                this.playbackSection = document.getElementById('playbackSection');
+                this.playBtn = document.getElementById('playBtn');
+                this.playbackTimer = document.getElementById('playbackTimer');
+                this.deleteBtn = document.getElementById('deleteBtn');
+                this.messagesList = document.getElementById('messagesList');
+
+                // Initialize
+                this.recordingStatus.style.display = 'none';
+                this.initEventListeners();
+                this.renderMessages();
+            }
+
+            initEventListeners() {
+                this.recordBtn.addEventListener('click', () => this.toggleRecording());
+                this.stopBtn.addEventListener('click', () => this.stopRecording());
+                this.cancelBtn.addEventListener('click', () => this.cancelRecording());
+                this.playBtn.addEventListener('click', () => this.togglePlayback());
+                this.deleteBtn.addEventListener('click', () => this.deleteRecording());
+            }
+
+            toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    this.startRecording();
+                }
+            }
+
+            startRecording() {
+                this.isRecording = true;
+                this.seconds = 0;
+                this.recordLabel.textContent = '🔴 Recording...';
+                this.recordBtn.classList.add('recording');
+                this.recordingStatus.style.display = 'block';
+                this.recordingStatus.style.animation = 'slideUp 0.3s ease';
+                this.waveform.classList.add('active');
+                this.playbackSection.style.display = 'none';
+
+                // Start timer
+                this.timerInterval = setInterval(() => {
+                    this.seconds++;
+                    this.updateTimer();
+                    this.randomizeWaveform();
+                }, 1000);
+
+                // Start waveform animation
+                this.waveformInterval = setInterval(() => {
+                    this.randomizeWaveform();
+                }, 150);
+
+                this.randomizeWaveform();
+            }
+
+            stopRecording() {
+                if (!this.isRecording) return;
+                this.isRecording = false;
+                clearInterval(this.timerInterval);
+                clearInterval(this.waveformInterval);
+
+                this.recordLabel.textContent = 'Tap to Record';
+                this.recordBtn.classList.remove('recording');
+                this.waveform.classList.remove('active');
+
+                // Save recording
+                const duration = this.seconds;
+                const message = {
+                    id: Date.now(),
+                    duration: duration,
+                    timestamp: new Date().toLocaleTimeString(),
+                    formattedTime: this.formatTime(duration)
+                };
+                this.recordedMessages.push(message);
+                this.currentRecording = message;
+                this.renderMessages();
+
+                // Show playback
+                this.playbackSection.style.display = 'block';
+                this.playbackTimer.textContent = `00:00 / ${message.formattedTime}`;
+                this.recordingStatus.style.display = 'none';
+                this.playBtn.textContent = '▶ Play';
+                this.isPlaying = false;
+
+                console.log('🎤 Recording saved:', message);
+            }
+
+            cancelRecording() {
+                if (this.isRecording) {
+                    clearInterval(this.timerInterval);
+                    clearInterval(this.waveformInterval);
+                    this.isRecording = false;
+                }
+                this.recordLabel.textContent = 'Tap to Record';
+                this.recordBtn.classList.remove('recording');
+                this.recordingStatus.style.display = 'none';
+                this.waveform.classList.remove('active');
+                this.playbackSection.style.display = 'none';
+                this.seconds = 0;
+                this.recordingTimer.textContent = '00:00';
+                console.log('🎤 Recording cancelled');
+            }
+
+            togglePlayback() {
+                if (this.isPlaying) {
+                    this.isPlaying = false;
+                    this.playBtn.textContent = '▶ Play';
+                    this.playbackTimer.textContent = `00:00 / ${this.currentRecording?.formattedTime || '00:00'}`;
+                } else if (this.currentRecording) {
+                    this.isPlaying = true;
+                    this.playBtn.textContent = '⏸ Pause';
+                    let playSeconds = 0;
+                    const totalSeconds = this.currentRecording.duration;
+                    
+                    // Simulate playback
+                    const playInterval = setInterval(() => {
+                        if (!this.isPlaying) {
+                            clearInterval(playInterval);
+                            return;
+                        }
+                        playSeconds++;
+                        this.playbackTimer.textContent = `${this.formatTime(playSeconds)} / ${this.formatTime(totalSeconds)}`;
+                        if (playSeconds >= totalSeconds) {
+                            clearInterval(playInterval);
+                            this.isPlaying = false;
+                            this.playBtn.textContent = '▶ Play';
+                            this.playbackTimer.textContent = `00:00 / ${this.formatTime(totalSeconds)}`;
+                        }
+                    }, 1000);
+                }
+            }
+
+            deleteRecording() {
+                if (this.currentRecording) {
+                    this.recordedMessages = this.recordedMessages.filter(
+                        m => m.id !== this.currentRecording.id
+                    );
+                    this.currentRecording = null;
+                    this.playbackSection.style.display = 'none';
+                    this.renderMessages();
+                    console.log('🗑 Recording deleted');
+                }
+            }
+
+            updateTimer() {
+                this.recordingTimer.textContent = this.formatTime(this.seconds);
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            randomizeWaveform() {
+                const bars = this.waveform.querySelectorAll('.bar');
+                bars.forEach(bar => {
+                    const height = 10 + Math.random() * 40;
+                    bar.style.height = `${height}px`;
+                });
+            }
+
+            renderMessages() {
+                if (this.recordedMessages.length === 0) {
+                    this.messagesList.innerHTML = '<span class="empty-message">No voice messages yet. Tap the microphone to start recording.</span>';
+                    return;
+                }
+                this.messagesList.innerHTML = this.recordedMessages.map(msg => `
+                    <div class="message-item">
+                        <span class="msg-icon">🎤</span>
+                        <span class="msg-duration">${msg.formattedTime}</span>
+                        <span class="msg-time">${msg.timestamp}</span>
+                        <button class="msg-play" onclick="voiceRecorder.playMessage(${msg.id})">▶</button>
+                        <button class="msg-delete" onclick="voiceRecorder.deleteMessage(${msg.id})">✕</button>
+                    </div>
+                `).join('');
+            }
+
+            playMessage(id) {
+                const msg = this.recordedMessages.find(m => m.id === id);
+                if (msg) {
+                    alert(`▶ Playing message: ${msg.formattedTime} (simulated)`);
+                }
+            }
+
+            deleteMessage(id) {
+                this.recordedMessages = this.recordedMessages.filter(m => m.id !== id);
+                if (this.currentRecording && this.currentRecording.id === id) {
+                    this.currentRecording = null;
+                    this.playbackSection.style.display = 'none';
+                }
+                this.renderMessages();
+                console.log('🗑 Message deleted');
+            }
+        }
+
+        // Initialize the voice recorder
+        const voiceRecorder = new VoiceMessageRecorder();
+
+        // Make it available globally for inline onclick handlers
+        window.voiceRecorder = voiceRecorder;
+
+        console.log('🎤 Voice Message Recorder initialized!');
+    </script>
+</body>
+</html>

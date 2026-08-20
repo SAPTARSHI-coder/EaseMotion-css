@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Font Display Swap Render Blocking Audit</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">FONT PERFORMANCE AUDIT</span>
+
+      <h1>Font Display Swap</h1>
+
+      <p>
+        A responsive benchmark for evaluating font loading, rendering,
+        execution timing, and render-blocking behavior.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Performance metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>CSS Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Waiting for audit</small>
+      </article>
+    </section>
+
+    <section class="audit-card">
+      <div>
+        <span class="card-label">RENDERING AUDIT</span>
+
+        <h2>Swap Font Rendering</h2>
+
+        <p>
+          The page uses
+          <code>font-display: swap</code>
+          so fallback text can render while the web font loads.
+        </p>
+      </div>
+
+      <button id="runAudit">
+        Run Font Audit
+      </button>
+
+      <div class="timing">
+        <div>
+          <span>DOM Ready</span>
+          <strong id="domTime">--</strong>
+        </div>
+
+        <div>
+          <span>Fonts Ready</span>
+          <strong id="fontTime">--</strong>
+        </div>
+
+        <div>
+          <span>Swap Delay</span>
+          <strong id="swapTime">--</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <article class="content-card">
+        <span>01</span>
+        <h2>Fallback First</h2>
+        <p>
+          Text remains available while the requested font resource is loading.
+        </p>
+      </article>
+
+      <article class="content-card">
+        <span>02</span>
+        <h2>Font Swap</h2>
+        <p>
+          The browser can replace the fallback face when the web font becomes
+          available.
+        </p>
+      </article>
+
+      <article class="content-card">
+        <span>03</span>
+        <h2>Performance</h2>
+        <p>
+          Font timing can be inspected alongside FPS and stylesheet size.
+        </p>
+      </article>
+
+      <article class="content-card">
+        <span>04</span>
+        <h2>Audit Ready</h2>
+        <p>
+          The workload can be opened in Headless Chrome for automated testing.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const auditButton = document.getElementById("runAudit");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+
+    const domOutput = document.getElementById("domTime");
+    const fontOutput = document.getElementById("fontTime");
+    const swapOutput = document.getElementById("swapTime");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000,
+      maximumFontSwapMs: 1500
+    };
+
+    const pageStart = performance.timeOrigin;
+
+    function formatMs(value) {
+      return `${Math.round(value)} ms`;
+    }
+
+    auditButton.addEventListener("click", async () => {
+      auditButton.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Collecting font metrics";
+
+      const start = performance.now();
+
+      const domReady =
+        performance.getEntriesByType("navigation")[0]?.domContentLoadedEventEnd ||
+        performance.now();
+
+      domOutput.textContent = formatMs(domReady);
+
+      let fontReadyTime = performance.now();
+
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+          fontReadyTime = performance.now();
+        }
+      } catch (error) {
+        console.warn("Font readiness measurement failed:", error);
+      }
+
+      const fontSwapMs = fontReadyTime;
+
+      fontOutput.textContent = formatMs(fontReadyTime);
+      swapOutput.textContent = formatMs(fontSwapMs);
+
+      const frameStart = performance.now();
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        function measureFrame(time) {
+          frames++;
+
+          document.body.style.setProperty(
+            "--audit-offset",
+            `${Math.sin(time / 180) * 2}px`
+          );
+
+          if (time - frameStart < 1000) {
+            requestAnimationFrame(measureFrame);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(measureFrame);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        formatMs(executionMs);
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budget passed"
+          : "Performance budget failed";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        domReadyMs: Number(domReady.toFixed(2)),
+        fontReadyMs: Number(fontReadyTime.toFixed(2)),
+        fontSwapMs: Number(fontSwapMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        maximumFontSwapMs: BUDGET.maximumFontSwapMs,
+        passed
+      });
+
+      auditButton.disabled = false;
+    });
+  </script>
+</body>
+</html>

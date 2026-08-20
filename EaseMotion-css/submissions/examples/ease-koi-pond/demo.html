@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Koi Pond – Fish Swim and Ripple Water</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🐟 Koi Pond</h1>
+    <p class="subtitle">Fish swim gracefully through rippling water</p>
+
+    <div class="pond-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="fish-count" id="fishCount">🐟 0 fish</span>
+        <span class="pond-status" id="pondStatus">🌊 Calm</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn add" id="addBtn">➕ Add Fish</button>
+      <button class="ctrl-btn ripple" id="rippleBtn">🌊 Ripple</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Fish Count</span>
+      <input type="range" id="countSlider" min="0" max="15" value="5" />
+      <span class="slider-value" id="countValue">5</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Ripple Intensity</span>
+      <input type="range" id="rippleSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="rippleValue">50%</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🐟 Koi swimming peacefully in the pond</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>A</kbd> Add · <kbd>R</kbd> Ripple · <kbd>C</kbd> Clear · <kbd>Space</kbd> Pause
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const fishCount = document.getElementById('fishCount');
+      const pondStatus = document.getElementById('pondStatus');
+      const addBtn = document.getElementById('addBtn');
+      const rippleBtn = document.getElementById('rippleBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const rippleSlider = document.getElementById('rippleSlider');
+      const rippleValue = document.getElementById('rippleValue');
+
+      // State
+      let fish = [];
+      let ripples = [];
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+
+      // Constants
+      const MAX_FISH = 15;
+      const COLORS = [
+        '#ff6b6b', '#ff4757', '#ff6348', '#ff7f50', '#ff9f43',
+        '#feca57', '#ffd93d', '#ff6b81', '#e056a0', '#a29bfe',
+        '#6c5ce7', '#00cec9', '#00b894', '#55efc4', '#81ecec',
+        '#74b9ff', '#0984e3', '#fd79a8', '#e17055', '#fdcb6e'
+      ];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Ripple class -----
+      class Ripple {
+        constructor(x, y, intensity = 1) {
+          this.x = x;
+          this.y = y;
+          this.radius = 5;
+          this.maxRadius = 60 + intensity * 60;
+          this.opacity = 0.6 + intensity * 0.4;
+          this.speed = 1 + intensity * 1.5;
+          this.alive = true;
+          this.waves = 3 + Math.floor(intensity * 3);
+          this.intensity = intensity;
+        }
+
+        update() {
+          this.radius += this.speed;
+          this.opacity *= 0.99;
+          if (this.radius > this.maxRadius || this.opacity < 0.02) {
+            this.alive = false;
+          }
+        }
+
+        draw(ctx) {
+          for (let i = 0; i < this.waves; i++) {
+            const r = this.radius - i * 5;
+            if (r <= 0) continue;
+            const alpha = this.opacity * (1 - i / this.waves) * 0.8;
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
+            ctx.lineWidth = 1.5 - i * 0.3;
+            ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.1})`;
+            ctx.shadowBlur = 10;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Inner glow
+            if (i === 0) {
+              const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r);
+              glow.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.05})`);
+              glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+              ctx.fillStyle = glow;
+              ctx.beginPath();
+              ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // ----- Fish class -----
+      class Fish {
+        constructor() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const padding = 40;
+          
+          this.x = padding + Math.random() * (w - padding * 2);
+          this.y = padding + Math.random() * (h - padding * 2);
+          this.targetX = this.x;
+          this.targetY = this.y;
+          this.size = 15 + Math.random() * 20;
+          this.speed = 0.5 + Math.random() * 0.8;
+          this.angle = Math.random() * Math.PI * 2;
+          this.tailAngle = 0;
+          this.tailSpeed = 0.04 + Math.random() * 0.06;
+          this.tailAmplitude = 0.3 + Math.random() * 0.3;
+          this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          this.color2 = this.shiftColor(this.color, -20);
+          this.pattern = Math.random() > 0.5 ? 'solid' : 'spotted';
+          this.wobble = 0;
+          this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+          this.wobbleAmount = 0.5 + Math.random() * 1.5;
+          
+          // Swimming behavior
+          this.state = 'wander';
+          this.stateTimer = 0;
+          this.directionChange = 0;
+          
+          this.setNewTarget();
+        }
+
+        shiftColor(hex, amount) {
+          let r = parseInt(hex.slice(1, 3), 16);
+          let g = parseInt(hex.slice(3, 5), 16);
+          let b = parseInt(hex.slice(5, 7), 16);
+          r = Math.max(0, Math.min(255, r + amount));
+          g = Math.max(0, Math.min(255, g + amount));
+          b = Math.max(0, Math.min(255, b + amount));
+          return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        setNewTarget() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const padding = 50;
+          this.targetX = padding + Math.random() * (w - padding * 2);
+          this.targetY = padding + Math.random() * (h - padding * 2);
+          this.stateTimer = 100 + Math.random() * 200;
+        }
+
+        update(speedMultiplier = 1) {
+          const speed = this.speed * speedMultiplier * 0.5;
+          
+          // Update target periodically
+          this.stateTimer--;
+          if (this.stateTimer <= 0) {
+            this.setNewTarget();
+          }
+
+          // Move toward target with smooth interpolation
+          const dx = this.targetX - this.x;
+          const dy = this.targetY - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 2) {
+            const moveSpeed = Math.min(speed, dist * 0.03);
+            this.x += (dx / dist) * moveSpeed;
+            this.y += (dy / dist) * moveSpeed;
+            this.angle = Math.atan2(dy, dx);
+          }
+
+          // Add wobble
+          this.wobble += this.wobbleSpeed;
+          this.y += Math.sin(this.wobble) * this.wobbleAmount * 0.2;
+
+          // Tail animation
+          this.tailAngle += this.tailSpeed;
+          
+          // Keep within bounds
+          const padding = 20;
+          if (this.x < padding) { this.x = padding; this.setNewTarget(); }
+          if (this.x > canvas.width - padding) { this.x = canvas.width - padding; this.setNewTarget(); }
+          if (this.y < padding) { this.y = padding; this.setNewTarget(); }
+          if (this.y > canvas.height - padding) { this.y = canvas.height - padding; this.setNewTarget(); }
+        }
+
+        draw(ctx) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle);
+
+          const s = this.size;
+          const tail = Math.sin(this.tailAngle) * this.tailAmplitude;
+
+          // Shadow
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 3;
+
+          // Body
+          const bodyGradient = ctx.createRadialGradient(
+            -s * 0.2, -s * 0.2, 0,
+            0, 0, s
+          );
+          bodyGradient.addColorStop(0, this.color);
+          bodyGradient.addColorStop(0.7, this.color);
+          bodyGradient.addColorStop(1, this.color2);
+
+          ctx.fillStyle = bodyGradient;
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+          ctx.shadowBlur = 15;
+          ctx.shadowOffsetY = 3;
+          
+          // Fish body shape
+          ctx.beginPath();
+          ctx.moveTo(s, 0);
+          ctx.quadraticCurveTo(s * 0.8, -s * 0.3, 0, -s * 0.4);
+          ctx.quadraticCurveTo(-s * 0.4, -s * 0.3, -s * 0.6, -s * 0.2 + tail * s * 0.3);
+          ctx.quadraticCurveTo(-s * 0.8, 0, -s * 0.6, s * 0.2 + tail * s * 0.3);
+          ctx.quadraticCurveTo(-s * 0.4, s * 0.3, 0, s * 0.4);
+          ctx.quadraticCurveTo(s * 0.8, s * 0.3, s, 0);
+          ctx.closePath();
+          ctx.fill();
+
+          // Glow
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Pattern (spots)
+          if (this.pattern === 'spotted') {
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+              const seed = i * 137.508;
+              const px = (seed * 0.618) % s * 1.2 - s * 0.3;
+              const py = (seed * 0.381) % s * 1.2 - s * 0.3;
+              const ps = 2 + (seed % 5) * (0.5 + this.size / 40);
+              ctx.fillStyle = `rgba(255, 255, 255, 0.15)`;
+              ctx.beginPath();
+              ctx.arc(px, py, ps, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Eye
+          ctx.shadowBlur = 0;
+          const eyeX = s * 0.5;
+          const eyeY = -s * 0.1;
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.ellipse(eyeX, eyeY, s * 0.15, s * 0.18, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#1a1a2e';
+          ctx.beginPath();
+          ctx.arc(eyeX + s * 0.06, eyeY + s * 0.02, s * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Eye highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.beginPath();
+          ctx.arc(eyeX + s * 0.1, eyeY - s * 0.06, s * 0.03, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Fin
+          ctx.fillStyle = `rgba(255, 255, 255, 0.08)`;
+          ctx.beginPath();
+          ctx.moveTo(0, -s * 0.25);
+          ctx.quadraticCurveTo(-s * 0.2, -s * 0.5, -s * 0.1, -s * 0.35);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      // ----- Create ripples -----
+      function createRipple(x, y, intensity = 1) {
+        const ripple = new Ripple(x, y, intensity);
+        ripples.push(ripple);
+        if (ripples.length > 30) {
+          ripples.shift();
+        }
+      }
+
+      // ----- Create random ripples -----
+      function createRandomRipples(count = 3) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const padding = 60;
+        const intensity = parseInt(rippleSlider.value) / 100;
+        for (let i = 0; i < count; i++) {
+          const x = padding + Math.random() * (w - padding * 2);
+          const y = padding + Math.random() * (h - padding * 2);
+          const ri = new Ripple(x, y, intensity * (0.5 + Math.random() * 0.5));
+          ripples.push(ri);
+          if (ripples.length > 30) ripples.shift();
+        }
+        pondStatus.textContent = '🌊 Rippling';
+        status.textContent = `🌊 ${count} ripples created!`;
+        setTimeout(() => {
+          if (ripples.length === 0 || ripples.every(r => !r.alive)) {
+            pondStatus.textContent = '🌊 Calm';
+          }
+        }, 2000);
+      }
+
+      // ----- Add fish -----
+      function addFish(count = 1) {
+        const currentCount = fish.length;
+        const newCount = Math.min(currentCount + count, MAX_FISH);
+        for (let i = currentCount; i < newCount; i++) {
+          fish.push(new Fish());
+        }
+        countSlider.value = newCount;
+        countValue.textContent = newCount;
+        fishCount.textContent = `🐟 ${newCount} fish`;
+        status.textContent = `🐟 Added ${newCount - currentCount} fish (${newCount} total)`;
+      }
+
+      // ----- Remove all fish -----
+      function clearFish() {
+        fish = [];
+        ripples = [];
+        fishCount.textContent = '🐟 0 fish';
+        countSlider.value = 0;
+        countValue.textContent = '0';
+        status.textContent = '🗑️ All fish removed';
+        pondStatus.textContent = '🌊 Empty';
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        pondStatus.textContent = isPaused ? '⏸ Paused' : '🌊 Calm';
+      }
+
+      // ----- Draw water background -----
+      function drawWater(time) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Water gradient
+        const waterGradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
+        waterGradient.addColorStop(0, '#0a2a4a');
+        waterGradient.addColorStop(0.3, '#0a1f3a');
+        waterGradient.addColorStop(0.7, '#06152a');
+        waterGradient.addColorStop(1, '#030a18');
+        ctx.fillStyle = waterGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Water surface texture (subtle caustics)
+        for (let i = 0; i < 30; i++) {
+          const seed = i * 137.508;
+          const x = (seed * 0.618) % w;
+          const y = (seed * 0.381) % h;
+          const size = 10 + (seed % 30);
+          const alpha = 0.02 + (seed % 100) / 100 * 0.04;
+          const offset = Math.sin(x * 0.01 + y * 0.02 + time * 0.5) * 5;
+          
+          ctx.fillStyle = `rgba(100, 200, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(x + offset, y + offset * 0.5, size, size * 0.3, x * 0.01, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Water surface ripples (ambient)
+        for (let i = 0; i < 8; i++) {
+          const seed = i * 73.189;
+          const x = (seed * 0.718) % w;
+          const y = (seed * 0.482) % h;
+          const radius = 20 + (seed % 40);
+          const alpha = 0.02 + (seed % 100) / 100 * 0.04;
+          const phase = time * 0.3 + seed;
+          
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.arc(x + Math.sin(phase) * 10, y + Math.cos(phase * 0.7) * 10, radius + Math.sin(phase * 0.5) * 5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Draw ripples
+        ripples.forEach(ripple => ripple.draw(ctx));
+
+        // Draw fish (in order of size for depth)
+        const sortedFish = [...fish].sort((a, b) => a.size - b.size);
+        sortedFish.forEach(f => f.draw(ctx));
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+
+        if (!isPaused) {
+          const speedMultiplier = parseInt(speedSlider.value) / 5;
+          
+          // Update fish
+          fish.forEach(f => f.update(speedMultiplier));
+
+          // Update ripples
+          ripples = ripples.filter(r => {
+            r.update();
+            return r.alive;
+          });
+
+          // Update pond status
+          if (ripples.length > 0) {
+            pondStatus.textContent = '🌊 Rippling';
+          } else if (fish.length > 0) {
+            pondStatus.textContent = '🌊 Calm';
+          } else {
+            pondStatus.textContent = '🌊 Empty';
+          }
+        }
+
+        // Draw
+        drawWater(time);
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      addBtn.addEventListener('click', () => {
+        const count = parseInt(countSlider.value) || 1;
+        addFish(Math.max(1, Math.floor(count / 3) + 1));
+      });
+
+      rippleBtn.addEventListener('click', () => {
+        if (fish.length === 0) {
+          status.textContent = '⚠️ Add some fish first!';
+          return;
+        }
+        createRandomRipples(3 + Math.floor(Math.random() * 5));
+      });
+
+      clearBtn.addEventListener('click', clearFish);
+
+      toggleBtn.addEventListener('click', togglePause);
+
+      countSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        countValue.textContent = val;
+        const currentCount = fish.length;
+        if (val > currentCount) {
+          addFish(val - currentCount);
+        } else if (val < currentCount) {
+          fish = fish.slice(0, val);
+          fishCount.textContent = `🐟 ${fish.length} fish`;
+          status.textContent = `🐟 Reduced to ${fish.length} fish`;
+        }
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      rippleSlider.addEventListener('input', (e) => {
+        rippleValue.textContent = e.target.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          addBtn.click();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          rippleBtn.click();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearBtn.click();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+      });
+
+      // Click on canvas to add ripple
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const intensity = parseInt(rippleSlider.value) / 100;
+        createRipple(x, y, intensity);
+        status.textContent = `🌊 Ripple at (${Math.round(x)}, ${Math.round(y)})`;
+        pondStatus.textContent = '🌊 Rippling';
+        setTimeout(() => {
+          if (ripples.length === 0 || ripples.every(r => !r.alive)) {
+            pondStatus.textContent = '🌊 Calm';
+          }
+        }, 1500);
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        // Add initial fish
+        const initialCount = parseInt(countSlider.value);
+        for (let i = 0; i < initialCount; i++) {
+          fish.push(new Fish());
+        }
+        fishCount.textContent = `🐟 ${fish.length} fish`;
+        startAnimation();
+        status.textContent = '🐟 Koi swimming peacefully in the pond — click to ripple!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

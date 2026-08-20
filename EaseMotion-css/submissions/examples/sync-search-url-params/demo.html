@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sync Search with URL Parameters - EaseMotion CSS</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="demo-wrapper">
+      <header class="demo-header">
+        <h1>Sync Search with URL Parameters</h1>
+        <p class="description">
+          A premium, interactive demonstration of syncing search input state
+          with URL query parameters in real time. Share queries instantly via
+          link generation.
+        </p>
+      </header>
+
+      <!-- Mock Browser Address Bar (Visualizing URL Parameters) -->
+      <div class="mock-browser card">
+        <div class="browser-controls">
+          <span class="control-dot close"></span>
+          <span class="control-dot minimize"></span>
+          <span class="control-dot maximize"></span>
+        </div>
+        <div class="address-bar-container">
+          <div class="nav-arrows">
+            <span class="arrow disabled">←</span>
+            <span class="arrow disabled">→</span>
+            <span class="arrow reload">↻</span>
+          </div>
+          <input
+            type="text"
+            id="mockAddress"
+            class="address-input"
+            readonly
+            value="https://easemotion.css/docs"
+          />
+          <button
+            id="copyShareBtn"
+            class="copy-share-btn"
+            title="Copy shareable link"
+          >
+            <span>Copy Link</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Control Panel -->
+        <div class="control-panel card">
+          <h2>Filter Animations</h2>
+          <div class="input-container">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search animations (e.g. fade, slide, spin)..."
+              class="search-input"
+            />
+          </div>
+
+          <div class="info-note">
+            <span class="info-icon">ℹ️</span>
+            <p>
+              Type in the box above. The browser URL query parameter `?q=` will
+              update dynamically. Reloading or sharing this page will preserve
+              your search query!
+            </p>
+          </div>
+        </div>
+
+        <!-- Event Logs -->
+        <div class="log-panel card">
+          <h2>Url State Log</h2>
+          <div class="log-console" id="logConsole">
+            <div class="log-line system">
+              Console initialized. Ready to sync URL query state.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid -->
+      <div class="results-panel card">
+        <h2>Filtered Animations (<span id="resultsCount">8</span>)</h2>
+        <div class="items-grid" id="itemsGrid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Copy feedback notification toast -->
+    <div id="toast" class="toast">Link copied to clipboard!</div>
+
+    <script>
+      const animations = [
+        {
+          name: "ease-fade-in",
+          desc: "Fade in from 0 to 1 opacity",
+          cat: "fade",
+        },
+        {
+          name: "ease-fade-out",
+          desc: "Fade out from 1 to 0 opacity",
+          cat: "fade",
+        },
+        {
+          name: "ease-slide-up",
+          desc: "Slide up while fading in",
+          cat: "slide",
+        },
+        {
+          name: "ease-slide-down",
+          desc: "Slide down while fading in",
+          cat: "slide",
+        },
+        {
+          name: "ease-slide-in-left",
+          desc: "Slide in from the left",
+          cat: "slide",
+        },
+        {
+          name: "ease-slide-in-right",
+          desc: "Slide in from the right",
+          cat: "slide",
+        },
+        {
+          name: "ease-bounce",
+          desc: "Infinite vertical bounce animation",
+          cat: "bounce",
+        },
+        {
+          name: "ease-rotate",
+          desc: "Continuous 360-degree rotation",
+          cat: "rotate",
+        },
+      ];
+
+      const searchInput = document.getElementById("searchInput");
+      const mockAddress = document.getElementById("mockAddress");
+      const copyShareBtn = document.getElementById("copyShareBtn");
+      const logConsole = document.getElementById("logConsole");
+      const itemsGrid = document.getElementById("itemsGrid");
+      const resultsCountEl = document.getElementById("resultsCount");
+      const toast = document.getElementById("toast");
+
+      let debounceTimer;
+
+      function renderItems(filter = "") {
+        const query = filter.toLowerCase().trim();
+        const filtered = animations.filter(
+          (anim) =>
+            anim.name.includes(query) || anim.desc.toLowerCase().includes(query)
+        );
+
+        itemsGrid.innerHTML = "";
+        if (filtered.length === 0) {
+          itemsGrid.innerHTML = `<div class="no-results">No animations match "${filter}"</div>`;
+        } else {
+          filtered.forEach((anim) => {
+            const itemCard = document.createElement("div");
+            itemCard.className = "item-card";
+            itemCard.innerHTML = `
+              <div class="item-name">${anim.name}</div>
+              <div class="item-desc">${anim.desc}</div>
+              <span class="item-badge">${anim.cat}</span>
+            `;
+            itemsGrid.appendChild(itemCard);
+          });
+        }
+        resultsCountEl.textContent = filtered.length;
+      }
+
+      function logEvent(message, type = "info") {
+        const time = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
+        const ms = String(new Date().getMilliseconds()).padStart(3, "0");
+        const line = document.createElement("div");
+        line.className = `log-line ${type}`;
+        line.innerHTML = `<span class="log-time">[${time}.${ms}]</span> ${message}`;
+        logConsole.appendChild(line);
+        logConsole.scrollTop = logConsole.scrollHeight;
+      }
+
+      // Sync actual and mock URL
+      function syncURLState(query) {
+        const url = new URL(window.location);
+        const prevParams = url.searchParams.get("q") || "";
+
+        if (query) {
+          url.searchParams.set("q", query);
+          mockAddress.value = `https://easemotion.css/docs?q=${encodeURIComponent(query)}`;
+        } else {
+          url.searchParams.delete("q");
+          mockAddress.value = "https://easemotion.css/docs";
+        }
+
+        // Only update browser history state if it actually changed
+        if (prevParams !== query) {
+          window.history.replaceState({}, "", url);
+          logEvent(`🔗 URL Param Synced: q="${query}"`, "success");
+        }
+      }
+
+      // On input, filter instantly & update URL with debounce (to avoid flooding history stack)
+      searchInput.addEventListener("input", (e) => {
+        const val = e.target.value;
+        renderItems(val);
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          syncURLState(val);
+        }, 150);
+      });
+
+      // Load query parameter from URL on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get("q") || "";
+
+        if (query) {
+          searchInput.value = query;
+          logEvent(`📥 Loaded Query Param from URL: q="${query}"`, "warn");
+          renderItems(query);
+          mockAddress.value = `https://easemotion.css/docs?q=${encodeURIComponent(query)}`;
+        } else {
+          renderItems();
+        }
+      });
+
+      // Copy shareable link
+      copyShareBtn.addEventListener("click", () => {
+        // Construct copyable URL based on browser location
+        const url = new URL(window.location);
+        const query = searchInput.value;
+        if (query) {
+          url.searchParams.set("q", query);
+        } else {
+          url.searchParams.delete("q");
+        }
+
+        navigator.clipboard.writeText(url.href).then(() => {
+          logEvent(`📋 Copied shareable link: ${url.search}`, "info");
+          toast.classList.add("show");
+          setTimeout(() => {
+            toast.classList.remove("show");
+          }, 2000);
+        });
+      });
+    </script>
+  </body>
+</html>

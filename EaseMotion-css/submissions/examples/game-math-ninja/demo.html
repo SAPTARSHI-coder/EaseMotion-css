@@ -1,0 +1,745 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Math Ninja · 🥷</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>🥷 Math Ninja</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">⭐ Score</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🔥 Combo</span>
+                    <span id="comboDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">⚡ Level</span>
+                    <span id="levelDisplay">1</span>
+                </div>
+                <div class="stat">
+                    <span class="label">⏱️ Time</span>
+                    <span id="timerDisplay">30</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+            
+            <!-- HUD Overlay -->
+            <div id="hudOverlay">
+                <div id="equationDisplay" class="equation-box">
+                    <span id="equationText">12 + 8 = ?</span>
+                </div>
+                <div id="answerButtons" class="answer-grid">
+                    <button class="answer-btn" data-value="20">20</button>
+                    <button class="answer-btn" data-value="16">16</button>
+                    <button class="answer-btn" data-value="24">24</button>
+                    <button class="answer-btn" data-value="18">18</button>
+                </div>
+                <div id="comboDisplayOverlay" class="combo-overlay" style="display:none">
+                    <span id="comboText">🔥 5x Combo!</span>
+                </div>
+            </div>
+
+            <!-- Start Overlay -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>🥷 Math Ninja</h2>
+                    <p>Solve math problems by striking the correct answer!</p>
+                    <p class="sub-text">Combos • Time Pressure • Scaling Difficulty</p>
+                    <div class="difficulty-select">
+                        <button class="diff-btn active" data-diff="easy">😊 Easy</button>
+                        <button class="diff-btn" data-diff="medium">🤔 Medium</button>
+                        <button class="diff-btn" data-diff="hard">😈 Hard</button>
+                    </div>
+                    <button id="startBtn" class="btn-primary">⚔️ Start Training</button>
+                    <div class="controls-hint">
+                        <span>🖱️ Click answer • ⌨️ Press 1-4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameOverOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>💫 Training Complete!</h2>
+                    <div class="final-stats">
+                        <p>⭐ Score: <span id="finalScore">0</span></p>
+                        <p>🔥 Best Combo: <span id="finalCombo">0</span></p>
+                        <p>✅ Correct: <span id="finalCorrect">0</span></p>
+                        <p>❌ Wrong: <span id="finalWrong">0</span></p>
+                        <p>⚡ Level Reached: <span id="finalLevel">1</span></p>
+                    </div>
+                    <button id="restartBtn" class="btn-primary">🔄 Train Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-footer">
+            <span class="hint">🥷 Strike fast! Combo for bonus points • Difficulty scales with your level</span>
+            <button id="toggleSound" class="btn-secondary">🔊 Sound</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== MATH NINJA GAME ==========
+        class MathNinja {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game state
+                this.state = 'start'; // 'start' | 'playing' | 'gameover'
+                this.score = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.correct = 0;
+                this.wrong = 0;
+                this.level = 1;
+                this.timer = 30;
+                this.maxTimer = 30;
+                this.difficulty = 'easy';
+                this.soundEnabled = true;
+                this.audioCtx = null;
+                
+                // Equation
+                this.currentEquation = null;
+                this.answers = [];
+                this.correctIndex = -1;
+                this.showingFeedback = false;
+                this.feedbackTimer = 0;
+                
+                // Animations
+                this.particles = [];
+                this.shurikens = [];
+                this.ninjaStars = [];
+                this.frame = 0;
+                
+                // Background
+                this.bgStars = [];
+                for (let i = 0; i < 80; i++) {
+                    this.bgStars.push({
+                        x: Math.random() * 800,
+                        y: Math.random() * 500,
+                        size: Math.random() * 2 + 0.5,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.state = 'start';
+                this.score = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.correct = 0;
+                this.wrong = 0;
+                this.level = 1;
+                this.timer = this.maxTimer;
+                this.particles = [];
+                this.shurikens = [];
+                this.frame = 0;
+                
+                document.getElementById('scoreDisplay').textContent = '0';
+                document.getElementById('comboDisplay').textContent = '0';
+                document.getElementById('levelDisplay').textContent = '1';
+                document.getElementById('timerDisplay').textContent = this.timer;
+                document.getElementById('comboDisplayOverlay').style.display = 'none';
+                document.getElementById('startOverlay').style.display = 'flex';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                
+                this.updateUI();
+            }
+            
+            generateEquation() {
+                // Difficulty scaling
+                let num1, num2, operator;
+                const maxNum = 10 + this.level * 2;
+                
+                const operations = ['+', '-', '×'];
+                // Higher levels include division
+                if (this.level > 3) operations.push('÷');
+                
+                operator = operations[Math.floor(Math.random() * operations.length)];
+                
+                switch(operator) {
+                    case '+':
+                        num1 = Math.floor(Math.random() * maxNum) + 1;
+                        num2 = Math.floor(Math.random() * maxNum) + 1;
+                        break;
+                    case '-':
+                        num1 = Math.floor(Math.random() * maxNum) + 1;
+                        num2 = Math.floor(Math.random() * num1) + 1;
+                        break;
+                    case '×':
+                        const multMax = Math.min(12, 5 + this.level);
+                        num1 = Math.floor(Math.random() * multMax) + 1;
+                        num2 = Math.floor(Math.random() * multMax) + 1;
+                        break;
+                    case '÷':
+                        num2 = Math.floor(Math.random() * 10) + 1;
+                        const result = Math.floor(Math.random() * 10) + 1;
+                        num1 = num2 * result;
+                        break;
+                }
+                
+                let correctAnswer;
+                switch(operator) {
+                    case '+': correctAnswer = num1 + num2; break;
+                    case '-': correctAnswer = num1 - num2; break;
+                    case '×': correctAnswer = num1 * num2; break;
+                    case '÷': correctAnswer = num1 / num2; break;
+                }
+                
+                // Generate wrong answers
+                const wrongAnswers = new Set();
+                while (wrongAnswers.size < 3) {
+                    let offset = Math.floor(Math.random() * 10) + 1;
+                    if (Math.random() > 0.5) offset = -offset;
+                    const wrong = correctAnswer + offset;
+                    if (wrong !== correctAnswer && wrong > 0) {
+                        wrongAnswers.add(wrong);
+                    }
+                }
+                
+                // Combine and shuffle
+                const allAnswers = [correctAnswer, ...wrongAnswers];
+                const shuffled = allAnswers.sort(() => Math.random() - 0.5);
+                const correctIndex = shuffled.indexOf(correctAnswer);
+                
+                this.currentEquation = { num1, num2, operator, correctAnswer };
+                this.answers = shuffled;
+                this.correctIndex = correctIndex;
+                
+                // Update display
+                document.getElementById('equationText').textContent = 
+                    `${num1} ${operator} ${num2} = ?`;
+                
+                const buttons = document.querySelectorAll('.answer-btn');
+                buttons.forEach((btn, i) => {
+                    btn.textContent = shuffled[i];
+                    btn.dataset.value = shuffled[i];
+                });
+            }
+            
+            checkAnswer(index) {
+                if (this.state !== 'playing' || this.showingFeedback) return;
+                
+                const selected = parseInt(this.answers[index]);
+                const correct = this.currentEquation.correctAnswer;
+                const isCorrect = selected === correct;
+                
+                this.showingFeedback = true;
+                this.feedbackTimer = 20;
+                
+                const btn = document.querySelectorAll('.answer-btn')[index];
+                
+                if (isCorrect) {
+                    this.combo++;
+                    this.correct++;
+                    const bonus = Math.floor(this.combo / 5) + 1;
+                    const points = 10 * (1 + Math.floor(this.combo / 3));
+                    this.score += points;
+                    this.spawnParticles('correct');
+                    this.spawnShuriken('correct');
+                    this.playSound(500 + this.combo * 10, 0.1);
+                    
+                    btn.style.background = '#4ecdc4';
+                    btn.style.transform = 'scale(1.1)';
+                    
+                    // Combo notification
+                    if (this.combo > 1 && this.combo % 5 === 0) {
+                        this.showCombo(this.combo);
+                        this.spawnParticles('combo');
+                        this.playSound(800, 0.15);
+                    }
+                    
+                    if (this.combo > this.bestCombo) {
+                        this.bestCombo = this.combo;
+                    }
+                    
+                    // Level up every 10 correct answers
+                    if (this.correct % 10 === 0) {
+                        this.level++;
+                        document.getElementById('levelDisplay').textContent = this.level;
+                        this.maxTimer = Math.max(15, 30 - this.level * 1);
+                        this.timer = Math.min(this.timer + 2, this.maxTimer);
+                        this.spawnParticles('levelup');
+                        this.playSound(300, 0.2);
+                    }
+                    
+                } else {
+                    this.combo = 0;
+                    this.wrong++;
+                    this.spawnParticles('wrong');
+                    this.playSound(200, 0.2);
+                    
+                    btn.style.background = '#ff6b6b';
+                    btn.style.transform = 'scale(0.9)';
+                    
+                    // Flash correct answer
+                    document.querySelectorAll('.answer-btn')[this.correctIndex].style.background = '#4ecdc4';
+                }
+                
+                this.updateUI();
+                
+                // Generate new equation after delay
+                setTimeout(() => {
+                    btn.style.background = '';
+                    btn.style.transform = '';
+                    document.querySelectorAll('.answer-btn').forEach(b => {
+                        b.style.background = '';
+                        b.style.transform = '';
+                    });
+                    this.showingFeedback = false;
+                    if (this.state === 'playing') {
+                        this.generateEquation();
+                    }
+                }, 400);
+            }
+            
+            showCombo(combo) {
+                const overlay = document.getElementById('comboDisplayOverlay');
+                const text = document.getElementById('comboText');
+                text.textContent = `🔥 ${combo}x Combo!`;
+                overlay.style.display = 'block';
+                
+                // Create floating particles
+                for (let i = 0; i < 20; i++) {
+                    this.particles.push({
+                        x: 400 + (Math.random() - 0.5) * 200,
+                        y: 200 + (Math.random() - 0.5) * 100,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: -2 - Math.random() * 6,
+                        life: 1,
+                        decay: 0.01 + Math.random() * 0.01,
+                        size: 3 + Math.random() * 5,
+                        color: ['#ffd93d', '#ff6b6b', '#4ecdc4', '#6c5ce7'][Math.floor(Math.random() * 4)]
+                    });
+                }
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1500);
+            }
+            
+            spawnParticles(type) {
+                const colors = {
+                    correct: ['#4ecdc4', '#ffd93d', '#6c5ce7'],
+                    wrong: ['#ff6b6b', '#ff9f43', '#fd79a8'],
+                    combo: ['#ffd93d', '#ff6b6b', '#4ecdc4', '#6c5ce7'],
+                    levelup: ['#ffd93d', '#ff6b6b', '#4ecdc4', '#6c5ce7', '#a29bfe']
+                };
+                
+                const colorSet = colors[type] || colors.correct;
+                const count = type === 'levelup' ? 30 : 15;
+                
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 5;
+                    this.particles.push({
+                        x: 400 + (Math.random() - 0.5) * 100,
+                        y: 250 + (Math.random() - 0.5) * 80,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1,
+                        life: 1,
+                        decay: 0.015 + Math.random() * 0.025,
+                        size: 2 + Math.random() * 6,
+                        color: colorSet[Math.floor(Math.random() * colorSet.length)]
+                    });
+                }
+            }
+            
+            spawnShuriken(type) {
+                const x = type === 'correct' ? Math.random() * 800 : Math.random() * 800;
+                const y = type === 'correct' ? -20 : 520;
+                const targetX = 400 + (Math.random() - 0.5) * 200;
+                const targetY = 250 + (Math.random() - 0.5) * 80;
+                
+                this.shurikens.push({
+                    x: x,
+                    y: y,
+                    targetX: targetX,
+                    targetY: targetY,
+                    progress: 0,
+                    rotation: Math.random() * Math.PI * 2,
+                    color: type === 'correct' ? '#4ecdc4' : '#ff6b6b',
+                    speed: 0.03 + Math.random() * 0.02
+                });
+            }
+            
+            playSound(frequency, duration) {
+                if (!this.soundEnabled || !this.audioCtx) return;
+                try {
+                    const oscillator = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    oscillator.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'sine';
+                    gain.gain.value = 0.1;
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+                    oscillator.start(this.audioCtx.currentTime);
+                    oscillator.stop(this.audioCtx.currentTime + duration);
+                } catch(e) {}
+            }
+            
+            updateUI() {
+                document.getElementById('scoreDisplay').textContent = this.score;
+                document.getElementById('comboDisplay').textContent = this.combo;
+                document.getElementById('timerDisplay').textContent = Math.ceil(this.timer);
+            }
+            
+            update() {
+                if (this.state !== 'playing') return;
+                this.frame++;
+                
+                // Timer
+                if (this.frame % 60 === 0) {
+                    this.timer--;
+                    this.updateUI();
+                    
+                    if (this.timer <= 0) {
+                        this.gameOver();
+                        return;
+                    }
+                }
+                
+                // Update particles
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // Update shurikens
+                for (let i = this.shurikens.length - 1; i >= 0; i--) {
+                    const s = this.shurikens[i];
+                    s.progress += s.speed;
+                    s.rotation += 0.1;
+                    
+                    if (s.progress >= 1) {
+                        this.shurikens.splice(i, 1);
+                    }
+                }
+                
+                // Update background stars
+                for (const star of this.bgStars) {
+                    star.twinkle += 0.02;
+                }
+            }
+            
+            render() {
+                const ctx = this.ctx;
+                const W = 800, H = 500;
+                
+                // Background
+                const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                gradient.addColorStop(0, '#1a1a2e');
+                gradient.addColorStop(0.5, '#16213e');
+                gradient.addColorStop(1, '#0f0c29');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Background stars
+                for (const star of this.bgStars) {
+                    const brightness = 0.5 + 0.5 * Math.sin(star.twinkle);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.6})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw decorative elements
+                ctx.fillStyle = 'rgba(78, 205, 196, 0.05)';
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.arc(100 + i * 150, 100 + Math.sin(i + this.frame * 0.01) * 30, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw shurikens
+                for (const s of this.shurikens) {
+                    const x = s.x + (s.targetX - s.x) * s.progress;
+                    const y = s.y + (s.targetY - s.y) * s.progress;
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(s.rotation);
+                    ctx.shadowColor = s.color;
+                    ctx.shadowBlur = 20;
+                    
+                    // Shuriken shape
+                    ctx.fillStyle = s.color;
+                    for (let i = 0; i < 4; i++) {
+                        ctx.save();
+                        ctx.rotate(i * Math.PI / 2);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -15);
+                        ctx.lineTo(-3, -8);
+                        ctx.lineTo(0, 0);
+                        ctx.lineTo(3, -8);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Draw particles
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                
+                // Draw ninja character (decorative)
+                this.drawNinja(ctx);
+            }
+            
+            drawNinja(ctx) {
+                const x = 700, y = 400;
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Body
+                ctx.fillStyle = '#2d2d44';
+                ctx.shadowColor = 'rgba(78, 205, 196, 0.2)';
+                ctx.shadowBlur = 20;
+                ctx.fillRect(-15, -10, 30, 35);
+                
+                // Head
+                ctx.fillStyle = '#3d3d5a';
+                ctx.beginPath();
+                ctx.arc(0, -15, 18, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Headband
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillRect(-20, -22, 40, 6);
+                
+                // Headband tails
+                ctx.fillRect(-25, -22, 8, 20);
+                ctx.fillRect(17, -22, 8, 20);
+                
+                // Eyes (slits)
+                ctx.fillStyle = '#4ecdc4';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#4ecdc4';
+                ctx.fillRect(-8, -18, 4, 2);
+                ctx.fillRect(4, -18, 4, 2);
+                
+                // Scarf
+                ctx.fillStyle = '#4ecdc4';
+                ctx.shadowBlur = 0;
+                ctx.fillRect(-12, 4, 24, 4);
+                ctx.fillRect(-16, 8, 8, 15);
+                ctx.fillRect(8, 8, 8, 15);
+                
+                // Arms
+                ctx.fillStyle = '#2d2d44';
+                ctx.fillRect(-22, 0, 7, 20);
+                ctx.fillRect(15, 0, 7, 20);
+                
+                // Hands (holding shuriken)
+                ctx.fillStyle = '#3d3d5a';
+                ctx.beginPath();
+                ctx.arc(-18, 22, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(18, 22, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Shuriken in hand
+                ctx.fillStyle = '#ffd93d';
+                ctx.shadowColor = '#ffd93d';
+                ctx.shadowBlur = 15;
+                for (let i = 0; i < 4; i++) {
+                    ctx.save();
+                    ctx.rotate(i * Math.PI / 2 + this.frame * 0.05);
+                    ctx.beginPath();
+                    ctx.moveTo(20, -5);
+                    ctx.lineTo(18, -3);
+                    ctx.lineTo(20, 0);
+                    ctx.lineTo(22, -3);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.beginPath();
+                ctx.arc(20, 0, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Legs
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#1a1a2e';
+                const legOffset = Math.sin(this.frame * 0.05) * 2;
+                ctx.fillRect(-10, 25 + legOffset, 8, 20);
+                ctx.fillRect(2, 25 - legOffset, 8, 20);
+                
+                // Feet
+                ctx.fillStyle = '#2d2d44';
+                ctx.fillRect(-12, 43 + legOffset, 12, 4);
+                ctx.fillRect(0, 43 - legOffset, 12, 4);
+                
+                ctx.restore();
+            }
+            
+            gameOver() {
+                this.state = 'gameover';
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalCombo').textContent = this.bestCombo;
+                document.getElementById('finalCorrect').textContent = this.correct;
+                document.getElementById('finalWrong').textContent = this.wrong;
+                document.getElementById('finalLevel').textContent = this.level;
+                document.getElementById('gameOverOverlay').style.display = 'flex';
+                this.spawnParticles('levelup');
+                this.playSound(150, 0.3);
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            setupEventListeners() {
+                // Start button
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Restart button
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.init();
+                    this.startGame();
+                });
+                
+                // Difficulty buttons
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.difficulty = btn.dataset.diff;
+                        
+                        // Adjust timer based on difficulty
+                        switch(this.difficulty) {
+                            case 'easy': this.maxTimer = 35; break;
+                            case 'medium': this.maxTimer = 25; break;
+                            case 'hard': this.maxTimer = 15; break;
+                        }
+                        this.timer = this.maxTimer;
+                        document.getElementById('timerDisplay').textContent = this.timer;
+                    });
+                });
+                
+                // Answer buttons
+                document.querySelectorAll('.answer-btn').forEach((btn, index) => {
+                    btn.addEventListener('click', () => {
+                        this.checkAnswer(index);
+                    });
+                    
+                    // Touch support
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.checkAnswer(index);
+                    }, { passive: false });
+                });
+                
+                // Keyboard shortcuts (1-4)
+                document.addEventListener('keydown', (e) => {
+                    const num = parseInt(e.key);
+                    if (num >= 1 && num <= 4) {
+                        e.preventDefault();
+                        if (this.state === 'playing') {
+                            this.checkAnswer(num - 1);
+                        }
+                    }
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.state === 'start') {
+                            this.startGame();
+                        } else if (this.state === 'gameover') {
+                            this.init();
+                            this.startGame();
+                        }
+                    }
+                });
+                
+                // Sound toggle
+                document.getElementById('toggleSound').addEventListener('click', () => {
+                    this.soundEnabled = !this.soundEnabled;
+                    document.getElementById('toggleSound').textContent = 
+                        this.soundEnabled ? '🔊 Sound' : '🔇 Muted';
+                    if (this.soundEnabled && !this.audioCtx) {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                });
+                
+                // Initialize audio context
+                document.addEventListener('click', () => {
+                    if (!this.audioCtx) {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                }, { once: true });
+            }
+            
+            startGame() {
+                this.state = 'playing';
+                this.timer = this.maxTimer;
+                this.combo = 0;
+                this.score = 0;
+                this.correct = 0;
+                this.wrong = 0;
+                this.level = 1;
+                this.bestCombo = 0;
+                this.particles = [];
+                this.shurikens = [];
+                
+                document.getElementById('startOverlay').style.display = 'none';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                document.getElementById('comboDisplayOverlay').style.display = 'none';
+                
+                this.updateUI();
+                this.generateEquation();
+                this.playSound(400, 0.1);
+                
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+            }
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new MathNinja();
+        });
+    </script>
+</body>
+</html>

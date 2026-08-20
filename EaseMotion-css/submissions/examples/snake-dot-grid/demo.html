@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Dot Grid Demo - EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="theme-cyan">
+
+  <div class="snake-app-layout">
+    
+    <!-- Header -->
+    <header class="snake-header">
+      <div class="snake-title-group">
+        <h1>
+          Snake Dot Grid
+          <span class="title-badge">Play Gallery</span>
+        </h1>
+        <p>A dot snakes through a grid matrix, leaving a decaying neon light trail.</p>
+      </div>
+    </header>
+
+    <!-- Canvas Stage Card -->
+    <main class="snake-stage-card">
+      
+      <!-- Interactive Grid Matrix -->
+      <div class="snake-grid-matrix" id="gridMatrix" aria-label="Snake Dot Grid Display">
+        <!-- Cells generated dynamically by JS -->
+      </div>
+
+      <!-- Control Panel -->
+      <div class="snake-controls">
+        
+        <!-- Play / Pause & Step -->
+        <div class="control-group">
+          <button class="btn-action" id="btnTogglePlay" aria-label="Pause or Play Animation">
+            <span id="playIcon">⏸</span> <span id="playText">Pause</span>
+          </button>
+          <button class="btn-action" id="btnStep" aria-label="Advance one step">
+            <span>⏭</span> Step
+          </button>
+        </div>
+
+        <!-- Pattern Selector -->
+        <div class="control-group">
+          <label for="selectPattern" class="control-label">Pattern:</label>
+          <select id="selectPattern" class="custom-select">
+            <option value="serpentine">Serpentine</option>
+            <option value="spiral">Spiral</option>
+            <option value="random">Random Wander</option>
+            <option value="border">Border Chase</option>
+          </select>
+        </div>
+
+        <!-- Speed Slider -->
+        <div class="control-group">
+          <label for="speedSlider" class="control-label">Speed:</label>
+          <input type="range" id="speedSlider" class="slider-control" min="60" max="450" value="180" step="10">
+          <span id="speedVal" class="control-label" style="min-width: 45px;">180ms</span>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="control-group">
+          <label for="selectTheme" class="control-label">Theme:</label>
+          <select id="selectTheme" class="custom-select">
+            <option value="theme-cyan">Cyber Cyan</option>
+            <option value="theme-matrix">Emerald Matrix</option>
+            <option value="theme-solar">Solar Flame</option>
+            <option value="theme-violet">Electric Violet</option>
+          </select>
+        </div>
+
+        <!-- Grid Dimension -->
+        <div class="control-group">
+          <label for="selectGridSize" class="control-label">Grid:</label>
+          <select id="selectGridSize" class="custom-select">
+            <option value="8">8 x 8</option>
+            <option value="10" selected>10 x 10</option>
+            <option value="12">12 x 12</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Info & Status Footer -->
+      <footer class="snake-info-footer">
+        <div class="stat-item">
+          Current Position: <span class="stat-val" id="statPos">(0, 0)</span>
+        </div>
+        <div class="stat-item">
+          Steps Count: <span class="stat-val" id="statSteps">0</span>
+        </div>
+        <div class="stat-item">
+          Trail Length: <span class="stat-val">5 Cells</span>
+        </div>
+        <div class="stat-item" style="font-style: italic;">
+          💡 Tip: Click any grid cell to teleport the snake head!
+        </div>
+      </footer>
+
+    </main>
+
+  </div>
+
+  <!-- Dependency-free JavaScript Implementation -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Elements
+      const gridMatrix = document.getElementById('gridMatrix');
+      const btnTogglePlay = document.getElementById('btnTogglePlay');
+      const btnStep = document.getElementById('btnStep');
+      const playIcon = document.getElementById('playIcon');
+      const playText = document.getElementById('playText');
+      const selectPattern = document.getElementById('selectPattern');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedVal = document.getElementById('speedVal');
+      const selectTheme = document.getElementById('selectTheme');
+      const selectGridSize = document.getElementById('selectGridSize');
+      const statPos = document.getElementById('statPos');
+      const statSteps = document.getElementById('statSteps');
+
+      // Snake State
+      let cols = 10;
+      let rows = 10;
+      let isPlaying = true;
+      let speedMs = 180;
+      let timerId = null;
+      let pattern = 'serpentine';
+      let stepsCount = 0;
+
+      // Position & Trail (Queue of max length 6: [0] = head, [1..5] = trail)
+      const MAX_TRAIL = 5;
+      let trail = []; // array of { r, c }
+      let pathSequence = [];
+      let sequenceIndex = 0;
+
+      // Initialize Grid Layout
+      function initGrid() {
+        cols = parseInt(selectGridSize.value, 10);
+        rows = parseInt(selectGridSize.value, 10);
+        document.documentElement.style.setProperty('--grid-cols', cols);
+        document.documentElement.style.setProperty('--grid-rows', rows);
+
+        gridMatrix.innerHTML = '';
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+            cell.title = `Cell (${r}, ${c})`;
+            cell.addEventListener('click', () => onCellClick(r, c));
+            gridMatrix.appendChild(cell);
+          }
+        }
+
+        // Generate Path & Start Position
+        generatePathSequence();
+        sequenceIndex = 0;
+        stepsCount = 0;
+        trail = [];
+        
+        const startPos = pathSequence[0] || { r: 0, c: 0 };
+        trail.unshift(startPos);
+        renderSnake();
+      }
+
+      // Generate pattern coordinate paths
+      function generatePathSequence() {
+        pathSequence = [];
+
+        if (pattern === 'serpentine') {
+          for (let r = 0; r < rows; r++) {
+            if (r % 2 === 0) {
+              for (let c = 0; c < cols; c++) pathSequence.push({ r, c });
+            } else {
+              for (let c = cols - 1; c >= 0; c--) pathSequence.push({ r, c });
+            }
+          }
+        } 
+        else if (pattern === 'spiral') {
+          let top = 0, bottom = rows - 1, left = 0, right = cols - 1;
+          while (top <= bottom && left <= right) {
+            for (let c = left; c <= right; c++) pathSequence.push({ r: top, c });
+            top++;
+            for (let r = top; r <= bottom; r++) pathSequence.push({ r, c: right });
+            right--;
+            if (top <= bottom) {
+              for (let c = right; c >= left; c--) pathSequence.push({ r: bottom, c });
+              bottom--;
+            }
+            if (left <= right) {
+              for (let r = bottom; r >= top; r--) pathSequence.push({ r, c: left });
+              left++;
+            }
+          }
+        }
+        else if (pattern === 'border') {
+          for (let c = 0; c < cols; c++) pathSequence.push({ r: 0, c });
+          for (let r = 1; r < rows; r++) pathSequence.push({ r, c: cols - 1 });
+          for (let c = cols - 2; c >= 0; c--) pathSequence.push({ r: rows - 1, c });
+          for (let r = rows - 2; r > 0; r--) pathSequence.push({ r, c: 0 });
+        }
+        else if (pattern === 'random') {
+          // Dynamic random sequence handled on the fly
+          pathSequence = [];
+        }
+      }
+
+      // Get Next Coordinate
+      function getNextPosition() {
+        if (pattern === 'random') {
+          const current = trail[0] || { r: 0, c: 0 };
+          const neighbors = [
+            { r: current.r - 1, c: current.c },
+            { r: current.r + 1, c: current.c },
+            { r: current.r, c: current.c - 1 },
+            { r: current.r, c: current.c + 1 }
+          ].filter(p => p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols);
+
+          // Avoid immediate backtrack if possible
+          const prev = trail[1];
+          const valid = neighbors.filter(n => !prev || !(n.r === prev.r && n.c === prev.c));
+          const choices = valid.length > 0 ? valid : neighbors;
+          return choices[Math.floor(Math.random() * choices.length)];
+        } else {
+          sequenceIndex = (sequenceIndex + 1) % pathSequence.length;
+          return pathSequence[sequenceIndex];
+        }
+      }
+
+      // Advance Snake Step
+      function stepSnake() {
+        const nextPos = getNextPosition();
+        trail.unshift(nextPos);
+        if (trail.length > MAX_TRAIL + 1) {
+          trail.pop();
+        }
+        stepsCount++;
+        renderSnake();
+      }
+
+      // Render Snake Trail & Head on Grid
+      function renderSnake() {
+        // Clear previous active classes
+        const allCells = gridMatrix.querySelectorAll('.grid-cell');
+        allCells.forEach(cell => {
+          cell.className = 'grid-cell';
+        });
+
+        // Apply classes for head and decaying trail
+        trail.forEach((pos, index) => {
+          const idx = pos.r * cols + pos.c;
+          const cell = allCells[idx];
+          if (!cell) return;
+
+          if (index === 0) {
+            cell.classList.add('snake-head');
+          } else if (index <= MAX_TRAIL) {
+            cell.classList.add(`snake-trail-${index}`);
+          }
+        });
+
+        // Update stats
+        if (trail[0]) {
+          statPos.textContent = `(${trail[0].r}, ${trail[0].c})`;
+        }
+        statSteps.textContent = stepsCount;
+      }
+
+      // Teleport on Cell Click
+      function onCellClick(r, c) {
+        trail.unshift({ r, c });
+        if (trail.length > MAX_TRAIL + 1) {
+          trail.pop();
+        }
+        stepsCount++;
+        renderSnake();
+      }
+
+      // Timer Controls
+      function startLoop() {
+        stopLoop();
+        timerId = setInterval(stepSnake, speedMs);
+      }
+
+      function stopLoop() {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }
+
+      function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          playIcon.textContent = '⏸';
+          playText.textContent = 'Pause';
+          startLoop();
+        } else {
+          playIcon.textContent = '▶';
+          playText.textContent = 'Play';
+          stopLoop();
+        }
+      }
+
+      // Event Listeners
+      btnTogglePlay.addEventListener('click', togglePlay);
+      
+      btnStep.addEventListener('click', () => {
+        if (isPlaying) {
+          togglePlay();
+        }
+        stepSnake();
+      });
+
+      selectPattern.addEventListener('change', (e) => {
+        pattern = e.target.value;
+        generatePathSequence();
+        sequenceIndex = 0;
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedMs = parseInt(e.target.value, 10);
+        speedVal.textContent = `${speedMs}ms`;
+        if (isPlaying) {
+          startLoop();
+        }
+      });
+
+      selectTheme.addEventListener('change', (e) => {
+        document.body.className = e.target.value;
+      });
+
+      selectGridSize.addEventListener('change', () => {
+        initGrid();
+        if (isPlaying) startLoop();
+      });
+
+      // Init on load
+      initGrid();
+      if (isPlaying) startLoop();
+
+    })();
+  </script>
+</body>
+</html>

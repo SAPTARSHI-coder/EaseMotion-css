@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stone Skipping · stones skip on water surface</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="stone-container">
+      <div class="stone-display" id="stoneDisplay">
+        <!-- Canvas for stone skipping -->
+        <canvas id="stoneCanvas"></canvas>
+        
+        <!-- Stone Info -->
+        <div class="stone-info">
+          <span class="info-label">🪨 Skips</span>
+          <span class="info-value" id="skipCount">0</span>
+        </div>
+
+        <!-- Stone Controls -->
+        <div class="stone-controls">
+          <div class="control-group">
+            <label class="control-label">💪 Power</label>
+            <input type="range" class="control-slider" id="powerSlider" min="1" max="10" value="5">
+            <span class="control-value" id="powerValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎯 Angle</label>
+            <input type="range" class="control-slider" id="angleSlider" min="1" max="10" value="5">
+            <span class="control-value" id="angleValue">5</span>
+          </div>
+        </div>
+
+        <!-- Stone Text -->
+        <div class="stone-text">
+          <span class="text-label">🪨 Stone Skipping</span>
+          <span class="text-message" id="stoneMessage">Click the water to skip a stone</span>
+        </div>
+      </div>
+      
+      <div class="stone-status">
+        <span id="stoneStatus">🪨 Click the water to skip a stone across the surface</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-skip" id="skipBtn">🪨 Skip Stone</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🪨 stones skip · 3-8 skips · ripples and splashes</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('stoneCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('stoneDisplay');
+      const skipCount = document.getElementById('skipCount');
+      const stoneStatus = document.getElementById('stoneStatus');
+      const stoneMessage = document.getElementById('stoneMessage');
+      const skipBtn = document.getElementById('skipBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const powerSlider = document.getElementById('powerSlider');
+      const powerValue = document.getElementById('powerValue');
+      const angleSlider = document.getElementById('angleSlider');
+      const angleValue = document.getElementById('angleValue');
+
+      // State
+      let totalSkips = 0;
+      let stones = [];
+      let ripples = [];
+      let splashes = [];
+      let animationId = null;
+
+      // Stone class
+      class Stone {
+        constructor(x, y, power, angle) {
+          this.x = x;
+          this.y = y;
+          this.power = power / 10;
+          this.angle = (angle / 10) * Math.PI * 0.8 + 0.2;
+          this.size = 4 + this.power * 4;
+          this.speed = 2 + this.power * 4;
+          this.rotation = 0;
+          this.rotationSpeed = 0.05 + Math.random() * 0.05;
+          this.skips = 0;
+          this.maxSkips = 3 + Math.floor(this.power * 5);
+          this.trail = [];
+          this.alive = true;
+          this.direction = 1;
+          this.bounceY = 0;
+          this.bounceSpeed = 0.1;
+          this.gravity = 0.02;
+          this.vx = Math.cos(this.angle) * this.speed;
+          this.vy = -Math.sin(this.angle) * this.speed * 0.3;
+          this.splashTimer = 0;
+        }
+
+        update() {
+          if (!this.alive) return;
+
+          // Gravity
+          this.vy += this.gravity;
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // Bounce on water
+          const waterY = canvas.height * 0.65;
+          if (this.y > waterY && this.vy > 0) {
+            this.y = waterY;
+            this.vy = -this.vy * 0.6;
+            this.vx *= 0.9;
+            this.skips++;
+            this.bounceY = 0;
+
+            // Create ripple on each skip
+            createRipple(this.x, waterY, this.size * (1 + this.skips * 0.1));
+            createSplash(this.x, waterY, this.size);
+
+            if (this.skips >= this.maxSkips || this.vx < 0.3) {
+              this.alive = false;
+              // Final splash
+              createSplash(this.x, waterY, this.size * 1.5);
+            }
+          }
+
+          // Boundary
+          if (this.x > canvas.width || this.x < 0) {
+            this.alive = false;
+          }
+
+          // Rotation
+          this.rotation += this.rotationSpeed * this.vx * 0.1;
+
+          // Trail
+          if (this.skips > 0 && this.skips % 1 === 0) {
+            this.trail.push({ x: this.x, y: this.y, life: 1 });
+          }
+        }
+
+        draw(ctx) {
+          if (!this.alive) return;
+
+          // Trail
+          this.trail = this.trail.filter(t => t.life > 0);
+          this.trail.forEach(t => {
+            t.life -= 0.02;
+            ctx.save();
+            ctx.globalAlpha = t.life * 0.2;
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, this.size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+
+          // Shadow
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.2)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 3;
+
+          // Stone body
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+
+          const grad = ctx.createRadialGradient(
+            -this.size * 0.2, -this.size * 0.2, 0,
+            0, 0, this.size
+          );
+          grad.addColorStop(0, '#8a8a8a');
+          grad.addColorStop(0.3, '#6a6a6a');
+          grad.addColorStop(0.7, '#4a4a4a');
+          grad.addColorStop(1, '#2a2a2a');
+
+          ctx.fillStyle = grad;
+          ctx.shadowBlur = 5;
+          ctx.shadowColor = 'rgba(0,0,0,0.15)';
+
+          // Irregular stone shape
+          ctx.beginPath();
+          const points = 8 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < points; i++) {
+            const angle = (i / points) * Math.PI * 2;
+            const radius = this.size * (0.7 + Math.random() * 0.3);
+            const px = Math.cos(angle) * radius;
+            const py = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+
+          // Highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 0.15;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.ellipse(-this.size * 0.15, -this.size * 0.15, this.size * 0.2, this.size * 0.1, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          ctx.restore();
+        }
+
+        isAlive() {
+          return this.alive;
+        }
+      }
+
+      // Create ripple
+      function createRipple(x, y, size) {
+        ripples.push({
+          x: x,
+          y: y,
+          maxSize: size * 2 + Math.random() * 20,
+          size: 0,
+          life: 1,
+          speed: 0.02 + Math.random() * 0.02,
+          opacity: 0.3 + Math.random() * 0.2
+        });
+      }
+
+      // Create splash
+      function createSplash(x, y, size) {
+        const count = 8 + Math.floor(Math.random() * 8);
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+          const speed = 1 + Math.random() * 2;
+          const distance = 10 + Math.random() * 20;
+          splashes.push({
+            x: x + Math.cos(angle) * distance,
+            y: y + Math.sin(angle) * distance * 0.3,
+            vx: Math.cos(angle) * speed * 0.5,
+            vy: -Math.random() * 2 - 1,
+            size: 2 + Math.random() * 4,
+            life: 1,
+            gravity: 0.05,
+            angle: angle
+          });
+        }
+      }
+
+      // Skip stone
+      function skipStone(x, y) {
+        const power = parseInt(powerSlider.value);
+        const angle = parseInt(angleSlider.value);
+        
+        const stone = new Stone(x, y, power, angle);
+        stones.push(stone);
+        totalSkips++;
+        skipCount.textContent = totalSkips;
+        
+        // Status update
+        stoneStatus.textContent = `🪨 Stone skipped! (${totalSkips})`;
+        stoneStatus.style.color = '#fbbf24';
+        stoneMessage.textContent = `Stone skipped ${stone.maxSkips} times!`;
+        stoneMessage.style.color = '#fbbf24';
+        
+        // Create initial splash
+        createSplash(x, y, 10);
+        
+        setTimeout(() => {
+          stoneStatus.textContent = '🪨 Click the water to skip a stone across the surface';
+          stoneStatus.style.color = '#94a3b8';
+          stoneMessage.textContent = 'Click the water to skip a stone';
+          stoneMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Draw water
+      function drawWater() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const waterY = h * 0.65;
+        
+        // Water gradient
+        const grad = ctx.createLinearGradient(0, waterY, 0, h);
+        grad.addColorStop(0, 'rgba(30, 80, 120, 0.3)');
+        grad.addColorStop(0.3, 'rgba(20, 60, 100, 0.4)');
+        grad.addColorStop(0.7, 'rgba(15, 45, 80, 0.5)');
+        grad.addColorStop(1, 'rgba(10, 30, 60, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, waterY, w, h - waterY);
+        
+        // Water surface line
+        ctx.strokeStyle = 'rgba(100, 200, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, waterY);
+        ctx.lineTo(w, waterY);
+        ctx.stroke();
+        
+        // Water ripples (ambient)
+        for (let i = 0; i < 10; i++) {
+          const x = (i / 10) * w + Math.sin(i * 1.5 + Date.now() * 0.0005) * 20;
+          const y = waterY + 5 + Math.sin(i * 2 + Date.now() * 0.0003) * 3;
+          ctx.globalAlpha = 0.05;
+          ctx.fillStyle = 'rgba(100, 200, 255, 0.1)';
+          ctx.beginPath();
+          ctx.ellipse(x, y, 20 + Math.sin(i * 3) * 10, 3 + Math.sin(i * 2) * 1, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        
+        // Water reflections
+        for (let i = 0; i < 5; i++) {
+          const x = Math.random() * w;
+          const y = waterY + 10 + Math.random() * 20;
+          ctx.globalAlpha = 0.03;
+          ctx.fillStyle = 'rgba(150, 200, 255, 0.2)';
+          ctx.beginPath();
+          ctx.ellipse(x, y, 30 + Math.random() * 20, 3 + Math.random() * 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+        grad.addColorStop(0, 'rgba(20, 30, 50, 0.2)');
+        grad.addColorStop(0.5, 'rgba(30, 50, 70, 0.25)');
+        grad.addColorStop(1, 'rgba(40, 60, 80, 0.3)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h * 0.7);
+        
+        // Distant shore
+        ctx.fillStyle = 'rgba(30, 50, 40, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.55);
+        ctx.quadraticCurveTo(w * 0.3, h * 0.45, w * 0.5, h * 0.5);
+        ctx.quadraticCurveTo(w * 0.7, h * 0.55, w, h * 0.48);
+        ctx.lineTo(w, h * 0.65);
+        ctx.lineTo(0, h * 0.65);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Trees silhouette
+        ctx.fillStyle = 'rgba(20, 40, 30, 0.08)';
+        for (let i = 0; i < 5; i++) {
+          const x = w * (0.05 + i * 0.2) + Math.sin(i * 2) * 20;
+          const y = h * 0.5 + Math.sin(i * 1.5) * 10;
+          ctx.beginPath();
+          ctx.moveTo(x - 15, y);
+          ctx.quadraticCurveTo(x, y - 30 - Math.random() * 20, x + 15, y);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
+        // Sun/moon reflection
+        const grad2 = ctx.createRadialGradient(w * 0.8, h * 0.15, 0, w * 0.8, h * 0.15, 40);
+        grad2.addColorStop(0, 'rgba(200, 220, 240, 0.03)');
+        grad2.addColorStop(1, 'rgba(200, 220, 240, 0)');
+        ctx.fillStyle = grad2;
+        ctx.beginPath();
+        ctx.arc(w * 0.8, h * 0.15, 40, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Update ripples
+      function updateRipples() {
+        ripples = ripples.filter(r => {
+          r.size += r.speed * r.maxSize;
+          r.life -= 0.01;
+          r.opacity *= 0.995;
+          return r.life > 0 && r.size < r.maxSize * 1.2;
+        });
+      }
+
+      // Draw ripples
+      function drawRipples() {
+        ripples.forEach(r => {
+          ctx.save();
+          ctx.globalAlpha = r.opacity * r.life * 0.5;
+          ctx.strokeStyle = 'rgba(150, 220, 255, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(r.x, r.y, r.size, r.size * 0.15, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Inner ring
+          ctx.globalAlpha = r.opacity * r.life * 0.3;
+          ctx.strokeStyle = 'rgba(200, 240, 255, 0.2)';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.ellipse(r.x, r.y, r.size * 0.6, r.size * 0.1, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      // Update splashes
+      function updateSplashes() {
+        splashes = splashes.filter(s => {
+          s.x += s.vx;
+          s.y += s.vy;
+          s.vy += s.gravity;
+          s.life -= 0.01;
+          return s.life > 0 && s.y < canvas.height * 0.85;
+        });
+      }
+
+      // Draw splashes
+      function drawSplashes() {
+        splashes.forEach(s => {
+          ctx.save();
+          ctx.globalAlpha = s.life * 0.6;
+          ctx.fillStyle = 'rgba(150, 220, 255, 0.4)';
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Sparkle
+          ctx.globalAlpha = s.life * 0.3;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.beginPath();
+          ctx.arc(s.x - s.size * 0.2, s.y - s.size * 0.2, s.size * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Animation loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawWater();
+        
+        // Update stones
+        stones = stones.filter(s => {
+          s.update();
+          return s.isAlive();
+        });
+        
+        // Draw stones
+        stones.forEach(s => s.draw(ctx));
+        
+        // Update and draw ripples
+        updateRipples();
+        drawRipples();
+        
+        // Update and draw splashes
+        updateSplashes();
+        drawSplashes();
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetStone() {
+        stones = [];
+        ripples = [];
+        splashes = [];
+        totalSkips = 0;
+        skipCount.textContent = '0';
+        stoneStatus.textContent = '🔄 Reset complete';
+        stoneStatus.style.color = '#94a3b8';
+        stoneMessage.textContent = 'Click the water to skip a stone';
+        stoneMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          stoneStatus.textContent = '🪨 Click the water to skip a stone across the surface';
+          stoneStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const waterY = canvas.height * 0.65;
+        if (y > waterY) {
+          skipStone(x, y);
+        } else {
+          stoneStatus.textContent = '🪨 Aim for the water!';
+          stoneStatus.style.color = '#fbbf24';
+          setTimeout(() => {
+            stoneStatus.textContent = '🪨 Click the water to skip a stone across the surface';
+            stoneStatus.style.color = '#94a3b8';
+          }, 1000);
+        }
+      });
+
+      if (skipBtn) {
+        skipBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const x = 50 + Math.random() * (canvas.width - 100);
+          const y = canvas.height * 0.7 + Math.random() * 20;
+          skipStone(x, y);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetStone();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const x = 50 + Math.random() * (canvas.width - 100);
+          const y = canvas.height * 0.7 + Math.random() * 20;
+          skipStone(x, y);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetStone();
+        }
+      });
+
+      // Slider updates
+      powerSlider.addEventListener('input', function() {
+        powerValue.textContent = this.value;
+      });
+
+      angleSlider.addEventListener('input', function() {
+        angleValue.textContent = this.value;
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🪨 Stone Skipping ready · shortcuts: [Space] Skip, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+// ==========================================================================
+// EaseMotion CSS — Text Balance mixin
+// Issue #63799
+// --------------------------------------------------------------------------
+// Headline wrapping that avoids orphans, with a real fallback.
+//
+// `text-wrap: balance` is the right tool and carries a hard constraint:
+// browsers cap it at a small line count (four in Chromium at time of
+// writing) because the algorithm is expensive. Applying it to body copy
+// is silently ignored past that cap — so it is a HEADING tool, and using
+// it on a paragraph is a no-op that looks like a browser bug.
+//
+// The fallback matters too. Where `balance` is unsupported, a `max-width`
+// in `ch` at least prevents a full-width headline dropping one word onto
+// its own line — the specific ugliness `balance` exists to fix.
+//
+// `text-wrap: pretty` is the correct choice for body copy: it targets
+// orphans and rags without the line-count cap, at much lower cost.
+// ==========================================================================
+
+@use "sass:meta";
+
+$text-balance-measure: 34ch !default;
+$text-balance-body-measure: 68ch !default;
+
+// --------------------------------------------------------------------------
+// text-balance
+//
+// For headings. Falls back to a `ch` measure where `balance` is absent.
+//
+// @param {Number} $measure  Fallback max-width, in ch.
+// @param {Bool}   $center   Centre the block within its parent.
+// --------------------------------------------------------------------------
+@mixin text-balance($measure: $text-balance-measure, $center: false) {
+    // Fallback first — a bounded measure is better than nothing and is
+    // harmless where `balance` is supported.
+    max-width: $measure;
+
+    @if $center {
+        margin-inline: auto;
+    }
+
+    @supports (text-wrap: balance) {
+        max-width: none;
+        text-wrap: balance;
+    }
+}
+
+// --------------------------------------------------------------------------
+// text-pretty
+//
+// For body copy. `pretty` has no line-count cap and specifically targets
+// orphans and ragged edges, which is what long text actually needs.
+// --------------------------------------------------------------------------
+@mixin text-pretty($measure: $text-balance-body-measure) {
+    max-width: $measure;
+
+    @supports (text-wrap: pretty) {
+        text-wrap: pretty;
+    }
+}
+
+// --------------------------------------------------------------------------
+// text-no-orphan
+//
+// Last-resort orphan prevention where neither `balance` nor `pretty` is
+// available. Works by making the last two words unbreakable.
+//
+// Note: this requires the markup to wrap those words, e.g.
+//   <h2>A headline that <span class="no-orphan">ends here</span></h2>
+// It is included because it is the only approach that works everywhere,
+// but it is markup-dependent and should be a fallback, not a default.
+// --------------------------------------------------------------------------
+@mixin text-no-orphan {
+    white-space: nowrap;
+}
+
+// --------------------------------------------------------------------------
+// text-clamp-lines
+//
+// Bounded headings that must not exceed N lines regardless of content —
+// for card titles in a fixed grid where a third line would break
+// alignment across the row.
+// --------------------------------------------------------------------------
+@mixin text-clamp-lines($lines: 2) {
+    @if meta.type-of($lines) != "number" or $lines < 1 {
+        @error "text-clamp-lines(): $lines must be a positive number, got `#{$lines}`.";
+    }
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: $lines;
+    overflow: hidden;
+}
+
+// --------------------------------------------------------------------------
+// text-balance-headings
+//
+// Apply balance across a heading scale in one call. Deliberately does not
+// touch `p` — `balance` is capped at a few lines and would be ignored
+// there, giving the false impression it had been applied.
+// --------------------------------------------------------------------------
+@mixin text-balance-headings($levels: (h1, h2, h3, h4)) {
+    @each $level in $levels {
+        #{$level} {
+            @include text-balance;
+        }
+    }
+}

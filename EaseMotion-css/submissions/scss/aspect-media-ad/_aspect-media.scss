@@ -1,0 +1,176 @@
+// ==========================================================================
+// EaseMotion CSS — Aspect Media mixin
+// Issue #63553
+// --------------------------------------------------------------------------
+// Fixed-ratio media containers, so images and embeds reserve their space
+// before they load instead of shifting the page when they arrive.
+//
+// Uses `aspect-ratio` where available and the padding-top hack elsewhere.
+// The two cannot simply be stacked: the padding hack needs an absolutely
+// positioned child, and that positioning must be undone in the modern
+// path or the child escapes the flow for no reason. The `@supports not`
+// query scopes the legacy geometry so only one strategy is ever active.
+// ==========================================================================
+
+@use "sass:math";
+@use "sass:meta";
+@use "sass:list";
+
+$aspect-media-fit: cover !default;
+$aspect-media-radius: 0 !default;
+
+// --------------------------------------------------------------------------
+// aspect-media
+//
+// @param {List|Number} $ratio   `16 9`, or a single number (16/9).
+// @param {String}      $fit     object-fit for the media child.
+// @param {Number}      $radius  Corner radius applied to container + child.
+// --------------------------------------------------------------------------
+@mixin aspect-media(
+    $ratio: 16 9,
+    $fit: $aspect-media-fit,
+    $radius: $aspect-media-radius
+) {
+    $w: null;
+    $h: null;
+
+    @if meta.type-of($ratio) == "list" {
+        @if list.length($ratio) != 2 {
+            @error "aspect-media(): $ratio list must have exactly 2 values, got #{list.length($ratio)}.";
+        }
+        $w: list.nth($ratio, 1);
+        $h: list.nth($ratio, 2);
+    } @else if meta.type-of($ratio) == "number" {
+        $w: $ratio;
+        $h: 1;
+    } @else {
+        @error "aspect-media(): $ratio must be a list like `16 9` or a number, got `#{$ratio}`.";
+    }
+
+    @if $w <= 0 or $h <= 0 {
+        @error "aspect-media(): ratio values must be positive, got `#{$w} #{$h}`.";
+    }
+
+    display: block;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    aspect-ratio: math.div($w, $h);
+
+    @if $radius != 0 {
+        border-radius: $radius;
+    }
+
+    // Legacy path only. Scoping to `@supports not` means the padding and
+    // absolute positioning never coexist with a working `aspect-ratio`.
+    @supports not (aspect-ratio: 1) {
+        height: 0;
+        padding-top: math.percentage(math.div($h, $w));
+
+        > img,
+        > video,
+        > iframe,
+        > picture,
+        > .aspect-media-ad__inner {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+        }
+    }
+
+    > img,
+    > video,
+    > picture > img,
+    > .aspect-media-ad__inner {
+        display: block;
+        height: 100%;
+        object-fit: $fit;
+        width: 100%;
+    }
+
+    > iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+    }
+}
+
+// --------------------------------------------------------------------------
+// aspect-media-responsive
+//
+// Different ratios per breakpoint — a 21:9 cinematic hero is unreadable on
+// a phone and usually wants to become 4:3 or square.
+//
+// @param {Map} $map  Breakpoint (min-width) => ratio. `default` is emitted
+//                    outside any media query.
+// --------------------------------------------------------------------------
+@mixin aspect-media-responsive($map, $fit: $aspect-media-fit, $radius: $aspect-media-radius) {
+    @each $breakpoint, $ratio in $map {
+        @if $breakpoint == default {
+            @include aspect-media($ratio, $fit, $radius);
+        } @else {
+            @media (min-width: $breakpoint) {
+                $w: list.nth($ratio, 1);
+                $h: list.nth($ratio, 2);
+
+                aspect-ratio: math.div($w, $h);
+
+                @supports not (aspect-ratio: 1) {
+                    padding-top: math.percentage(math.div($h, $w));
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// aspect-media-placeholder
+//
+// Skeleton shimmer shown while the media loads. Sits behind the child, so
+// it disappears naturally the moment the image paints — no load handler,
+// no state, no JavaScript.
+// --------------------------------------------------------------------------
+@mixin aspect-media-placeholder($color: rgba(148, 163, 184, 0.1), $speed: 1.4s) {
+    background: $color;
+    position: relative;
+
+    &::before {
+        animation: aspect-media-shimmer-ad $speed ease-in-out infinite;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.06),
+            transparent
+        );
+        content: "";
+        inset: 0;
+        position: absolute;
+        z-index: 0;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    // An infinite shimmer is exactly what reduced-motion opts out of.
+    @media (prefers-reduced-motion: reduce) {
+        &::before {
+            animation: none;
+        }
+    }
+}
+
+@mixin aspect-media-keyframes {
+    @keyframes aspect-media-shimmer-ad {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+}

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Trick · Object Appears/Disappears</title>
+    <meta name="description" content="Interactive magic trick where objects appear and disappear with magical effects, sparkles, and mystery.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎩 MAGIC TRICK</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="magicCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="appear-btn" id="appearBtn">✨ APPEAR</button>
+                <button class="disappear-btn" id="disappearBtn">🌀 DISAPPEAR</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Magic</label>
+                <input type="range" id="magicSlider" min="1" max="10" value="5">
+                <span id="magicLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎩 MAGIC TRICK</span>
+            <small>appear · disappear · mystery</small>
+        </div>
+        <div class="hint">
+            <span>✨ click to make the object appear or disappear with magic!</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('magicCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const appearBtn = document.getElementById('appearBtn');
+            const disappearBtn = document.getElementById('disappearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const magicSlider = document.getElementById('magicSlider');
+            const magicLabel = document.getElementById('magicLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let magicLevel = 5;
+            let time = 0;
+            let isVisible = false;
+            let transitionProgress = 0;
+            let targetState = false;
+            let isTransitioning = false;
+            let sparkles = [];
+            let magicParticles = [];
+
+            // ---- Magic Object ----
+            const object = {
+                x: W / 2,
+                y: H / 2,
+                size: 60,
+                color: '#ffd700',
+                glowColor: '#ffd700'
+            };
+
+            // ---- Sparkle Class ----
+            class Sparkle {
+                constructor(x, y) {
+                    this.x = x || object.x + (Math.random() - 0.5) * 80;
+                    this.y = y || object.y + (Math.random() - 0.5) * 80;
+                    this.size = 2 + Math.random() * 6;
+                    this.speed = 1 + Math.random() * 3;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.life = 1;
+                    this.decay = 0.01 + Math.random() * 0.02;
+                    this.color = `hsl(${40 + Math.random() * 40}, 100%, ${60 + Math.random() * 30}%)`;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.gravity = 0.02 + Math.random() * 0.03;
+                }
+
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed + this.gravity;
+                    this.life -= this.decay;
+                    this.size *= 0.99;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 15 * this.life;
+                    // Star shape
+                    const spikes = 4;
+                    const outer = this.size;
+                    const inner = this.size * 0.4;
+                    ctx.beginPath();
+                    for (let i = 0; i < spikes * 2; i++) {
+                        const r = i % 2 === 0 ? outer : inner;
+                        const angle = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+                        const x = this.x + Math.cos(angle) * r;
+                        const y = this.y + Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Magic Particle ----
+            class MagicParticle {
+                constructor(x, y) {
+                    this.x = x || object.x + (Math.random() - 0.5) * 120;
+                    this.y = y || object.y + (Math.random() - 0.5) * 120;
+                    this.size = 3 + Math.random() * 8;
+                    this.targetX = object.x + (Math.random() - 0.5) * 60;
+                    this.targetY = object.y + (Math.random() - 0.5) * 60;
+                    this.progress = 0;
+                    this.speed = 0.02 + Math.random() * 0.03;
+                    this.color = `hsl(${200 + Math.random() * 60}, 100%, 70%)`;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobble = 0.02 + Math.random() * 0.03;
+                }
+
+                update() {
+                    this.progress += this.speed;
+                    if (this.progress > 1) this.progress = 1;
+                    const ease = 1 - Math.pow(1 - this.progress, 3);
+                    this.x += (this.targetX - this.x) * 0.05;
+                    this.y += (this.targetY - this.y) * 0.05;
+                    this.size *= 0.99;
+                }
+
+                draw(ctx) {
+                    if (this.progress < 0.1) return;
+                    const alpha = Math.min(1, this.progress * 2);
+                    ctx.save();
+                    ctx.globalAlpha = alpha * 0.6;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * (0.3 + this.progress * 0.7), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Sparkle Burst ----
+            function createSparkleBurst() {
+                const numSparkles = 20 + Math.floor(Math.random() * 20);
+                for (let i = 0; i < numSparkles; i++) {
+                    sparkles.push(new Sparkle());
+                }
+            }
+
+            // ---- Create Magic Swirl ----
+            function createMagicSwirl() {
+                const numParticles = 30 + Math.floor(Math.random() * 30);
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = (i / numParticles) * Math.PI * 2;
+                    const radius = 30 + Math.random() * 40;
+                    const p = new MagicParticle(
+                        object.x + Math.cos(angle) * radius,
+                        object.y + Math.sin(angle) * radius
+                    );
+                    magicParticles.push(p);
+                }
+            }
+
+            // ---- Appear ----
+            function appearObject() {
+                if (isVisible || isTransitioning) return;
+                targetState = true;
+                isTransitioning = true;
+                transitionProgress = 0;
+                createMagicSwirl();
+                setTimeout(() => {
+                    createSparkleBurst();
+                }, 300);
+                playMagicSound(true);
+            }
+
+            // ---- Disappear ----
+            function disappearObject() {
+                if (!isVisible || isTransitioning) return;
+                targetState = false;
+                isTransitioning = true;
+                transitionProgress = 0;
+                createMagicSwirl();
+                setTimeout(() => {
+                    createSparkleBurst();
+                }, 300);
+                playMagicSound(false);
+            }
+
+            // ---- Play Magic Sound ----
+            function playMagicSound(isAppear) {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    if (isAppear) {
+                        // Ascending magical sound
+                        const notes = [523, 659, 784, 1047];
+                        notes.forEach((freq, i) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                            gain.gain.setValueAtTime(0.08, now + i * 0.08);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.12);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + i * 0.08);
+                            osc.stop(now + i * 0.08 + 0.12);
+                        });
+                        // Sparkle shimmer
+                        for (let i = 0; i < 5; i++) {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(1200 + Math.random() * 600, now + 0.4 + i * 0.04);
+                            gain.gain.setValueAtTime(0.03, now + 0.4 + i * 0.04);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4 + i * 0.04 + 0.05);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + 0.4 + i * 0.04);
+                            osc.stop(now + 0.4 + i * 0.04 + 0.05);
+                        }
+                    } else {
+                        // Descending magical sound
+                        const notes = [784, 659, 523, 392];
+                        notes.forEach((freq, i) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                            gain.gain.setValueAtTime(0.08, now + i * 0.08);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.12);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + i * 0.08);
+                            osc.stop(now + i * 0.08 + 0.12);
+                        });
+                        // Mysterious whoosh
+                        const bufferSize = audioCtx.sampleRate * 0.15;
+                        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                        }
+                        const noise = audioCtx.createBufferSource();
+                        noise.buffer = buffer;
+                        const gainNoise = audioCtx.createGain();
+                        gainNoise.gain.setValueAtTime(0.05, now);
+                        gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                        noise.connect(gainNoise);
+                        gainNoise.connect(audioCtx.destination);
+                        noise.start(now);
+                        noise.stop(now + 0.15);
+                    }
+                } catch (e) {}
+            }
+
+            // ---- Reset ----
+            function resetMagic() {
+                isVisible = false;
+                isTransitioning = false;
+                transitionProgress = 0;
+                targetState = false;
+                sparkles = [];
+                magicParticles = [];
+                time = 0;
+            }
+
+            // ---- Draw Object ----
+            function drawObject(ctx, progress) {
+                const x = object.x;
+                const y = object.y;
+                const size = object.size * (0.3 + progress * 0.7);
+                const alpha = Math.min(1, progress * 1.5);
+                const glow = Math.min(1, progress * 2);
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                
+                // Glow
+                const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 1.5);
+                const glowColor = `rgba(255, 215, 0, ${0.1 * glow})`;
+                glowGrad.addColorStop(0, glowColor);
+                glowGrad.addColorStop(0.5, `rgba(255, 200, 100, ${0.05 * glow})`);
+                glowGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                ctx.fillStyle = glowGrad;
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.05)';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(x, y, size * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Object body (crystal/gem shape)
+                ctx.shadowBlur = 0;
+                const grad = ctx.createRadialGradient(
+                    x - size * 0.2, y - size * 0.2, 0,
+                    x, y, size
+                );
+                grad.addColorStop(0, '#fff4d6');
+                grad.addColorStop(0.3, '#ffd700');
+                grad.addColorStop(0.7, '#e8a800');
+                grad.addColorStop(1, '#b8860b');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.2)';
+                ctx.shadowBlur = 20 * glow;
+                
+                // Diamond/crystal shape
+                ctx.beginPath();
+                ctx.moveTo(x, y - size);
+                ctx.lineTo(x + size * 0.7, y);
+                ctx.lineTo(x, y + size);
+                ctx.lineTo(x - size * 0.7, y);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Inner facets
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.beginPath();
+                ctx.moveTo(x, y - size * 0.5);
+                ctx.lineTo(x + size * 0.3, y);
+                ctx.lineTo(x, y + size * 0.5);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.beginPath();
+                ctx.moveTo(x, y - size * 0.3);
+                ctx.lineTo(x - size * 0.3, y);
+                ctx.lineTo(x, y + size * 0.3);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Highlight
+                ctx.fillStyle = `rgba(255,255,255,${0.2 * glow})`;
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.2, y - size * 0.3, size * 0.15, size * 0.1, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background - mysterious
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw magic particles
+                for (let p of magicParticles) {
+                    p.draw(ctx);
+                }
+                
+                // Update and draw sparkles
+                sparkles = sparkles.filter(s => s.life > 0);
+                for (let s of sparkles) {
+                    s.update();
+                    s.draw(ctx);
+                }
+                
+                // Draw object
+                const progress = isVisible ? 1 : 0;
+                drawObject(ctx, progress);
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const status = isVisible ? '✨ VISIBLE' : '🌀 HIDDEN';
+                ctx.fillText(status, W - 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Transition
+                if (isTransitioning) {
+                    const dt = 0.02 * (speed / 5);
+                    transitionProgress += dt;
+                    if (transitionProgress >= 1) {
+                        transitionProgress = 1;
+                        isTransitioning = false;
+                        isVisible = targetState;
+                    }
+                }
+                
+                // Update magic particles
+                magicParticles = magicParticles.filter(p => p.progress < 1);
+                for (let p of magicParticles) {
+                    p.update();
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            magicSlider.addEventListener('input', function() {
+                magicLevel = parseInt(this.value);
+                magicLabel.textContent = magicLevel;
+            });
+
+            // ---- Event Listeners ----
+            appearBtn.addEventListener('click', appearObject);
+            disappearBtn.addEventListener('click', disappearObject);
+            resetBtn.addEventListener('click', resetMagic);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'a' || e.key === 'A') {
+                    appearObject();
+                }
+                if (e.key === 'd' || e.key === 'D') {
+                    disappearObject();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMagic();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isVisible) {
+                        appearObject();
+                    } else {
+                        disappearObject();
+                    }
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🎩 Magic Trick · Click Appear/Disappear or press Space for magic!');
+        })();
+    </script>
+</body>
+</html>

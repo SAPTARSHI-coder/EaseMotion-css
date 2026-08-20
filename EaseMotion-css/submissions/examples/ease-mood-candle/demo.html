@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🕯️ Mood Candle – Flame Color Changes With Interaction</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🕯️ Mood Candle</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle candle">🔥 Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset color">🎨 Reset</button>
+                <button class="control-btn" id="modeBtn" title="Change mode">🌀 Mode</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="candleCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="candleStatus">🕯️ Lit</span>
+                <span id="colorDisplay" style="color: #ff8833;">🔥 #ff8833</span>
+                <span id="modeDisplay">🌀 Calm</span>
+            </div>
+            <div class="hint" id="hint">🖱️ Click/drag to change flame color</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🎨 Hue</label>
+                <input type="range" id="hueSlider" min="0" max="360" value="25" step="1" />
+                <span id="hueLabel">25°</span>
+            </div>
+            <div class="slider-group">
+                <label>💡 Brightness</label>
+                <input type="range" id="brightnessSlider" min="20" max="100" value="80" step="1" />
+                <span id="brightnessLabel">80%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Flicker</label>
+                <input type="range" id="flickerSlider" min="0" max="100" value="60" step="1" />
+                <span id="flickerLabel">60%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Mood Candle – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('candleCanvas');
+            const ctx = canvas.getContext('2d');
+            const candleStatus = document.getElementById('candleStatus');
+            const colorDisplay = document.getElementById('colorDisplay');
+            const modeDisplay = document.getElementById('modeDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const modeBtn = document.getElementById('modeBtn');
+            const hueSlider = document.getElementById('hueSlider');
+            const hueLabel = document.getElementById('hueLabel');
+            const brightnessSlider = document.getElementById('brightnessSlider');
+            const brightnessLabel = document.getElementById('brightnessLabel');
+            const flickerSlider = document.getElementById('flickerSlider');
+            const flickerLabel = document.getElementById('flickerLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isLit = true;
+            let isDragging = false;
+            let isHovering = false;
+            let time = 0;
+            let animationId = null;
+            let modeIndex = 0;
+            let targetHue = 25;
+            let currentHue = 25;
+            let flameOffsetX = 0;
+            let flameOffsetY = 0;
+            let glowPulse = 0;
+            let interactionIntensity = 0;
+
+            // --- Parameters ---
+            let hue = 25; // 0-360
+            let brightness = 80; // 20-100
+            let flickerAmount = 60; // 0-100
+
+            // --- Modes ---
+            const modes = [
+                { name: 'Calm', desc: '🌀 Calm', hueRange: [20, 40] },
+                { name: 'Warm', desc: '🔥 Warm', hueRange: [10, 30] },
+                { name: 'Cool', desc: '❄️ Cool', hueRange: [190, 230] },
+                { name: 'Romantic', desc: '❤️ Romantic', hueRange: [330, 350] },
+                { name: 'Nature', desc: '🌿 Nature', hueRange: [100, 140] },
+                { name: 'Sunset', desc: '🌅 Sunset', hueRange: [0, 15] },
+                { name: 'Ocean', desc: '🌊 Ocean', hueRange: [200, 240] },
+                { name: 'Aurora', desc: '🌌 Aurora', hueRange: [250, 300] },
+                { name: 'Rainbow', desc: '🌈 Rainbow', hueRange: [0, 360] },
+            ];
+
+            // --- Flame particles ---
+            let flameParticles = [];
+            const MAX_PARTICLES = 60;
+
+            // --- Particle class for flame sparks ---
+            class FlameParticle {
+                constructor(cx, cy, hue, intensity) {
+                    this.reset(cx, cy, hue, intensity);
+                }
+
+                reset(cx, cy, hue, intensity) {
+                    const angle = (Math.random() - 0.5) * 0.8;
+                    const speed = 0.5 + Math.random() * 1.5;
+                    this.x = cx + (Math.random() - 0.5) * 4;
+                    this.y = cy - 10 + (Math.random() - 0.5) * 6;
+                    this.vx = Math.sin(angle) * speed * (0.5 + Math.random() * 0.5);
+                    this.vy = -(0.8 + Math.random() * 1.8) * (intensity / 100) * 0.8;
+                    this.size = 1.5 + Math.random() * 3.5;
+                    this.life = 1;
+                    this.decay = 0.008 + Math.random() * 0.015;
+                    this.alpha = 0.5 + Math.random() * 0.5;
+
+                    // Color based on hue
+                    const h = hue + (Math.random() - 0.5) * 20;
+                    this.color = `hsl(${h}, 90%, ${60 + Math.random() * 30}%)`;
+                }
+
+                update() {
+                    this.x += this.vx + (Math.random() - 0.5) * 0.1;
+                    this.y += this.vy;
+                    this.vy += 0.02;
+                    this.life -= this.decay;
+                    this.alpha *= 0.998;
+                    this.size *= 0.999;
+                    return this.life > 0 && this.size > 0.3;
+                }
+
+                draw(ctx) {
+                    const alpha = this.alpha * this.life * 0.8;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = this.size * 3;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Draw mood candle ---
+            function drawCandle(ctx, cx, cy, time, hue, brightness, flicker) {
+                const intensityFactor = brightness / 100;
+                const flickerFactor = flicker / 100;
+                const hueRad = (hue * Math.PI) / 180;
+
+                // --- Background ---
+                const bgGrad = ctx.createRadialGradient(
+                    cx, cy - 60, 20,
+                    cx, cy - 60, 400
+                );
+                const darkBase = 5;
+                const darkMid = 15 + (1 - brightness / 100) * 20;
+                bgGrad.addColorStop(0, `rgb(${darkMid + 10}, ${darkMid + 5}, ${darkMid})`);
+                bgGrad.addColorStop(0.3, `rgb(${darkMid}, ${darkMid - 2}, ${darkMid - 5})`);
+                bgGrad.addColorStop(0.7, `rgb(${darkBase + 5}, ${darkBase}, ${darkBase})`);
+                bgGrad.addColorStop(1, `rgb(${darkBase}, ${darkBase - 2}, ${darkBase - 5})`);
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Candle glow (atmospheric) ---
+                if (isLit) {
+                    const glowRadius = 150 + intensityFactor * 100 + Math.sin(time * 0.02) * 10 * flickerFactor;
+                    const glowGrad = ctx.createRadialGradient(
+                        cx + flameOffsetX * 0.3,
+                        cy - 70 + flameOffsetY * 0.3,
+                        10,
+                        cx + flameOffsetX * 0.3,
+                        cy - 70 + flameOffsetY * 0.3,
+                        glowRadius
+                    );
+
+                    const glowAlpha = (0.3 + intensityFactor * 0.4) * (0.8 + Math.sin(time * 0.03) * 0.1 * flickerFactor);
+
+                    // Convert hue to RGB for glow
+                    const glowColor = `hsl(${hue}, 80%, 60%)`;
+                    const temp = document.createElement('div');
+                    temp.style.color = glowColor;
+                    document.body.appendChild(temp);
+                    const computed = getComputedStyle(temp).color;
+                    document.body.removeChild(temp);
+                    const rgb = computed.match(/\d+/g);
+                    const r = parseInt(rgb?.[0] || 255);
+                    const g = parseInt(rgb?.[1] || 200);
+                    const b = parseInt(rgb?.[2] || 150);
+
+                    glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.4})`);
+                    glowGrad.addColorStop(0.2, `rgba(${r * 0.8}, ${g * 0.8}, ${b * 0.8}, ${glowAlpha * 0.2})`);
+                    glowGrad.addColorStop(0.5, `rgba(${r * 0.5}, ${g * 0.5}, ${b * 0.5}, ${glowAlpha * 0.08})`);
+                    glowGrad.addColorStop(1, `rgba(${r * 0.3}, ${g * 0.3}, ${b * 0.3}, 0)`);
+
+                    ctx.fillStyle = glowGrad;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Secondary wider glow
+                    const glowGrad2 = ctx.createRadialGradient(
+                        cx + flameOffsetX * 0.2,
+                        cy - 50 + flameOffsetY * 0.2,
+                        50,
+                        cx + flameOffsetX * 0.2,
+                        cy - 50 + flameOffsetY * 0.2,
+                        glowRadius * 1.8
+                    );
+                    glowGrad2.addColorStop(0, `rgba(${r * 0.7}, ${g * 0.7}, ${b * 0.7}, ${glowAlpha * 0.06})`);
+                    glowGrad2.addColorStop(1, `rgba(${r * 0.3}, ${g * 0.3}, ${b * 0.3}, 0)`);
+                    ctx.fillStyle = glowGrad2;
+                    ctx.fillRect(0, 0, W, H);
+                }
+
+                // --- Candle body ---
+                ctx.save();
+
+                // Candle holder/base
+                const baseY = cy + 60;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+
+                // Holder
+                const holderGrad = ctx.createLinearGradient(cx - 30, baseY, cx + 30, baseY);
+                holderGrad.addColorStop(0, '#4a3a2a');
+                holderGrad.addColorStop(0.3, '#6a5a4a');
+                holderGrad.addColorStop(0.5, '#8a7a6a');
+                holderGrad.addColorStop(0.7, '#6a5a4a');
+                holderGrad.addColorStop(1, '#3a2a1a');
+
+                ctx.beginPath();
+                ctx.ellipse(cx, baseY + 10, 35, 8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = holderGrad;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(cx, baseY, 30, 7, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#5a4a3a';
+                ctx.fill();
+
+                // Candle wax
+                const waxGrad = ctx.createLinearGradient(cx - 20, cy + 40, cx + 20, cy + 40);
+                waxGrad.addColorStop(0, '#d4c8b0');
+                waxGrad.addColorStop(0.2, '#f0e8d8');
+                waxGrad.addColorStop(0.5, '#faf2e8');
+                waxGrad.addColorStop(0.8, '#f0e8d8');
+                waxGrad.addColorStop(1, '#c8bca8');
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.roundRect(cx - 18, cy - 20, 36, 65, 3);
+                ctx.fillStyle = waxGrad;
+                ctx.fill();
+
+                // Wax drip details
+                ctx.shadowBlur = 5;
+                for (let i = 0; i < 5; i++) {
+                    const dx = (Math.random() - 0.5) * 24;
+                    const dy = 10 + Math.random() * 30;
+                    const dw = 3 + Math.random() * 5;
+                    const dh = 5 + Math.random() * 15;
+                    ctx.beginPath();
+                    ctx.ellipse(cx + dx, cy + dy, dw, dh, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(240, 232, 220, ${0.3 + Math.random() * 0.4})`;
+                    ctx.fill();
+                }
+
+                // Wax pool on top
+                const waxPoolGrad = ctx.createRadialGradient(
+                    cx, cy - 20, 2,
+                    cx, cy - 20, 16
+                );
+                waxPoolGrad.addColorStop(0, 'rgba(255, 240, 220, 0.6)');
+                waxPoolGrad.addColorStop(0.5, 'rgba(240, 225, 200, 0.4)');
+                waxPoolGrad.addColorStop(1, 'rgba(220, 200, 180, 0.1)');
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - 20, 16, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = waxPoolGrad;
+                ctx.fill();
+
+                ctx.restore();
+
+                // --- Wick ---
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#2a1a0a';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 20);
+                ctx.quadraticCurveTo(
+                    cx + flameOffsetX * 0.1,
+                    cy - 28 + flameOffsetY * 0.1,
+                    cx + flameOffsetX * 0.2,
+                    cy - 30 + flameOffsetY * 0.15
+                );
+                ctx.stroke();
+
+                // Wick tip glow (ember)
+                if (isLit) {
+                    const emberSize = 2 + Math.random() * 1;
+                    ctx.shadowBlur = 15;
+                    const emberColor = `hsl(${hue}, 80%, 60%)`;
+                    ctx.shadowColor = emberColor;
+                    ctx.fillStyle = emberColor;
+                    ctx.beginPath();
+                    ctx.arc(
+                        cx + flameOffsetX * 0.2,
+                        cy - 30 + flameOffsetY * 0.15,
+                        emberSize, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // --- Flame ---
+                if (isLit) {
+                    drawFlame(ctx, cx, cy, time, hue, intensityFactor, flickerFactor);
+                }
+
+                // --- Particles ---
+                if (isLit && !isDragging) {
+                    const spawnRate = Math.floor(3 / (intensityFactor));
+                    if (time % Math.max(1, spawnRate) === 0) {
+                        const p = new FlameParticle(
+                            cx + flameOffsetX * 0.5,
+                            cy - 30 + flameOffsetY * 0.5,
+                            hue,
+                            brightness
+                        );
+                        flameParticles.push(p);
+                    }
+
+                    while (flameParticles.length > MAX_PARTICLES) {
+                        flameParticles.shift();
+                    }
+
+                    flameParticles = flameParticles.filter(p => p.update());
+                }
+
+                // Draw particles
+                ctx.save();
+                for (const p of flameParticles) {
+                    p.draw(ctx);
+                }
+                ctx.restore();
+            }
+
+            // --- Flame drawing ---
+            function drawFlame(ctx, cx, cy, time, hue, intensityFactor, flickerFactor) {
+                // Flame offset with flicker
+                const flickerStrength = 0.5 + flickerFactor * 0.5;
+
+                flameOffsetX = Math.sin(time * 0.05 + 0.5) * 3 * flickerStrength +
+                    Math.sin(time * 0.08 + 1.2) * 1.5 * flickerStrength;
+                flameOffsetY = Math.sin(time * 0.07 + 0.3) * 2 * flickerStrength +
+                    Math.cos(time * 0.04 + 0.8) * 1 * flickerStrength;
+
+                const fx = cx + flameOffsetX * 0.5;
+                const fy = cy - 28 + flameOffsetY * 0.5;
+
+                // Flame size with intensity and interaction
+                const baseSize = 25 + intensityFactor * 20;
+                const interactionBoost = 1 + interactionIntensity * 0.3;
+                const sizeVariation = 1 + Math.sin(time * 0.06) * 0.08 * flickerFactor;
+                const flameSize = baseSize * sizeVariation * interactionBoost;
+
+                // --- Flame glow ---
+                ctx.save();
+
+                // Outer glow
+                const glowSize = flameSize * 2.5 + Math.sin(time * 0.04) * 10 * flickerFactor;
+                const glowGrad = ctx.createRadialGradient(
+                    fx, fy - flameSize * 0.3, 5,
+                    fx, fy - flameSize * 0.3, glowSize
+                );
+
+                const glowColor = `hsl(${hue}, 80%, 60%)`;
+                const temp = document.createElement('div');
+                temp.style.color = glowColor;
+                document.body.appendChild(temp);
+                const computed = getComputedStyle(temp).color;
+                document.body.removeChild(temp);
+                const rgb = computed.match(/\d+/g);
+                const r = parseInt(rgb?.[0] || 255);
+                const g = parseInt(rgb?.[1] || 200);
+                const b = parseInt(rgb?.[2] || 150);
+                const glowAlpha = 0.15 * intensityFactor;
+
+                glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.8})`);
+                glowGrad.addColorStop(0.3, `rgba(${r * 0.8}, ${g * 0.8}, ${b * 0.8}, ${glowAlpha * 0.4})`);
+                glowGrad.addColorStop(0.6, `rgba(${r * 0.6}, ${g * 0.6}, ${b * 0.6}, ${glowAlpha * 0.15})`);
+                glowGrad.addColorStop(1, `rgba(${r * 0.3}, ${g * 0.3}, ${b * 0.3}, 0)`);
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = glowGrad;
+                ctx.fillRect(fx - glowSize, fy - glowSize * 1.2, glowSize * 2, glowSize * 2.4);
+
+                // --- Main flame ---
+                ctx.shadowBlur = 40 + intensityFactor * 40;
+                ctx.shadowColor = `hsl(${hue}, 80%, 50%)`;
+
+                const flameGrad = ctx.createRadialGradient(
+                    fx - flameSize * 0.1, fy - flameSize * 0.4, 2,
+                    fx, fy - flameSize * 0.2, flameSize
+                );
+
+                const h = hue;
+                flameGrad.addColorStop(0, `hsla(${h}, 100%, 95%, ${0.9 * intensityFactor})`);
+                flameGrad.addColorStop(0.1, `hsla(${h}, 95%, 85%, ${0.8 * intensityFactor})`);
+                flameGrad.addColorStop(0.3, `hsla(${h}, 90%, 70%, ${0.7 * intensityFactor})`);
+                flameGrad.addColorStop(0.5, `hsla(${h}, 85%, 55%, ${0.6 * intensityFactor})`);
+                flameGrad.addColorStop(0.7, `hsla(${h}, 80%, 40%, ${0.4 * intensityFactor})`);
+                flameGrad.addColorStop(0.9, `hsla(${h + 10}, 70%, 30%, ${0.2 * intensityFactor})`);
+                flameGrad.addColorStop(1, `hsla(${h + 20}, 60%, 20%, 0)`);
+
+                // Flame shape (teardrop with flicker)
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - flameSize * 1.2);
+                const leftWave = Math.sin(time * 0.07 + 0.2) * 2 * flickerFactor;
+                const rightWave = Math.sin(time * 0.09 + 0.7) * 2 * flickerFactor;
+
+                ctx.bezierCurveTo(
+                    fx - flameSize * 0.3 + leftWave,
+                    fy - flameSize * 0.7,
+                    fx - flameSize * 0.8 + leftWave,
+                    fy - flameSize * 0.2,
+                    fx - flameSize * 0.5 + leftWave,
+                    fy + flameSize * 0.1
+                );
+                ctx.bezierCurveTo(
+                    fx - flameSize * 0.3 + leftWave * 0.5,
+                    fy + flameSize * 0.2,
+                    fx + flameSize * 0.3 + rightWave * 0.5,
+                    fy + flameSize * 0.2,
+                    fx + flameSize * 0.5 + rightWave,
+                    fy + flameSize * 0.1
+                );
+                ctx.bezierCurveTo(
+                    fx + flameSize * 0.8 + rightWave,
+                    fy - flameSize * 0.2,
+                    fx + flameSize * 0.3 + rightWave,
+                    fy - flameSize * 0.7,
+                    fx,
+                    fy - flameSize * 1.2
+                );
+                ctx.closePath();
+
+                ctx.fillStyle = flameGrad;
+                ctx.fill();
+
+                // --- Inner flame (bright core) ---
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = `hsla(${h}, 80%, 70%, ${0.1 * intensityFactor})`;
+
+                const innerSize = flameSize * 0.4;
+                const innerGrad = ctx.createRadialGradient(
+                    fx - innerSize * 0.1, fy - innerSize * 0.3, 1,
+                    fx, fy - innerSize * 0.2, innerSize
+                );
+                innerGrad.addColorStop(0, `hsla(${h}, 100%, 98%, ${0.8 * intensityFactor})`);
+                innerGrad.addColorStop(0.3, `hsla(${h}, 95%, 90%, ${0.6 * intensityFactor})`);
+                innerGrad.addColorStop(0.6, `hsla(${h}, 90%, 75%, ${0.3 * intensityFactor})`);
+                innerGrad.addColorStop(1, `hsla(${h}, 85%, 60%, 0)`);
+
+                ctx.beginPath();
+                ctx.ellipse(fx, fy - flameSize * 0.3, innerSize * 0.6, innerSize * 0.8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = innerGrad;
+                ctx.fill();
+
+                ctx.restore();
+
+                // --- Color ring effect (mood indicator) ---
+                if (isDragging || isHovering) {
+                    ctx.save();
+                    const ringRadius = flameSize * 1.5;
+                    const ringAlpha = (isDragging ? 0.4 : 0.15) * intensityFactor;
+                    ctx.globalAlpha = ringAlpha;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `hsl(${hue}, 80%, 60%)`;
+                    ctx.strokeStyle = `hsl(${hue}, 80%, 60%)`;
+                    ctx.lineWidth = 2 + interactionIntensity * 3;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.arc(fx, fy - flameSize * 0.3, ringRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+
+                // Update color display
+                const hex = hslToHex(hue, 80, 55);
+                colorDisplay.textContent = `🔥 #${hex}`;
+                colorDisplay.style.color = `hsl(${hue}, 80%, 55%)`;
+            }
+
+            // --- HSL to Hex helper ---
+            function hslToHex(h, s, l) {
+                h /= 360;
+                s /= 100;
+                l /= 100;
+                let r, g, b;
+                if (s === 0) {
+                    r = g = b = l;
+                } else {
+                    const hue2rgb = (p, q, t) => {
+                        if (t < 0) t += 1;
+                        if (t > 1) t -= 1;
+                        if (t < 1 / 6) return p + (q - p) * 6 * t;
+                        if (t < 1 / 2) return q;
+                        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                        return p;
+                    };
+                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    const p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1 / 3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1 / 3);
+                }
+                const toHex = (x) => {
+                    const hex = Math.round(x * 255).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                };
+                return toHex(r) + toHex(g) + toHex(b);
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Smooth hue transition
+                currentHue += (targetHue - currentHue) * 0.05;
+                hue = currentHue;
+
+                // Interaction intensity decay
+                interactionIntensity *= 0.98;
+                if (interactionIntensity < 0.01) interactionIntensity = 0;
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                drawCandle(ctx, W / 2, H / 2 - 20, time, hue, brightness, flickerAmount);
+
+                // Candle status
+                candleStatus.textContent = isLit ? '🕯️ Lit' : '🕯️ Unlit';
+
+                // Mode display
+                modeDisplay.textContent = modes[modeIndex].desc;
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleCandle() {
+                isLit = !isLit;
+                toggleBtn.textContent = isLit ? '🔥 Toggle' : '🔥 Off';
+                candleStatus.textContent = isLit ? '🕯️ Lit' : '🕯️ Unlit';
+                if (!isLit) {
+                    flameParticles = [];
+                }
+                hint.textContent = isLit ? '🕯️ Lit!' : '🕯️ Unlit';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function resetColor() {
+                targetHue = 25;
+                hueSlider.value = 25;
+                hueLabel.textContent = '25°';
+                modeIndex = 0;
+                hint.textContent = '🎨 Reset to warm glow!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function nextMode() {
+                modeIndex = (modeIndex + 1) % modes.length;
+                const mode = modes[modeIndex];
+                if (mode.name === 'Rainbow') {
+                    // Rainbow mode - will cycle automatically
+                    targetHue = (targetHue + 30) % 360;
+                } else {
+                    const [min, max] = mode.hueRange;
+                    targetHue = min + Math.random() * (max - min);
+                }
+                hueSlider.value = Math.round(targetHue);
+                hueLabel.textContent = `${Math.round(targetHue)}°`;
+                hint.textContent = `🌀 ${mode.name}`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+
+                // Reset rainbow cycle if switching away
+                if (mode.name !== 'Rainbow') {
+                    // Just set the color
+                }
+            }
+
+            // --- Interaction handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function handleInteraction(pos) {
+                // Map position to hue (0-360)
+                const hueFromX = (pos.x / W) * 360;
+                const hueFromY = (1 - pos.y / H) * 360;
+                const newHue = (hueFromX * 0.6 + hueFromY * 0.4) % 360;
+
+                targetHue = newHue;
+                hueSlider.value = Math.round(newHue);
+                hueLabel.textContent = `${Math.round(newHue)}°`;
+
+                // Interaction intensity
+                interactionIntensity = Math.min(1, interactionIntensity + 0.1);
+
+                // Update mode display if not in a specific mode
+                const currentMode = modes[modeIndex];
+                if (currentMode.name !== 'Rainbow') {
+                    // Check if we're close to a mode's range
+                    let foundMode = false;
+                    for (let i = 0; i < modes.length; i++) {
+                        if (modes[i].name === 'Rainbow') continue;
+                        const [min, max] = modes[i].hueRange;
+                        if (newHue >= min && newHue <= max) {
+                            modeIndex = i;
+                            foundMode = true;
+                            break;
+                        }
+                    }
+                    if (!foundMode) {
+                        // Custom color
+                        modeDisplay.textContent = '🎨 Custom';
+                    }
+                }
+
+                // Update color display
+                const hex = hslToHex(newHue, 80, 55);
+                colorDisplay.textContent = `🔥 #${hex}`;
+                colorDisplay.style.color = `hsl(${newHue}, 80%, 55%)`;
+
+                hint.textContent = `🎨 Color: ${Math.round(newHue)}°`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 500);
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                isDragging = true;
+                handleInteraction(pos);
+                canvas.style.cursor = 'grabbing';
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+
+                if (isDragging) {
+                    handleInteraction(pos);
+                }
+
+                // Hover effect
+                isHovering = true;
+                canvas.style.cursor = isDragging ? 'grabbing' : 'pointer';
+            }
+
+            function onEnd(e) {
+                e.preventDefault();
+                isDragging = false;
+                isHovering = false;
+                canvas.style.cursor = 'default';
+            }
+
+            // --- Slider handlers ---
+            hueSlider.addEventListener('input', function() {
+                targetHue = parseFloat(this.value);
+                hueLabel.textContent = `${Math.round(targetHue)}°`;
+                interactionIntensity = Math.min(1, interactionIntensity + 0.05);
+                // Check if we're in a mode
+                let foundMode = false;
+                for (let i = 0; i < modes.length; i++) {
+                    if (modes[i].name === 'Rainbow') continue;
+                    const [min, max] = modes[i].hueRange;
+                    if (targetHue >= min && targetHue <= max) {
+                        modeIndex = i;
+                        foundMode = true;
+                        break;
+                    }
+                }
+                if (!foundMode) {
+                    modeDisplay.textContent = '🎨 Custom';
+                } else {
+                    modeDisplay.textContent = modes[modeIndex].desc;
+                }
+            });
+
+            brightnessSlider.addEventListener('input', function() {
+                brightness = parseFloat(this.value);
+                brightnessLabel.textContent = `${Math.round(brightness)}%`;
+            });
+
+            flickerSlider.addEventListener('input', function() {
+                flickerAmount = parseFloat(this.value);
+                flickerLabel.textContent = `${Math.round(flickerAmount)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleCandle);
+            resetBtn.addEventListener('click', resetColor);
+            modeBtn.addEventListener('click', nextMode);
+
+            // --- Mouse events ---
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd, { passive: false });
+            canvas.addEventListener('touchcancel', onEnd, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleCandle();
+                }
+                if (e.key === 'r' || e.key === 'R') resetColor();
+                if (e.key === 'm' || e.key === 'M') nextMode();
+
+                // Hue adjustments
+                if (e.key === 'ArrowRight') {
+                    targetHue = (targetHue + 5) % 360;
+                    hueSlider.value = Math.round(targetHue);
+                    hueLabel.textContent = `${Math.round(targetHue)}°`;
+                }
+                if (e.key === 'ArrowLeft') {
+                    targetHue = (targetHue - 5 + 360) % 360;
+                    hueSlider.value = Math.round(targetHue);
+                    hueLabel.textContent = `${Math.round(targetHue)}°`;
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🕯️ Mood Candle ready!');
+            console.log('Controls: Space (toggle), R (reset), M (mode)');
+            console.log('          ←/→ (hue), Click/drag on canvas to change color!');
+
+        })();
+    </script>
+</body>
+</html>

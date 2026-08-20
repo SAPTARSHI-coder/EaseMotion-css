@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Zoom · Zoom into Infinite Fractal</title>
+    <meta name="description" content="Interactive fractal zoom into infinite Mandelbrot set with smooth zooming and vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌀 FRACTAL ZOOM</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="fractalCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="zoom-in-btn" id="zoomInBtn">🔍 ZOOM IN</button>
+                <button class="zoom-out-btn" id="zoomOutBtn">🔍 ZOOM OUT</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Depth</label>
+                <input type="range" id="depthSlider" min="50" max="500" value="200">
+                <span id="depthLabel">200</span>
+                <label>Zoom Speed</label>
+                <input type="range" id="zoomSpeedSlider" min="1" max="10" value="5">
+                <span id="zoomSpeedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌀 FRACTAL ZOOM</span>
+            <small>infinite · Mandelbrot · zoom</small>
+        </div>
+        <div class="hint">
+            <span>🔍 click to zoom into the infinite fractal</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('fractalCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const depthSlider = document.getElementById('depthSlider');
+            const depthLabel = document.getElementById('depthLabel');
+            const zoomSpeedSlider = document.getElementById('zoomSpeedSlider');
+            const zoomSpeedLabel = document.getElementById('zoomSpeedLabel');
+
+            let isAnimating = true;
+            let zoomSpeed = 5;
+            let maxIterations = 200;
+            let time = 0;
+            let isZooming = false;
+            let zoomTarget = 1;
+            let zoomFactor = 1;
+
+            // ---- Mandelbrot Parameters ----
+            let view = {
+                x: -0.5,
+                y: 0,
+                zoom: 1,
+                targetX: -0.5,
+                targetY: 0,
+                targetZoom: 1
+            };
+
+            // ---- Render Mandelbrot ----
+            function renderMandelbrot() {
+                const imageData = ctx.createImageData(W, H);
+                const data = imageData.data;
+                const zoom = view.zoom;
+                const cx = view.x;
+                const cy = view.y;
+                const iterations = maxIterations;
+                
+                const aspectRatio = W / H;
+                const scale = 2.5 / zoom;
+                const xMin = cx - scale * aspectRatio;
+                const xMax = cx + scale * aspectRatio;
+                const yMin = cy - scale;
+                const yMax = cy + scale;
+                
+                for (let py = 0; py < H; py++) {
+                    for (let px = 0; px < W; px++) {
+                        const x = xMin + (px / W) * (xMax - xMin);
+                        const y = yMin + (py / H) * (yMax - yMin);
+                        
+                        let zx = 0;
+                        let zy = 0;
+                        let i = 0;
+                        
+                        while (i < iterations && zx * zx + zy * zy < 4) {
+                            const tmp = zx * zx - zy * zy + x;
+                            zy = 2 * zx * zy + y;
+                            zx = tmp;
+                            i++;
+                        }
+                        
+                        const idx = (py * W + px) * 4;
+                        if (i === iterations) {
+                            data[idx] = 0;
+                            data[idx + 1] = 0;
+                            data[idx + 2] = 0;
+                            data[idx + 3] = 255;
+                        } else {
+                            // Smooth coloring
+                            const log_zn = Math.log(zx * zx + zy * zy) / 2;
+                            const nu = Math.log(log_zn / Math.log(2)) / Math.log(2);
+                            const smooth = i + 1 - nu;
+                            const hue = (smooth * 10 + 180) % 360;
+                            const sat = 80 + 20 * Math.sin(smooth * 0.1);
+                            const light = 30 + 40 * Math.sin(smooth * 0.15 + 1);
+                            
+                            const color = hslToRgb(hue, sat, light);
+                            data[idx] = color[0];
+                            data[idx + 1] = color[1];
+                            data[idx + 2] = color[2];
+                            data[idx + 3] = 255;
+                        }
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            // ---- HSL to RGB helper ----
+            function hslToRgb(h, s, l) {
+                h = h / 360;
+                s = s / 100;
+                l = l / 100;
+                let r, g, b;
+                if (s === 0) {
+                    r = g = b = l;
+                } else {
+                    const hue2rgb = (p, q, t) => {
+                        if (t < 0) t += 1;
+                        if (t > 1) t -= 1;
+                        if (t < 1/6) return p + (q - p) * 6 * t;
+                        if (t < 1/2) return q;
+                        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    };
+                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    const p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            }
+
+            // ---- Zoom In ----
+            function zoomIn() {
+                const speedFactor = zoomSpeed / 5;
+                view.targetZoom = view.zoom * (1.5 + speedFactor * 0.2);
+                isZooming = true;
+            }
+
+            // ---- Zoom Out ----
+            function zoomOut() {
+                const speedFactor = zoomSpeed / 5;
+                view.targetZoom = view.zoom / (1.5 + speedFactor * 0.2);
+                isZooming = true;
+            }
+
+            // ---- Reset ----
+            function resetFractal() {
+                view.x = -0.5;
+                view.y = 0;
+                view.zoom = 1;
+                view.targetX = -0.5;
+                view.targetY = 0;
+                view.targetZoom = 1;
+                isZooming = false;
+                renderMandelbrot();
+            }
+
+            // ---- Update Zoom ----
+            function updateZoom() {
+                const dt = 0.02 * (zoomSpeed / 5);
+                const speed = 0.02 * (zoomSpeed / 5);
+                
+                if (isZooming) {
+                    // Smooth zoom interpolation
+                    const diff = view.targetZoom - view.zoom;
+                    if (Math.abs(diff) < 0.001) {
+                        view.zoom = view.targetZoom;
+                        isZooming = false;
+                    } else {
+                        view.zoom += diff * speed * 2;
+                    }
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateZoom();
+                
+                // Only render if zoom changed
+                if (isZooming || time % 30 === 0) {
+                    renderMandelbrot();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            depthSlider.addEventListener('input', function() {
+                maxIterations = parseInt(this.value);
+                depthLabel.textContent = maxIterations;
+                renderMandelbrot();
+            });
+            zoomSpeedSlider.addEventListener('input', function() {
+                zoomSpeed = parseInt(this.value);
+                zoomSpeedLabel.textContent = zoomSpeed;
+            });
+
+            // ---- Event Listeners ----
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            resetBtn.addEventListener('click', resetFractal);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '=' || e.key === '+') {
+                    zoomIn();
+                }
+                if (e.key === '-' || e.key === '_') {
+                    zoomOut();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetFractal();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (isZooming) return;
+                    if (e.shiftKey) {
+                        zoomOut();
+                    } else {
+                        zoomIn();
+                    }
+                }
+            });
+
+            // ---- Click on canvas to zoom ----
+            canvas.addEventListener('click', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                
+                // Convert to fractal coordinates
+                const aspectRatio = W / H;
+                const scale = 2.5 / view.zoom;
+                const xMin = view.x - scale * aspectRatio;
+                const xMax = view.x + scale * aspectRatio;
+                const yMin = view.y - scale;
+                const yMax = view.y + scale;
+                
+                const fractalX = xMin + (x / W) * (xMax - xMin);
+                const fractalY = yMin + (y / H) * (yMax - yMin);
+                
+                // Zoom toward clicked point
+                view.targetX = fractalX;
+                view.targetY = fractalY;
+                view.targetZoom = view.zoom * 2;
+                isZooming = true;
+            });
+
+            // ---- Initialize ----
+            renderMandelbrot();
+            animate();
+
+            console.log('🌀 Fractal Zoom · Click to zoom in, use +/- keys to zoom in/out!');
+        })();
+    </script>
+</body>
+</html>
