@@ -66,6 +66,7 @@ describe('ToastQueueManager — auto-dismiss timer', () => {
     expect(t.size()).toBe(1);
     vi.advanceTimersByTime(1);
     expect(t.size()).toBe(0);
+    expect(region.querySelectorAll('.ease-toast')).toHaveLength(0);
   });
 
   it('renders an optional title and applies the type modifier class', () => {
