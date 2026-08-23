@@ -180,7 +180,34 @@ jobs:
             exit 1
           fi
 
-          # Spam/low-content/deletion check removed — all submissions inside submissions/ are accepted.
+          # Retrieve files and check status/deletions
+          combined_files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate | jq -s 'add')
+          
+          has_deletions=$(echo "$combined_files" | jq '[.[] | select(.deletions > 0)] | length > 0')
+          has_modified=$(echo "$combined_files" | jq '[.[] | select(.status != "added")] | length > 0')
+          
+          if [ "$has_deletions" = "true" ] || [ "$has_modified" = "true" ]; then
+            echo "❌ Auto-merge blocked: PR contains code deletions or modifies existing files."
+            
+            # Post warning notice comment
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            comment_body="⚠️ **Pull Request Closed: Code Integrity Policy Violation** ⚠️"$'\n\n'"Hi @${pr_author}! 👋"$'\n\n'"This PR has been automatically closed because it modifies existing files or deletes code, which is a violation of our repository rules:"$'\n'"- **No deletions are accepted on any code.**"$'\n'"- **No changes to existing code are allowed.**"$'\n\n'"All contributions must consist of new examples/documentation under newly created files/folders inside the \`submissions/\` directory. Please make sure you do not modify any existing files, and open a new pull request. Thank you!"
+            
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+              
+            # Add invalid labels (without spam label)
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+              -d '{"labels":["invalid-submission","gssoc:invalid"]}'
+              
+            # Close PR
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
