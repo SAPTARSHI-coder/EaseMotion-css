@@ -108,7 +108,7 @@ This will apply the iteration count to all looping animation utilities by defaul
 
 ## Support the Project
 
-If EaseMotion CSS saves you time or helps your learning journey, please consider supporting it.
+If EaseMotion CSS saves you time or helps your learningg journey, please consider supporting it.
 
 Most people simply forget. This is your reminder. 😊
 
