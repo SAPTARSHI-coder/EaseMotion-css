@@ -153,6 +153,7 @@ Most people simply forget. This is your reminder. 😊
 EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
 <div align="center">
+
 | Browser | Minimum Version | backdrop-filter | aspect-ratio | CSS variables | Animations | Notes |
 |---------|-----------------|-----------------|--------------|---------------|------------|-------|
 | Chrome  | 49+             | Supported       | Supported    | Supported     | Supported  | -     |
