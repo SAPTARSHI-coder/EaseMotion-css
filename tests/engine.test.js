@@ -7,9 +7,14 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parse }             from '../easemotion/engine/parser.js';
+import { parse } from '../easemotion/engine/parser.js';
 import { compile, className } from '../easemotion/engine/compiler.js';
-import { extractEmAttributes, extractEaseClasses, pruneKeyframes, pruneClasses } from '../easemotion/engine/optimizer.js';
+import {
+  extractEmAttributes,
+  extractEaseClasses,
+  pruneKeyframes,
+  pruneClasses,
+} from '../easemotion/engine/optimizer.js';
 
 // ── Parser ────────────────────────────────────────────────────────
 
@@ -51,6 +56,21 @@ describe('parser — parse()', () => {
     expect(ast.easing).toBe('cubic-bezier(0.34, 1.56, 0.64, 1)');
   });
 
+  it('parses bounce as an animation', () => {
+    const ast = parse('bounce');
+
+    expect(ast).not.toBeNull();
+    expect(ast.animation).toBe('bounce');
+  });
+
+  it('parses bounce as easing after an animation', () => {
+    const ast = parse('fade-in bounce');
+
+    expect(ast).not.toBeNull();
+    expect(ast.animation).toBe('fade-in');
+    expect(ast.easing).toBe('cubic-bezier(0.34, 1.56, 0.64, 1)');
+  });
+
   it('parses delay modifier', () => {
     const ast = parse('fade-in delay-200ms');
     expect(ast.delay).toBe(200);
@@ -72,7 +92,10 @@ describe('parser — parse()', () => {
   });
 
   it('parses all tokens together', () => {
-    const ast = parse('slide-up 800ms ease-out delay-100ms repeat-2 both');
+    const ast = parse(
+      'slide-up 800ms ease-out delay-100ms repeat-2 both'
+    );
+
     expect(ast.animation).toBe('slide-up');
     expect(ast.duration).toBe(800);
     expect(ast.easing).toBe('cubic-bezier(0, 0, 0.2, 1)');
@@ -83,6 +106,7 @@ describe('parser — parse()', () => {
 
   it('is case-insensitive', () => {
     const ast = parse('FADE-IN 500MS EASE-OUT');
+
     expect(ast.animation).toBe('fade-in');
     expect(ast.duration).toBe(500);
   });
@@ -94,18 +118,21 @@ describe('compiler — className()', () => {
   it('returns a string starting with _em_', () => {
     const ast = parse('fade-in 500ms ease-out');
     const cls = className(ast);
+
     expect(cls).toMatch(/^_em_[0-9a-f]{6}$/);
   });
 
   it('is deterministic — same input always same output', () => {
     const ast1 = parse('slide-up 300ms ease');
     const ast2 = parse('slide-up 300ms ease');
+
     expect(className(ast1)).toBe(className(ast2));
   });
 
   it('differs for different durations', () => {
     const a = parse('fade-in 300ms');
     const b = parse('fade-in 500ms');
+
     expect(className(a)).not.toBe(className(b));
   });
 });
@@ -115,6 +142,7 @@ describe('compiler — compile()', () => {
     const ast = parse('fade-in 500ms ease-out');
     const cls = className(ast);
     const css = compile(ast, cls);
+
     expect(css).toContain(`.${cls}`);
     expect(css).toContain('animation:');
     expect(css).toContain('ease-kf-fade-in');
@@ -125,6 +153,7 @@ describe('compiler — compile()', () => {
     const ast = parse('fade-in');
     const cls = className(ast);
     const css = compile(ast, cls);
+
     expect(css).toContain('prefers-reduced-motion');
     expect(css).toContain('0.01ms');
   });
@@ -133,12 +162,23 @@ describe('compiler — compile()', () => {
     const ast = parse('slide-up delay-200ms');
     const cls = className(ast);
     const css = compile(ast, cls);
+
     expect(css).toContain('200ms');
   });
 
   it('returns empty string for unknown animation', () => {
-    const ast = { animation: 'nonexistent', duration: 300, easing: 'linear', delay: 0, iterations: 1, fill: 'both', direction: 'normal' };
+    const ast = {
+      animation: 'nonexistent',
+      duration: 300,
+      easing: 'linear',
+      delay: 0,
+      iterations: 1,
+      fill: 'both',
+      direction: 'normal',
+    };
+
     const css = compile(ast, '_em_test01');
+
     expect(css).toBe('');
   });
 });
@@ -148,12 +188,17 @@ describe('compiler — compile()', () => {
 describe('optimizer — extractEmAttributes()', () => {
   it('extracts single em attribute', () => {
     const html = `<div em="fade-in 500ms"></div>`;
+
     expect(extractEmAttributes(html)).toEqual(['fade-in 500ms']);
   });
 
   it('extracts multiple em attributes', () => {
-    const html = `<div em="fade-in"></div><p em="slide-up delay-100ms"></p>`;
+    const html =
+      `<div em="fade-in"></div>` +
+      `<p em="slide-up delay-100ms"></p>`;
+
     const values = extractEmAttributes(html);
+
     expect(values).toHaveLength(2);
     expect(values).toContain('fade-in');
     expect(values).toContain('slide-up delay-100ms');
@@ -161,55 +206,89 @@ describe('optimizer — extractEmAttributes()', () => {
 
   it('returns empty array when no em attributes', () => {
     const html = `<div class="ease-fade-in"></div>`;
+
     expect(extractEmAttributes(html)).toHaveLength(0);
   });
 });
 
 describe('optimizer — extractEaseClasses()', () => {
   it('finds ease-* classes in HTML', () => {
-    const html = `<div class="ease-fade-in ease-slide-up"></div>`;
+    const html =
+      `<div class="ease-fade-in ease-slide-up"></div>`;
+
     const classes = extractEaseClasses(html);
+
     expect(classes.has('ease-fade-in')).toBe(true);
     expect(classes.has('ease-slide-up')).toBe(true);
   });
 
   it('ignores non-ease classes', () => {
     const html = `<div class="container flex gap-4"></div>`;
+
     const classes = extractEaseClasses(html);
+
     expect(classes.size).toBe(0);
   });
 });
 
 describe('optimizer — pruneKeyframes()', () => {
   const css = `
-    @keyframes ease-kf-fade-in { from { opacity:0 } to { opacity:1 } }
-    @keyframes ease-kf-slide-up { from { transform:translateY(24px) } to { transform:none } }
+    @keyframes ease-kf-fade-in {
+      from { opacity: 0 }
+      to { opacity: 1 }
+    }
+
+    @keyframes ease-kf-slide-up {
+      from { transform: translateY(24px) }
+      to { transform: none }
+    }
   `;
 
   it('keeps used keyframes', () => {
-    const result = pruneKeyframes(css, new Set(['ease-kf-fade-in']));
+    const result = pruneKeyframes(
+      css,
+      new Set(['ease-kf-fade-in'])
+    );
+
     expect(result).toContain('ease-kf-fade-in');
   });
 
   it('removes unused keyframes', () => {
-    const result = pruneKeyframes(css, new Set(['ease-kf-fade-in']));
+    const result = pruneKeyframes(
+      css,
+      new Set(['ease-kf-fade-in'])
+    );
+
     expect(result).not.toContain('ease-kf-slide-up');
   });
 });
 
 describe('optimizer — pruneClasses()', () => {
   const css = `
-    .ease-fade-in { animation: ease-kf-fade-in 300ms; }
-    .ease-slide-up { animation: ease-kf-slide-up 300ms; }
+    .ease-fade-in {
+      animation: ease-kf-fade-in 300ms;
+    }
+
+    .ease-slide-up {
+      animation: ease-kf-slide-up 300ms;
+    }
   `;
 
   it('keeps used classes', () => {
-    const result = pruneClasses(css, new Set(['ease-fade-in']));
+    const result = pruneClasses(
+      css,
+      new Set(['ease-fade-in'])
+    );
+
     expect(result).toContain('.ease-fade-in');
   });
 
   it('removes unused classes', () => {
-    const result = pruneClasses(css, new Set(['ease-fade-in']));
+    const result = pruneClasses(
+      css,
+      new Set(['ease-fade-in'])
+    );
+
     expect(result).not.toContain('.ease-slide-up');
   });
 });

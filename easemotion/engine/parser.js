@@ -49,8 +49,10 @@ const ANIMATION_NAMES = new Set([
 function parseTime(token) {
   const ms = token.match(/^(\d+(?:\.\d+)?)ms$/);
   if (ms) return parseFloat(ms[1]);
+
   const s = token.match(/^(\d+(?:\.\d+)?)s$/);
   if (s) return Math.round(parseFloat(s[1]) * 1000);
+
   return null;
 }
 
@@ -61,6 +63,7 @@ function parseTime(token) {
 function parseDelay(token) {
   const m = token.match(/^delay-(.+)$/);
   if (!m) return null;
+
   return parseTime(m[1]);
 }
 
@@ -70,7 +73,9 @@ function parseDelay(token) {
 function parseRepeat(token) {
   const m = token.match(/^repeat-(.+)$/);
   if (!m) return null;
+
   if (m[1] === 'infinite') return 'infinite';
+
   const n = parseInt(m[1], 10);
   return isNaN(n) ? null : n;
 }
@@ -79,25 +84,44 @@ function parseRepeat(token) {
  * Parse an `em=""` attribute string into an AST object.
  *
  * @param {string} value  - Raw attribute value string
- * @returns {{ animation: string, duration: number, easing: string,
- *             delay: number, iterations: number|string, fill: string,
- *             direction: string } | null}
+ * @returns {{
+ *   animation: string,
+ *   duration: number,
+ *   easing: string,
+ *   delay: number,
+ *   iterations: number|string,
+ *   fill: string,
+ *   direction: string
+ * } | null}
  */
 export function parse(value) {
   if (!value || typeof value !== 'string') return null;
 
   const tokens = value.trim().toLowerCase().split(/\s+/);
+
   const ast = {
     animation:  null,
-    duration:   300,      // ms — default
-    easing:     'cubic-bezier(0.4, 0, 0.2, 1)', // --ease-ease
-    delay:      0,        // ms
+    duration:   300,
+    easing:     'cubic-bezier(0.4, 0, 0.2, 1)',
+    delay:      0,
     iterations: 1,
     fill:       'both',
     direction:  'normal',
   };
 
   for (const token of tokens) {
+    /*
+     * "bounce" is both an animation name and an easing alias.
+     *
+     * If an animation has already been parsed, interpret bounce
+     * as the easing. Otherwise, keep the original behavior and
+     * interpret it as the animation.
+     */
+    if (token === 'bounce' && ast.animation) {
+      ast.easing = EASING_MAP[token];
+      continue;
+    }
+
     // Animation name
     if (ANIMATION_NAMES.has(token)) {
       ast.animation = token;
@@ -110,21 +134,21 @@ export function parse(value) {
       continue;
     }
 
-    // Duration  e.g. "500ms", "1.5s"
+    // Duration e.g. "500ms", "1.5s"
     const time = parseTime(token);
     if (time !== null) {
       ast.duration = time;
       continue;
     }
 
-    // Delay  e.g. "delay-200ms"
+    // Delay e.g. "delay-200ms"
     const delay = parseDelay(token);
     if (delay !== null) {
       ast.delay = delay;
       continue;
     }
 
-    // Repeat  e.g. "repeat-2", "repeat-infinite"
+    // Repeat e.g. "repeat-2", "repeat-infinite"
     const repeat = parseRepeat(token);
     if (repeat !== null) {
       ast.iterations = repeat;
@@ -138,7 +162,9 @@ export function parse(value) {
     }
 
     // Direction keywords
-    if (['normal', 'reverse', 'alternate', 'alternate-reverse'].includes(token)) {
+    if (
+      ['normal', 'reverse', 'alternate', 'alternate-reverse'].includes(token)
+    ) {
       ast.direction = token;
       continue;
     }
