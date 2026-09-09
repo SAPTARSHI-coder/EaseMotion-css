@@ -24,4 +24,4 @@ Streaming platforms combine many UI patterns. This example will show developers 
 submissions/examples/animated-streaming-platform/
 ├── demo.html
 ├── style.css
-└── README.md
+└── README.mdgit 
