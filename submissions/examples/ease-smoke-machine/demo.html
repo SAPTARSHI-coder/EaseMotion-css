@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoke Machine · Smoke Billows on Command</title>
+    <meta name="description" content="Interactive smoke machine that billows atmospheric smoke on command with particle effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">💨 SMOKE MACHINE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="smokeCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="billow-btn" id="billowBtn">💨 BILLOW</button>
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5">
+                <span id="densityLabel">5</span>
+                <label>Wind</label>
+                <input type="range" id="windSlider" min="1" max="10" value="5">
+                <span id="windLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>💨 SMOKE MACHINE</span>
+            <small>billow · particle · atmospheric</small>
+        </div>
+        <div class="hint">
+            <span>💨 click to billow atmospheric smoke</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('smokeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const billowBtn = document.getElementById('billowBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+            const windSlider = document.getElementById('windSlider');
+            const windLabel = document.getElementById('windLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            let particles = [];
+            let totalBillows = 0;
+
+            // ---- Smoke Particle ----
+            class SmokeParticle {
+                constructor(x, y) {
+                    this.x = x || W / 2;
+                    this.y = y || H - 50;
+                    this.size = 10 + Math.random() * 30;
+                    this.maxSize = this.size * (2 + Math.random() * 3);
+                    this.growth = 0.2 + Math.random() * 0.4;
+                    
+                    // Velocity
+                    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+                    const speed = 0.3 + Math.random() * 0.8;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 0.2;
+                    
+                    // Physics
+                    this.life = 1;
+                    this.decay = 0.002 + Math.random() * 0.004;
+                    this.opacity = 0.3 + Math.random() * 0.3;
+                    
+                    // Wind affect
+                    this.windAffect = 0.5 + Math.random() * 0.5;
+                    
+                    // Turbulence
+                    this.turbulence = 0.02 + Math.random() * 0.03;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.turbulenceSpeed = 0.02 + Math.random() * 0.03;
+                    
+                    // Color variation
+                    const gray = 180 + Math.random() * 75;
+                    this.color = `rgba(${gray}, ${gray}, ${gray}, `;
+                    this.baseOpacity = this.opacity;
+                }
+
+                update(wind) {
+                    // Wind effect
+                    this.vx += wind * this.windAffect * 0.01;
+                    
+                    // Turbulence
+                    this.phase += this.turbulenceSpeed;
+                    this.vx += Math.sin(this.phase) * this.turbulence;
+                    this.vy += Math.cos(this.phase * 0.7) * this.turbulence * 0.5;
+                    
+                    // Apply velocity
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // Drift upward
+                    this.vy -= 0.003;
+                    
+                    // Damping
+                    this.vx *= 0.995;
+                    this.vy *= 0.995;
+                    
+                    // Grow
+                    if (this.size < this.maxSize) {
+                        this.size += this.growth;
+                    }
+                    
+                    // Life decay
+                    this.life -= this.decay;
+                    
+                    // Opacity fade
+                    this.opacity = this.baseOpacity * this.life;
+                    
+                    // Size fluctuation
+                    this.size += Math.sin(this.phase * 0.5) * 0.05;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0 || this.opacity < 0.01) return;
+                    
+                    // Soft smoke glow
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    const alpha = this.opacity * 0.5;
+                    grad.addColorStop(0, this.color + (alpha * 0.8) + ')');
+                    grad.addColorStop(0.3, this.color + (alpha * 0.6) + ')');
+                    grad.addColorStop(0.7, this.color + (alpha * 0.3) + ')');
+                    grad.addColorStop(1, this.color + '0)');
+                    
+                    ctx.save();
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = grad;
+                    ctx.shadowColor = 'rgba(100, 150, 200, 0.02)';
+                    ctx.shadowBlur = 30;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                isAlive() {
+                    return this.life > 0 && this.opacity > 0.01 && 
+                           this.x > -100 && this.x < W + 100 && 
+                           this.y > -100 && this.y < H + 100;
+                }
+            }
+
+            // ---- Billow Smoke ----
+            function billowSmoke() {
+                const density = parseInt(densitySlider.value);
+                const wind = parseInt(windSlider.value) / 10;
+                const cx = W / 2;
+                const cy = H - 40;
+                const numParticles = 15 + density * 5;
+                
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.2;
+                    const speed = 0.3 + Math.random() * 1.2;
+                    const p = new SmokeParticle(
+                        cx + (Math.random() - 0.5) * 60,
+                        cy + (Math.random() - 0.5) * 20
+                    );
+                    p.vx = Math.cos(angle) * speed + wind * 0.2;
+                    p.vy = Math.sin(angle) * speed - 0.3;
+                    p.size = 8 + Math.random() * 25;
+                    p.maxSize = p.size * (2 + Math.random() * 4);
+                    p.growth = 0.15 + Math.random() * 0.4;
+                    p.decay = 0.0015 + Math.random() * 0.005;
+                    p.opacity = 0.2 + Math.random() * 0.3;
+                    p.windAffect = 0.5 + Math.random() * 0.5;
+                    particles.push(p);
+                    totalBillows++;
+                }
+                
+                // Play sound
+                playSmokeSound();
+            }
+
+            // ---- Play Smoke Sound ----
+            function playSmokeSound() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    // Low rumble
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                    
+                    // Noise hiss
+                    const bufferSize = audioCtx.sampleRate * 0.15;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.4));
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gainNoise = audioCtx.createGain();
+                    gainNoise.gain.setValueAtTime(0.08, now);
+                    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    noise.connect(gainNoise);
+                    gainNoise.connect(audioCtx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.15);
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // ---- Clear ----
+            function clearSmoke() {
+                particles = [];
+            }
+
+            // ---- Reset ----
+            function resetSmoke() {
+                particles = [];
+                totalBillows = 0;
+                time = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw smoke particles
+                for (let p of particles) {
+                    p.draw(ctx);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Particles: ${particles.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Billows: ${totalBillows}`, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                const wind = parseInt(windSlider.value) / 10;
+                
+                // Update particles
+                particles = particles.filter(p => p.isAlive());
+                for (let p of particles) {
+                    p.update(wind);
+                }
+                
+                // Limit particles
+                if (particles.length > 800) {
+                    particles.splice(0, particles.length - 800);
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            densitySlider.addEventListener('input', function() {
+                densityLabel.textContent = this.value;
+            });
+            windSlider.addEventListener('input', function() {
+                windLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            billowBtn.addEventListener('click', billowSmoke);
+            clearBtn.addEventListener('click', clearSmoke);
+            resetBtn.addEventListener('click', resetSmoke);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    billowSmoke();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearSmoke();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSmoke();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to billow ----
+            canvas.addEventListener('click', function(e) {
+                billowSmoke();
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('💨 Smoke Machine · Click Billow or press Space to release smoke!');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A11y: Datepicker Focus Trap & Grid Cell Audit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Screen Reader Announcer -->
+  <div id="dp-announcer" aria-live="polite" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;"></div>
+
+  <button type="button" class="ease-input-trigger" id="dp-trigger" aria-haspopup="dialog" aria-expanded="false">Choose Date</button>
+
+  <!-- Focus Trap Modal -->
+  <div class="ease-dp-dialog" id="dp-modal" role="dialog" aria-modal="true" aria-labelledby="dp-title">
+    <div class="ease-dp-header">
+      <h2 id="dp-title" class="ease-dp-title">September 2026</h2>
+      <button type="button" class="ease-dp-close" id="dp-close" aria-label="Close datepicker">✕</button>
+    </div>
+
+    <div role="grid" aria-labelledby="dp-title" class="ease-dp-table">
+      <div role="row" class="ease-dp-grid">
+        <span role="columnheader" aria-label="Sunday" class="ease-dp-colheader">Su</span>
+        <span role="columnheader" aria-label="Monday" class="ease-dp-colheader">Mo</span>
+        <span role="columnheader" aria-label="Tuesday" class="ease-dp-colheader">Tu</span>
+        <span role="columnheader" aria-label="Wednesday" class="ease-dp-colheader">We</span>
+        <span role="columnheader" aria-label="Thursday" class="ease-dp-colheader">Th</span>
+        <span role="columnheader" aria-label="Friday" class="ease-dp-colheader">Fr</span>
+        <span role="columnheader" aria-label="Saturday" class="ease-dp-colheader">Sa</span>
+      </div>
+      
+      <!-- Simulated Month Grid -->
+      <div role="row" class="ease-dp-grid">
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 1, 2026" tabindex="-1">1</button>
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 2, 2026" tabindex="-1">2</button>
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 3, 2026" tabindex="-1">3</button>
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 4, 2026" tabindex="-1">4</button>
+        <button type="button" role="gridcell" class="ease-dp-cell is-selected" aria-label="September 5, 2026, selected" aria-selected="true" tabindex="0">5</button>
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 6, 2026" tabindex="-1">6</button>
+        <button type="button" role="gridcell" class="ease-dp-cell" aria-label="September 7, 2026" tabindex="-1">7</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('dp-trigger');
+    const modal = document.getElementById('dp-modal');
+    const closeBtn = document.getElementById('dp-close');
+    const gridCells = Array.from(document.querySelectorAll('.ease-dp-cell'));
+    const announcer = document.getElementById('dp-announcer');
+
+    // Open / Close Logic
+    function openModal() {
+      modal.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      const selected = document.querySelector('.ease-dp-cell.is-selected') || gridCells[0];
+      selected.focus();
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus();
+    }
+
+    trigger.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    // KEYBOARD FOCUS TRAP LOGIC
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      // Only focusable elements are the close button and the ONE active grid cell
+      const focusable = [closeBtn, document.querySelector('.ease-dp-cell[tabindex="0"]')];
+      const first = focusable[0];
+      const last = focusable[1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    // GRID ROVING TABINDEX LOGIC
+    function setFocus(index) {
+      if (index < 0 || index >= gridCells.length) return;
+      gridCells.forEach(cell => cell.setAttribute('tabindex', '-1'));
+      gridCells[index].setAttribute('tabindex', '0');
+      gridCells[index].focus();
+    }
+
+    gridCells.forEach((cell, index) => {
+      cell.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        switch (e.key) {
+          case 'ArrowLeft': targetIndex = index - 1; break;
+          case 'ArrowRight': targetIndex = index + 1; break;
+          case 'ArrowUp': targetIndex = index - 7; break;
+          case 'ArrowDown': targetIndex = index + 7; break;
+        }
+        if (targetIndex !== null && targetIndex >= 0 && targetIndex < gridCells.length) {
+          e.preventDefault();
+          setFocus(targetIndex);
+        }
+      });
+
+      cell.addEventListener('click', () => {
+        gridCells.forEach(c => {
+          c.classList.remove('is-selected');
+          c.removeAttribute('aria-selected');
+        });
+        cell.classList.add('is-selected');
+        cell.setAttribute('aria-selected', 'true');
+        announcer.textContent = 'Selected ' + cell.getAttribute('aria-label');
+        closeModal(); // Close on selection
+      });
+    });
+  </script>
+</body>
+</html>

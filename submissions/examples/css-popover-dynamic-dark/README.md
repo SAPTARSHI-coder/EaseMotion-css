@@ -1,0 +1,2 @@
+# Dynamic Popover (Dark Mode)
+A crisp, dark-mode sharing dropdown popover. Expanding the popover utilizing `:focus-within` triggers a 180-degree rotation on the trigger icon, and the popover panel scales dynamically from the top-right origin.

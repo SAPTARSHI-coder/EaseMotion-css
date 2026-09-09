@@ -1,0 +1,2 @@
+# Dynamic Sidebar (Dark Mode)
+A deeply styled dark mode vertical navigation sidebar. It leverages a hidden checkbox to transition smoothly between a collapsed icon-only state and a fully expanded text state.

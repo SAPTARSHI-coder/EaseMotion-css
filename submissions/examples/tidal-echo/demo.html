@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidal Echo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="tidal-app">
+
+    <section class="tidal-display" id="tidalDisplay">
+
+      <canvas id="tidalCanvas"></canvas>
+
+      <div class="tidal-header">
+        <div>
+          <span class="eyebrow">INTERACTIVE OCEAN</span>
+          <h1>🌊 Tidal Echo</h1>
+          <p>Touch the water and create a wave.</p>
+        </div>
+
+        <div class="counter">
+          <span>🌊 Ripples</span>
+          <strong id="rippleCount">0</strong>
+        </div>
+      </div>
+
+      <div class="tidal-message" id="tidalMessage">
+        Click anywhere on the ocean
+      </div>
+
+      <div class="controls">
+
+        <div class="control-group">
+          <label for="waveSlider">
+            Wave Amplitude
+            <span id="waveValue">45%</span>
+          </label>
+
+          <input
+            id="waveSlider"
+            class="slider"
+            type="range"
+            min="0"
+            max="100"
+            value="45"
+          >
+        </div>
+
+        <div class="control-group">
+          <label for="rippleSlider">
+            Ripple Intensity
+            <span id="rippleValue">70%</span>
+          </label>
+
+          <input
+            id="rippleSlider"
+            class="slider"
+            type="range"
+            min="0"
+            max="100"
+            value="70"
+          >
+        </div>
+
+        <div class="scene-group">
+          <span>Scene</span>
+
+          <div class="scene-buttons">
+
+            <button
+              class="scene-btn active"
+              data-scene="calm"
+              title="Calm"
+            >
+              🌤️
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="sunset"
+              title="Sunset"
+            >
+              🌇
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="moonlit"
+              title="Moonlit"
+            >
+              🌙
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="storm"
+              title="Storm"
+            >
+              ⛈️
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <div class="action-buttons">
+
+      <button class="action primary" id="rippleBtn">
+        🌊 Create Ripple
+      </button>
+
+      <button class="action secondary" id="resetBtn">
+        ↻ Reset
+      </button>
+
+    </div>
+
+    <p class="hint">
+      Click the ocean · Space to create · R to reset
+    </p>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("tidalCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const display = document.getElementById("tidalDisplay");
+    const rippleCount = document.getElementById("rippleCount");
+    const message = document.getElementById("tidalMessage");
+
+    const waveSlider = document.getElementById("waveSlider");
+    const rippleSlider = document.getElementById("rippleSlider");
+
+    const waveValue = document.getElementById("waveValue");
+    const rippleValue = document.getElementById("rippleValue");
+
+    const scenes = {
+      calm: {
+        skyTop: "#7dd3fc",
+        skyBottom: "#e0f2fe",
+        waterTop: "#075985",
+        waterBottom: "#082f49",
+        glow: "#fef3c7"
+      },
+
+      sunset: {
+        skyTop: "#fb7185",
+        skyBottom: "#fef3c7",
+        waterTop: "#7c2d12",
+        waterBottom: "#431407",
+        glow: "#fde68a"
+      },
+
+      moonlit: {
+        skyTop: "#172554",
+        skyBottom: "#312e81",
+        waterTop: "#172554",
+        waterBottom: "#020617",
+        glow: "#e0e7ff"
+      },
+
+      storm: {
+        skyTop: "#334155",
+        skyBottom: "#0f172a",
+        waterTop: "#1e293b",
+        waterBottom: "#020617",
+        glow: "#cbd5e1"
+      }
+    };
+
+    let currentScene = "calm";
+    let waveAmplitude = 45;
+    let rippleIntensity = 70;
+    let ripples = [];
+    let time = 0;
+    let interactionCount = 0;
+
+    function resizeCanvas() {
+      const rect = display.getBoundingClientRect();
+
+      canvas.width = rect.width * devicePixelRatio;
+      canvas.height = rect.height * devicePixelRatio;
+
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
+
+      ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+      );
+    }
+
+    function addRipple(x, y, strength = rippleIntensity / 100) {
+
+      if (ripples.length >= 12) {
+        ripples.shift();
+      }
+
+      ripples.push({
+        x,
+        y,
+        radius: 2,
+        strength,
+        alpha: 1,
+        phase: Math.random() * Math.PI * 2
+      });
+
+      interactionCount++;
+      rippleCount.textContent = interactionCount;
+
+      message.textContent = "A tidal echo is spreading...";
+    }
+
+    function drawSky(width, height) {
+      const scene = scenes[currentScene];
+
+      const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        height * 0.65
+      );
+
+      gradient.addColorStop(0, scene.skyTop);
+      gradient.addColorStop(1, scene.skyBottom);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawGlow(width, height) {
+      const scene = scenes[currentScene];
+
+      const x = width * 0.78;
+      const y = height * 0.2;
+
+      const glow = ctx.createRadialGradient(
+        x,
+        y,
+        5,
+        x,
+        y,
+        90
+      );
+
+      glow.addColorStop(0, scene.glow);
+      glow.addColorStop(1, "transparent");
+
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, 90, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawOcean(width, height) {
+
+      const scene = scenes[currentScene];
+      const horizon = height * 0.46;
+
+      const waterGradient = ctx.createLinearGradient(
+        0,
+        horizon,
+        0,
+        height
+      );
+
+      waterGradient.addColorStop(0, scene.waterTop);
+      waterGradient.addColorStop(1, scene.waterBottom);
+
+      ctx.fillStyle = waterGradient;
+      ctx.fillRect(
+        0,
+        horizon,
+        width,
+        height - horizon
+      );
+
+      const layers = 4;
+
+      for (let layer = 0; layer < layers; layer++) {
+
+        const depth = layer / layers;
+        const baseY = horizon + depth * height * 0.45;
+
+        ctx.beginPath();
+
+        for (let x = 0; x <= width; x += 6) {
+
+          let y =
+            baseY +
+            Math.sin(
+              x * 0.018 +
+              time * (1 + layer * 0.2)
+            ) *
+            (waveAmplitude * 0.12);
+
+          y +=
+            Math.sin(
+              x * 0.007 -
+              time * 0.7
+            ) *
+            (waveAmplitude * 0.08);
+
+          for (const ripple of ripples) {
+
+            const dx = x - ripple.x;
+            const dy = y - ripple.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            const wave =
+              Math.sin(
+                distance * 0.06 -
+                ripple.radius * 0.08 +
+                ripple.phase
+              );
+
+            const influence =
+              Math.max(
+                0,
+                1 - Math.abs(distance - ripple.radius) / 100
+              );
+
+            y +=
+              wave *
+              influence *
+              ripple.strength *
+              14;
+          }
+
+          if (x === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+
+        ctx.strokeStyle = `rgba(255,255,255,${0.08 - depth * 0.01})`;
+        ctx.lineWidth = 1.5;
+
+        ctx.stroke();
+      }
+    }
+
+    function drawRipples(width, height) {
+
+      for (const ripple of ripples) {
+
+        ctx.save();
+
+        ctx.globalAlpha = ripple.alpha;
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+          ripple.x,
+          ripple.y,
+          ripple.radius,
+          ripple.radius * 0.22,
+          0,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.lineWidth = 1.5;
+
+        ctx.stroke();
+
+        ctx.restore();
+
+        ripple.radius += 1.8;
+        ripple.alpha *= 0.987;
+      }
+
+      ripples = ripples.filter(
+        ripple => ripple.alpha > 0.03
+      );
+
+      if (ripples.length === 0) {
+        message.textContent =
+          "Click anywhere on the ocean";
+      }
+    }
+
+    function animate() {
+
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      time += 0.015;
+
+      ctx.clearRect(0, 0, width, height);
+
+      drawSky(width, height);
+      drawGlow(width, height);
+      drawOcean(width, height);
+      drawRipples(width, height);
+
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+
+      const rect = canvas.getBoundingClientRect();
+
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      if (y > rect.height * 0.42) {
+        addRipple(x, y);
+      }
+    });
+
+    document.getElementById("rippleBtn")
+      .addEventListener("click", () => {
+
+        addRipple(
+          canvas.clientWidth / 2,
+          canvas.clientHeight * 0.62
+        );
+      });
+
+    document.getElementById("resetBtn")
+      .addEventListener("click", () => {
+
+        ripples = [];
+        interactionCount = 0;
+
+        rippleCount.textContent = "0";
+        message.textContent =
+          "Click anywhere on the ocean";
+      });
+
+    waveSlider.addEventListener("input", event => {
+
+      waveAmplitude = Number(event.target.value);
+      waveValue.textContent =
+        waveAmplitude + "%";
+    });
+
+    rippleSlider.addEventListener("input", event => {
+
+      rippleIntensity = Number(event.target.value);
+      rippleValue.textContent =
+        rippleIntensity + "%";
+    });
+
+    document.querySelectorAll(".scene-btn")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          currentScene =
+            button.dataset.scene;
+
+          document
+            .querySelectorAll(".scene-btn")
+            .forEach(btn =>
+              btn.classList.remove("active")
+            );
+
+          button.classList.add("active");
+        });
+      });
+
+    window.addEventListener("keydown", event => {
+
+      if (event.code === "Space") {
+
+        event.preventDefault();
+
+        addRipple(
+          canvas.clientWidth / 2,
+          canvas.clientHeight * 0.62
+        );
+      }
+
+      if (event.key.toLowerCase() === "r") {
+
+        ripples = [];
+        interactionCount = 0;
+
+        rippleCount.textContent = "0";
+        message.textContent =
+          "Click anywhere on the ocean";
+      }
+    });
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+    animate();
+  </script>
+
+</body>
+</html>

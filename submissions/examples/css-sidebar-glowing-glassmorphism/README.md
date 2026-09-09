@@ -1,0 +1,2 @@
+# Glowing Sidebar (Glassmorphism)
+A stunning glass panel sidebar. An animated, blurred blue orb drifts behind the sidebar in 3D space, heavily illuminating the frosted glass utilizing `backdrop-filter: blur()`.

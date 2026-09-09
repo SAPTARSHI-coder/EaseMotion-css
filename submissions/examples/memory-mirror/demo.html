@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Mirror</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="memory-page">
+
+    <section class="mirror-shell">
+
+      <div class="mirror-header">
+        <div>
+          <span class="eyebrow">REFLECTIVE MEMORY SYSTEM</span>
+          <h1>Memory Mirror</h1>
+        </div>
+
+        <div class="memory-count">
+          <span>MEMORIES</span>
+          <strong id="memoryCount">0</strong>
+        </div>
+      </div>
+
+      <div class="mirror-wrap">
+
+        <canvas id="mirrorCanvas"></canvas>
+
+        <div class="mirror-center">
+          <div class="reflection-mark"></div>
+          <p id="mirrorMessage">Click the mirror to remember</p>
+        </div>
+
+      </div>
+
+      <div class="mirror-footer">
+
+        <div class="mirror-status">
+          <span class="status-dot"></span>
+          <span id="statusText">Mirror is quiet</span>
+        </div>
+
+        <div class="controls">
+          <button id="rememberBtn">
+            ✦ Remember
+          </button>
+
+          <button id="clearBtn">
+            ↺ Clear Memories
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <p class="hint">
+      Click anywhere on the mirror · Space to remember · R to clear
+    </p>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("mirrorCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const memoryCount = document.getElementById("memoryCount");
+    const statusText = document.getElementById("statusText");
+    const mirrorMessage = document.getElementById("mirrorMessage");
+
+    const rememberBtn = document.getElementById("rememberBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const CONFIG = {
+      memoryLifetime: 4200,
+      maxMemories: 12,
+      rippleSpeed: 0.045,
+      particleCount: 35,
+      fragmentSize: 45,
+      fadeSpeed: 0.012,
+      distortionStrength: 18
+    };
+
+    let memories = [];
+    let particles = [];
+    let totalMemories = 0;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      const ratio = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      createParticles();
+    }
+
+    function createParticles() {
+      particles = [];
+
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      for (let i = 0; i < CONFIG.particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 1.5 + 0.4,
+          speed: Math.random() * 0.15 + 0.03,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function createMemory(x, y) {
+      if (memories.length >= CONFIG.maxMemories) {
+        memories.shift();
+      }
+
+      memories.push({
+        x,
+        y,
+        created: performance.now(),
+        life: 0,
+        radius: 4,
+        targetRadius:
+          CONFIG.fragmentSize +
+          Math.random() * 35,
+        rotation: Math.random() * Math.PI * 2,
+        driftX: (Math.random() - 0.5) * 0.15,
+        driftY: (Math.random() - 0.5) * 0.15,
+        hue: Math.random() * 40
+      });
+
+      totalMemories++;
+
+      memoryCount.textContent = totalMemories;
+      statusText.textContent = "A memory is forming";
+      mirrorMessage.textContent = "The mirror remembers";
+
+      setTimeout(() => {
+        if (memories.length) {
+          statusText.textContent = "Memories are fading";
+        }
+      }, 900);
+    }
+
+    function createRandomMemory() {
+      const padding = 50;
+
+      const x =
+        padding +
+        Math.random() *
+        (canvas.clientWidth - padding * 2);
+
+      const y =
+        padding +
+        Math.random() *
+        (canvas.clientHeight - padding * 2);
+
+      createMemory(x, y);
+    }
+
+    function clearMemories() {
+      memories = [];
+
+      memoryCount.textContent = totalMemories;
+
+      statusText.textContent = "Mirror is quiet";
+      mirrorMessage.textContent = "Click the mirror to remember";
+    }
+
+    function drawBackground(time) {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        width,
+        height
+      );
+
+      gradient.addColorStop(0, "#07121b");
+      gradient.addColorStop(0.5, "#152c39");
+      gradient.addColorStop(1, "#050a10");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const lightX =
+        width * 0.5 +
+        Math.sin(time * 0.00025) * width * 0.25;
+
+      const reflection = ctx.createRadialGradient(
+        lightX,
+        height * 0.45,
+        10,
+        lightX,
+        height * 0.45,
+        width * 0.65
+      );
+
+      reflection.addColorStop(
+        0,
+        "rgba(170,220,235,0.10)"
+      );
+
+      reflection.addColorStop(
+        1,
+        "rgba(0,0,0,0)"
+      );
+
+      ctx.fillStyle = reflection;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawParticles(time) {
+      for (const particle of particles) {
+        particle.y -= particle.speed;
+
+        if (particle.y < -5) {
+          particle.y = canvas.clientHeight + 5;
+        }
+
+        const alpha =
+          0.15 +
+          Math.sin(
+            time * 0.001 + particle.phase
+          ) * 0.08;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          particle.x,
+          particle.y,
+          particle.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle =
+          `rgba(210,235,245,${alpha})`;
+
+        ctx.fill();
+      }
+    }
+
+    function drawMemory(memory, time) {
+      const age =
+        time - memory.created;
+
+      const progress =
+        Math.min(
+          age / CONFIG.memoryLifetime,
+          1
+        );
+
+      memory.life = progress;
+
+      const growth =
+        Math.min(age * 0.08, memory.targetRadius);
+
+      const fade =
+        progress < 0.65
+          ? 1
+          : 1 - (progress - 0.65) / 0.35;
+
+      const x =
+        memory.x +
+        memory.driftX * age;
+
+      const y =
+        memory.y +
+        memory.driftY * age;
+
+      ctx.save();
+
+      ctx.translate(x, y);
+      ctx.rotate(
+        memory.rotation +
+        Math.sin(age * 0.001) * 0.08
+      );
+
+      /* Ripple */
+
+      ctx.beginPath();
+
+      ctx.arc(
+        0,
+        0,
+        growth,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.strokeStyle =
+        `rgba(190,235,245,${0.5 * fade})`;
+
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      /* Outer distortion rings */
+
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+
+        ctx.arc(
+          0,
+          0,
+          growth + i * 9,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+          `rgba(160,215,230,${0.11 * fade})`;
+
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      /* Reflective fragment */
+
+      const sides = 7;
+
+      ctx.beginPath();
+
+      for (let i = 0; i < sides; i++) {
+        const angle =
+          (Math.PI * 2 * i) / sides;
+
+        const radius =
+          growth * (
+            0.7 +
+            Math.sin(i * 4.7) * 0.12
+          );
+
+        const px =
+          Math.cos(angle) * radius;
+
+        const py =
+          Math.sin(angle) * radius;
+
+        if (i === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+
+      ctx.closePath();
+
+      const shardGradient =
+        ctx.createLinearGradient(
+          -growth,
+          -growth,
+          growth,
+          growth
+        );
+
+      shardGradient.addColorStop(
+        0,
+        `rgba(220,245,250,${0.16 * fade})`
+      );
+
+      shardGradient.addColorStop(
+        0.5,
+        `rgba(100,180,200,${0.08 * fade})`
+      );
+
+      shardGradient.addColorStop(
+        1,
+        `rgba(255,255,255,${0.02 * fade})`
+      );
+
+      ctx.fillStyle = shardGradient;
+      ctx.fill();
+
+      ctx.strokeStyle =
+        `rgba(220,250,255,${0.4 * fade})`;
+
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      /* Inner reflection */
+
+      ctx.beginPath();
+
+      ctx.moveTo(-growth * 0.55, -growth * 0.1);
+      ctx.lineTo(growth * 0.45, -growth * 0.45);
+
+      ctx.strokeStyle =
+        `rgba(235,250,255,${0.35 * fade})`;
+
+      ctx.stroke();
+
+      /* Glow point */
+
+      ctx.beginPath();
+
+      ctx.arc(
+        0,
+        0,
+        Math.max(2, 5 * fade),
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        `rgba(235,255,255,${0.8 * fade})`;
+
+      ctx.shadowBlur = 18;
+      ctx.shadowColor =
+        "rgba(170,235,255,0.8)";
+
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function update(time) {
+      drawBackground(time);
+      drawParticles(time);
+
+      memories =
+        memories.filter(
+          memory =>
+            time - memory.created <
+            CONFIG.memoryLifetime
+        );
+
+      for (const memory of memories) {
+        drawMemory(memory, time);
+      }
+
+      if (memories.length === 0) {
+        statusText.textContent = "Mirror is quiet";
+        mirrorMessage.textContent =
+          "Click the mirror to remember";
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+        const rect =
+          canvas.getBoundingClientRect();
+
+        createMemory(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    rememberBtn.addEventListener(
+      "click",
+      createRandomMemory
+    );
+
+    clearBtn.addEventListener(
+      "click",
+      clearMemories
+    );
+
+    window.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.code === "Space"
+        ) {
+          event.preventDefault();
+          createRandomMemory();
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+          clearMemories();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+    requestAnimationFrame(update);
+  </script>
+
+</body>
+</html>

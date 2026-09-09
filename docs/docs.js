@@ -278,3 +278,89 @@ document.querySelectorAll('.copy-class-btn').forEach(btn => {
 
   drawParticles();
 })();
+
+// ── Multi-Language Translation (translate.js) ─────────────
+(function initTranslation() {
+  const langWrapper = document.getElementById("langSelectorWrapper");
+  const langBtn = document.getElementById("langToggleBtn");
+  const langDropdown = document.getElementById("langDropdown");
+  const currentLabel = document.getElementById("currentLangLabel");
+
+  if (!langBtn || !langDropdown) return;
+
+  const langNames = {
+    english: "EN",
+    chinese_simplified: "中文",
+    hindi: "HI",
+    spanish: "ES",
+    french: "FR",
+    german: "DE",
+    japanese: "JA",
+    portuguese: "PT",
+    russian: "RU",
+    arabic: "AR"
+  };
+
+  // Toggle dropdown
+  langBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    langDropdown.classList.toggle("active");
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (langWrapper && !langWrapper.contains(e.target)) {
+      langDropdown.classList.remove("active");
+    }
+  });
+
+  // Configure translate.js if loaded
+  if (typeof translate !== "undefined") {
+    translate.selectLanguageTag.show = false; // Hide default float UI
+    translate.service.use("client.edge");    // Fast client-side edge translation
+
+    // Protect code snippets, classes, and technical terms from being translated
+    translate.ignore.tag.push("code", "pre", "script", "style", "textarea", "kbd");
+    translate.ignore.class.push(
+      "ignore",
+      "notranslate",
+      "ease-code",
+      "docs-code",
+      "code-block",
+      "syntax-highlight",
+      "demo-code"
+    );
+
+    // Initial translation execution if a stored language exists
+    const storedLang = translate.language.getCurrent();
+    if (storedLang && langNames[storedLang]) {
+      currentLabel.textContent = langNames[storedLang];
+      const opt = langDropdown.querySelector(`[data-lang="${storedLang}"]`);
+      if (opt) opt.classList.add("selected");
+    }
+
+    translate.execute();
+  }
+
+  // Handle language option click
+  const options = langDropdown.querySelectorAll(".lang-option");
+  options.forEach((opt) => {
+    opt.addEventListener("click", () => {
+      const targetLang = opt.getAttribute("data-lang");
+      if (!targetLang) return;
+
+      options.forEach((o) => o.classList.remove("selected"));
+      opt.classList.add("selected");
+
+      if (langNames[targetLang]) {
+        currentLabel.textContent = langNames[targetLang];
+      }
+
+      langDropdown.classList.remove("active");
+
+      if (typeof translate !== "undefined") {
+        translate.changeLanguage(targetLang);
+      }
+    });
+  });
+})();

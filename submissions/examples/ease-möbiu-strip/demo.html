@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Möbius Strip · Strip Rotates Continuously</title>
+    <meta name="description" content="Interactive 3D Möbius strip with continuous rotation, vibrant colors, and mesmerizing surface flow.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">♾️ MÖBIUS STRIP</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="mobiusCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Detail</label>
+                <input type="range" id="detailSlider" min="2" max="6" value="4">
+                <span id="detailLabel">4</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>♾️ MÖBIUS STRIP</span>
+            <small>rotate · twist · continuous</small>
+        </div>
+        <div class="hint">
+            <span>♾️ watch the Möbius strip rotate continuously</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('mobiusCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const detailSlider = document.getElementById('detailSlider');
+            const detailLabel = document.getElementById('detailLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let detail = 4;
+            let time = 0;
+
+            // ---- Möbius Strip Parameters ----
+            const U_SEGMENTS = 30;
+            const V_SEGMENTS = 8;
+
+            // ---- Generate Möbius Strip ----
+            function generateMobius() {
+                const pts = [];
+                const cols = [];
+                
+                const uSteps = U_SEGMENTS * detail;
+                const vSteps = V_SEGMENTS * detail;
+                
+                for (let i = 0; i <= uSteps; i++) {
+                    const u = (i / uSteps) * Math.PI * 2;
+                    for (let j = 0; j <= vSteps; j++) {
+                        const v = (j / vSteps) * 2 - 1;
+                        
+                        // Möbius strip parametric equations
+                        const r = 1.5;
+                        const halfWidth = 0.5;
+                        const x = (r + v * halfWidth * Math.cos(u / 2)) * Math.cos(u);
+                        const y = (r + v * halfWidth * Math.cos(u / 2)) * Math.sin(u);
+                        const z = v * halfWidth * Math.sin(u / 2);
+                        
+                        // Scale for display
+                        const scale = 120;
+                        pts.push({ x: x * scale, y: y * scale, z: z * scale });
+                        
+                        // Colors
+                        const hue = (i / uSteps) * 360 + 180;
+                        const sat = 80 + 20 * Math.sin(v * 2 + u);
+                        const light = 50 + 20 * Math.sin(u * 0.5 + v * 1.5);
+                        cols.push({ hue: hue % 360, sat: sat, light: light });
+                    }
+                }
+                return { points: pts, colors: cols };
+            }
+
+            let points = [];
+            let colors = [];
+
+            // ---- Initialize ----
+            function initMobius() {
+                const result = generateMobius();
+                points = result.points;
+                colors = result.colors;
+            }
+
+            // ---- Reset ----
+            function resetMobius() {
+                time = 0;
+                initMobius();
+            }
+
+            // ---- 3D Projection ----
+            function project3D(x, y, z) {
+                const distance = 4.5;
+                const rotX = time * 0.2;
+                const rotY = time * 0.3;
+                const rotZ = time * 0.05;
+                
+                // Rotation around X
+                let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
+                let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
+                
+                // Rotation around Y
+                let x1 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
+                let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
+                
+                // Rotation around Z
+                let x2 = x1 * Math.cos(rotZ) - y1 * Math.sin(rotZ);
+                let y2 = x1 * Math.sin(rotZ) + y1 * Math.cos(rotZ);
+                
+                // Perspective projection
+                const persp = distance / (distance + z2);
+                const px = W/2 + x2 * persp;
+                const py = H/2 + y2 * persp;
+                
+                return { x: px, y: py, z: z2, persp: persp };
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Project points
+                const projected = points.map((p, i) => {
+                    const proj = project3D(p.x, p.y, p.z);
+                    return { ...proj, color: colors[i] };
+                });
+                
+                // Sort by z for depth
+                projected.sort((a, b) => a.z - b.z);
+                
+                // Draw triangles
+                const uSteps = U_SEGMENTS * detail;
+                const vSteps = V_SEGMENTS * detail;
+                const stride = vSteps + 1;
+                
+                for (let i = 0; i < uSteps; i++) {
+                    for (let j = 0; j < vSteps; j++) {
+                        const idx = i * stride + j;
+                        const idx2 = idx + stride;
+                        
+                        const p1 = projected[idx];
+                        const p2 = projected[idx + 1];
+                        const p3 = projected[idx2];
+                        const p4 = projected[idx2 + 1];
+                        
+                        if (p1 && p2 && p3 && p4) {
+                            // First triangle
+                            const avgZ1 = (p1.z + p2.z + p3.z) / 3;
+                            const alpha1 = 0.3 + (1 - Math.min(1, (avgZ1 + 200) / 400)) * 0.4;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = alpha1;
+                            const hue1 = p1.color.hue;
+                            const sat1 = p1.color.sat;
+                            const light1 = p1.color.light;
+                            ctx.fillStyle = `hsla(${hue1}, ${sat1}%, ${light1}%, ${alpha1 * 0.6})`;
+                            ctx.shadowColor = `hsla(${hue1}, 100%, 70%, ${0.05 * (1 - (avgZ1 + 200) / 400)})`;
+                            ctx.shadowBlur = 10;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.lineTo(p3.x, p3.y);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.strokeStyle = `hsla(${hue1 + 20}, ${sat1}%, ${light1 + 20}%, ${0.1 + alpha1 * 0.1})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                            ctx.restore();
+                            
+                            // Second triangle
+                            const avgZ2 = (p2.z + p3.z + p4.z) / 3;
+                            const alpha2 = 0.3 + (1 - Math.min(1, (avgZ2 + 200) / 400)) * 0.4;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = alpha2;
+                            const hue2 = p2.color.hue;
+                            const sat2 = p2.color.sat;
+                            const light2 = p2.color.light;
+                            ctx.fillStyle = `hsla(${hue2}, ${sat2}%, ${light2}%, ${alpha2 * 0.6})`;
+                            ctx.shadowColor = `hsla(${hue2}, 100%, 70%, ${0.05 * (1 - (avgZ2 + 200) / 400)})`;
+                            ctx.shadowBlur = 10;
+                            ctx.beginPath();
+                            ctx.moveTo(p2.x, p2.y);
+                            ctx.lineTo(p3.x, p3.y);
+                            ctx.lineTo(p4.x, p4.y);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.strokeStyle = `hsla(${hue2 + 20}, ${sat2}%, ${light2 + 20}%, ${0.1 + alpha2 * 0.1})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+                
+                // Draw glow nodes
+                for (let i = 0; i < projected.length; i += 8) {
+                    const p = projected[i];
+                    const alpha = 0.1 + (1 - Math.min(1, (p.z + 200) / 400)) * 0.3;
+                    const size = 1 + (1 - Math.min(1, (p.z + 200) / 400)) * 1.5;
+                    const hue = p.color.hue;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowColor = `hsla(${hue}, 100%, 80%, ${0.1 * (1 - (p.z + 200) / 400)})`;
+                    ctx.shadowBlur = 15 * (1 - Math.min(1, (p.z + 200) / 400));
+                    ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Faces: ${uSteps * vSteps * 2}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = '♾️ ROTATING';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            detailSlider.addEventListener('input', function() {
+                detail = parseInt(this.value);
+                detailLabel.textContent = detail;
+                initMobius();
+                render();
+            });
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetMobius);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMobius();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initMobius();
+            render();
+            animate();
+
+            console.log('♾️ Möbius Strip · Watch the strip rotate continuously!');
+        })();
+    </script>
+</body>
+</html>

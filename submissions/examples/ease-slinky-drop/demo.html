@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slinky Drop · Slinky Stretches and Recoils</title>
+    <meta name="description" content="Interactive slinky simulation with stretching and recoiling physics, realistic coil animation, and gravity effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌀 SLINKY DROP</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="slinkyCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="drop-btn" id="dropBtn">⬇️ DROP</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Stiffness</label>
+                <input type="range" id="stiffnessSlider" min="1" max="10" value="5">
+                <span id="stiffnessLabel">5</span>
+                <label>Gravity</label>
+                <input type="range" id="gravitySlider" min="1" max="10" value="5">
+                <span id="gravityLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌀 SLINKY DROP</span>
+            <small>stretch · recoil · spring physics</small>
+        </div>
+        <div class="hint">
+            <span>⬇️ click to drop the slinky and watch it stretch and recoil</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('slinkyCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const dropBtn = document.getElementById('dropBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const stiffnessSlider = document.getElementById('stiffnessSlider');
+            const stiffnessLabel = document.getElementById('stiffnessLabel');
+            const gravitySlider = document.getElementById('gravitySlider');
+            const gravityLabel = document.getElementById('gravityLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            
+            // ---- Slinky Physics ----
+            // Mass-spring system with multiple segments
+            const SEGMENTS = 20;
+            let particles = [];
+            let isDropped = false;
+            let dropCount = 0;
+
+            class Particle {
+                constructor(index, total) {
+                    this.index = index;
+                    this.x = W / 2;
+                    const totalHeight = 300;
+                    const startY = 100;
+                    this.y = startY + (index / total) * totalHeight;
+                    this.vy = 0;
+                    this.mass = 1;
+                    this.fixed = (index === 0); // Top is fixed
+                    this.prevY = this.y;
+                }
+
+                update(gravity, stiffness, dt) {
+                    if (this.fixed) return;
+                    
+                    // Gravity
+                    this.vy += gravity * dt;
+                    
+                    // Spring forces from neighbors
+                    const springForce = stiffness * 0.15;
+                    const damping = 0.92;
+                    
+                    // Pull from above
+                    if (this.index > 0) {
+                        const above = particles[this.index - 1];
+                        const dy = above.y - this.y;
+                        const restDist = 15;
+                        const force = springForce * (dy - restDist);
+                        this.vy += force * dt;
+                    }
+                    
+                    // Pull from below
+                    if (this.index < particles.length - 1) {
+                        const below = particles[this.index + 1];
+                        const dy = below.y - this.y;
+                        const restDist = 15;
+                        const force = springForce * (dy + restDist);
+                        this.vy += force * dt;
+                    }
+                    
+                    // Damping
+                    this.vy *= damping;
+                    
+                    // Update position
+                    this.y += this.vy * dt;
+                    
+                    // Floor collision
+                    if (this.y > H - 20) {
+                        this.y = H - 20;
+                        this.vy *= -0.3;
+                        if (Math.abs(this.vy) < 0.5) this.vy = 0;
+                    }
+                    
+                    // Ceiling collision (top of slinky)
+                    if (this.y < 50) {
+                        this.y = 50;
+                        this.vy *= -0.2;
+                    }
+                }
+
+                getVelocity() {
+                    return this.vy;
+                }
+            }
+
+            // ---- Initialize Slinky ----
+            function initSlinky() {
+                particles = [];
+                for (let i = 0; i < SEGMENTS; i++) {
+                    particles.push(new Particle(i, SEGMENTS));
+                }
+                isDropped = false;
+                // Set initial resting state
+                for (let i = 0; i < 5; i++) {
+                    updateSlinky(0.01);
+                }
+            }
+
+            // ---- Update Slinky ----
+            function updateSlinky(dt) {
+                const stiffness = parseInt(stiffnessSlider.value) / 5;
+                const gravity = parseInt(gravitySlider.value) / 20 + 0.05;
+                
+                for (let p of particles) {
+                    p.update(gravity, stiffness, dt);
+                }
+            }
+
+            // ---- Drop Slinky ----
+            function dropSlinky() {
+                if (isDropped) return;
+                isDropped = true;
+                dropCount++;
+                
+                // Release all particles (except top)
+                for (let i = 1; i < particles.length; i++) {
+                    particles[i].vy = 1;
+                }
+            }
+
+            // ---- Reset ----
+            function resetSlinky() {
+                isDropped = false;
+                initSlinky();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Floor
+                ctx.fillStyle = 'rgba(100, 200, 255, 0.03)';
+                ctx.fillRect(0, H - 20, W, 20);
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H - 20);
+                ctx.lineTo(W, H - 20);
+                ctx.stroke();
+                
+                // Draw slinky
+                if (particles.length < 2) return;
+                
+                // Calculate total stretch
+                let totalStretch = 0;
+                for (let i = 1; i < particles.length; i++) {
+                    const dy = particles[i].y - particles[i-1].y;
+                    totalStretch += Math.abs(dy - 15);
+                }
+                
+                // Draw coils
+                ctx.save();
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.1)';
+                ctx.shadowBlur = 20;
+                
+                // Draw connecting lines (spring coils)
+                const points = particles.map(p => ({ x: p.x, y: p.y }));
+                
+                // Spring coil rendering with glow
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    const t = i / (points.length - 1);
+                    
+                    // Color based on stretch
+                    const dy = p2.y - p1.y;
+                    const stretch = Math.abs(dy - 15) / 20;
+                    const hue = 200 + Math.min(stretch * 60, 40);
+                    const alpha = 0.3 + t * 0.3 + Math.sin(time * 0.02 + i * 0.5) * 0.1;
+                    
+                    ctx.save();
+                    ctx.shadowColor = `rgba(100, 200, 255, ${alpha * 0.2})`;
+                    ctx.shadowBlur = 10 + stretch * 10;
+                    ctx.strokeStyle = `hsla(${hue}, 80%, ${60 + stretch * 20}%, ${alpha})`;
+                    ctx.lineWidth = 2 + stretch * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // Draw coil nodes (particles)
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    const t = i / (particles.length - 1);
+                    const size = 3 + t * 2 + Math.sin(time * 0.03 + i * 0.7) * 0.5;
+                    const alpha = 0.4 + t * 0.3;
+                    
+                    ctx.save();
+                    ctx.shadowColor = `rgba(100, 200, 255, ${alpha * 0.3})`;
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = `rgba(100, 200, 255, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                ctx.restore();
+                
+                // Top anchor
+                const topP = particles[0];
+                ctx.save();
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.1)';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.beginPath();
+                ctx.arc(topP.x, topP.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.4)';
+                ctx.font = '14px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⤒', topP.x, topP.y);
+                ctx.restore();
+                
+                // Status info
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Drops: ${dropCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const totalHeight = particles[particles.length - 1].y - particles[0].y;
+                ctx.fillText(`Height: ${totalHeight.toFixed(1)}px`, 20, H - 10);
+                
+                // Stretch indicator
+                const maxStretch = 200;
+                const currentStretch = Math.min(1, totalHeight / maxStretch);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.05 + currentStretch * 0.1})`;
+                ctx.fillRect(0, 0, W * currentStretch, 3);
+                
+                // Drop indicator
+                if (isDropped) {
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+                    ctx.font = '16px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('⬇️ DROPPING', W/2, 20);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Update physics with fixed timestep
+                const dt = 0.02;
+                updateSlinky(dt);
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Update Physics Parameters ----
+            function updatePhysics() {
+                const stiffVal = parseInt(stiffnessSlider.value);
+                const gravVal = parseInt(gravitySlider.value);
+                stiffnessLabel.textContent = stiffVal;
+                gravityLabel.textContent = gravVal;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Event Listeners ----
+            dropBtn.addEventListener('click', dropSlinky);
+            resetBtn.addEventListener('click', resetSlinky);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            stiffnessSlider.addEventListener('input', updatePhysics);
+            gravitySlider.addEventListener('input', updatePhysics);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    dropSlinky();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSlinky();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initSlinky();
+            render();
+            animate();
+
+            console.log('🌀 Slinky Drop · Click Drop or press Space to drop the slinky!');
+        })();
+    </script>
+</body>
+</html>

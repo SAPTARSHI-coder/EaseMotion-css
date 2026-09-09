@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Bridge · Rainbow Arches Across</title>
+    <meta name="description" content="Interactive rainbow bridge arching across the canvas with vibrant colors, shimmering effects, and atmospheric glow.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌈 RAINBOW BRIDGE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="rainbowCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="arch-btn" id="archBtn">🌈 ARCH</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Bands</label>
+                <input type="range" id="bandsSlider" min="5" max="12" value="7">
+                <span id="bandsLabel">7</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌈 RAINBOW BRIDGE</span>
+            <small>arch · color · shimmer</small>
+        </div>
+        <div class="hint">
+            <span>🌈 click to make the rainbow bridge appear</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('rainbowCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const archBtn = document.getElementById('archBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const bandsSlider = document.getElementById('bandsSlider');
+            const bandsLabel = document.getElementById('bandsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numBands = 7;
+            let time = 0;
+            let bridgeProgress = 0;
+            let targetProgress = 0;
+            let isArch = false;
+            let shimmerParticles = [];
+
+            // ---- Rainbow Colors ----
+            const rainbowColors = [
+                '#ff0000', // Red
+                '#ff7f00', // Orange
+                '#ffff00', // Yellow
+                '#00ff00', // Green
+                '#0000ff', // Blue
+                '#4b0082', // Indigo
+                '#8f00ff'  // Violet
+            ];
+
+            // ---- Shimmer Particle ----
+            class ShimmerParticle {
+                constructor(x, y) {
+                    this.x = x || 100 + Math.random() * 400;
+                    this.y = y || 100 + Math.random() * 200;
+                    this.size = 2 + Math.random() * 4;
+                    this.speed = 0.5 + Math.random() * 1;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.hue = Math.random() * 360;
+                    this.alpha = 0.3 + Math.random() * 0.4;
+                    this.life = 1;
+                    this.decay = 0.002 + Math.random() * 0.005;
+                }
+
+                update() {
+                    this.phase += 0.02;
+                    this.x += Math.sin(this.phase) * 0.2;
+                    this.y += Math.cos(this.phase * 0.7) * 0.2;
+                    this.life -= this.decay;
+                    this.alpha = this.life * 0.5;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.fillStyle = `hsl(${this.hue}, 100%, 70%)`;
+                    ctx.shadowColor = `hsl(${this.hue}, 100%, 70%)`;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Shimmer ----
+            function createShimmer() {
+                for (let i = 0; i < 20; i++) {
+                    shimmerParticles.push(new ShimmerParticle());
+                }
+            }
+
+            // ---- Draw Rainbow Bridge ----
+            function drawRainbowBridge(ctx, progress) {
+                const p = Math.min(1, progress);
+                const cx = W / 2;
+                const cy = H * 0.7;
+                const baseRadius = 200;
+                const bandWidth = 15;
+                const totalWidth = numBands * bandWidth;
+                const startRadius = baseRadius;
+                
+                // Glow
+                if (p > 0.1) {
+                    const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius + totalWidth);
+                    glowGrad.addColorStop(0, 'rgba(255, 200, 200, 0.02)');
+                    glowGrad.addColorStop(0.5, 'rgba(200, 200, 255, 0.02)');
+                    glowGrad.addColorStop(1, 'rgba(255, 200, 200, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, baseRadius + totalWidth, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw each band
+                for (let i = 0; i < numBands; i++) {
+                    const t = i / numBands;
+                    const color = rainbowColors[i % rainbowColors.length];
+                    const radius = startRadius + i * bandWidth;
+                    const alpha = 0.3 + p * 0.5;
+                    const width = bandWidth * (0.8 + Math.sin(time * 0.02 + i) * 0.2);
+                    
+                    // Shimmer effect
+                    const shimmer = 0.8 + Math.sin(time * 0.03 + i * 1.5) * 0.2;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha * shimmer;
+                    
+                    // Band glow
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 15 * p * shimmer;
+                    
+                    // Draw arc
+                    const startAngle = Math.PI * 0.1;
+                    const endAngle = Math.PI * 0.9;
+                    const arcProgress = p * 1.1;
+                    const currentEndAngle = startAngle + (endAngle - startAngle) * Math.min(1, arcProgress);
+                    
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = width;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, currentEndAngle);
+                    ctx.stroke();
+                    
+                    // Inner glow
+                    ctx.shadowBlur = 30 * p * shimmer;
+                    ctx.globalAlpha = alpha * 0.2 * shimmer;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = width * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, currentEndAngle);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+                
+                // Draw end caps (pots of gold)
+                if (p > 0.8) {
+                    const capAlpha = (p - 0.8) * 5;
+                    const leftX = cx + startRadius * Math.cos(Math.PI * 0.1);
+                    const leftY = cy + startRadius * Math.sin(Math.PI * 0.1);
+                    const rightX = cx + startRadius * Math.cos(Math.PI * 0.9);
+                    const rightY = cy + startRadius * Math.sin(Math.PI * 0.9);
+                    
+                    ctx.save();
+                    ctx.globalAlpha = capAlpha * 0.3;
+                    ctx.fillStyle = '#ffd700';
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 30;
+                    
+                    // Left pot
+                    ctx.beginPath();
+                    ctx.arc(leftX, leftY, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Right pot
+                    ctx.beginPath();
+                    ctx.arc(rightX, rightY, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Draw Clouds ----
+            function drawClouds(ctx) {
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                for (let i = 0; i < 4; i++) {
+                    const x = i * 180 + 50 + Math.sin(time * 0.005 + i) * 30;
+                    const y = 50 + Math.sin(i * 0.7) * 20;
+                    for (let j = 0; j < 5; j++) {
+                        const angle = (j / 5) * Math.PI * 2;
+                        const r = 30 + Math.sin(i * 1.5 + j) * 10;
+                        const cx = x + Math.cos(angle) * r * 0.5;
+                        const cy = y + Math.sin(angle) * r * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+
+            // ---- Draw Landscape ----
+            function drawLandscape(ctx) {
+                // Sky
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                skyGrad.addColorStop(0, '#0a1a2a');
+                skyGrad.addColorStop(0.3, '#1a2a3a');
+                skyGrad.addColorStop(0.6, '#2a3a4a');
+                skyGrad.addColorStop(0.8, '#1a2a3a');
+                skyGrad.addColorStop(1, '#0a1a2a');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Ground
+                const groundGrad = ctx.createLinearGradient(0, H - 40, 0, H);
+                groundGrad.addColorStop(0, 'rgba(20, 40, 30, 0)');
+                groundGrad.addColorStop(0.3, 'rgba(20, 40, 30, 0.2)');
+                groundGrad.addColorStop(0.7, 'rgba(20, 40, 30, 0.4)');
+                groundGrad.addColorStop(1, 'rgba(20, 40, 30, 0.6)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 40, W, 40);
+                
+                // Clouds
+                drawClouds(ctx);
+            }
+
+            // ---- Arch ----
+            function archBridge() {
+                if (isArch) return;
+                targetProgress = 1;
+                isArch = true;
+                createShimmer();
+            }
+
+            // ---- Reset ----
+            function resetBridge() {
+                targetProgress = 0;
+                bridgeProgress = 0;
+                isArch = false;
+                shimmerParticles = [];
+                time = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                drawLandscape(ctx);
+                
+                // Draw shimmer particles
+                shimmerParticles = shimmerParticles.filter(s => s.life > 0);
+                for (let s of shimmerParticles) {
+                    s.update();
+                    s.draw(ctx);
+                }
+                
+                // Draw rainbow bridge
+                drawRainbowBridge(ctx, bridgeProgress);
+                
+                // Status
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Bands: ${numBands}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isArch ? '🌈 ARCHED' : '🌉 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                const dt = 0.02 * (speed / 5);
+                
+                // Smooth bridge progress
+                const diff = targetProgress - bridgeProgress;
+                if (Math.abs(diff) > 0.001) {
+                    bridgeProgress += diff * 0.04 * dt * 5;
+                } else {
+                    bridgeProgress = targetProgress;
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            bandsSlider.addEventListener('input', function() {
+                numBands = parseInt(this.value);
+                bandsLabel.textContent = numBands;
+            });
+
+            // ---- Event Listeners ----
+            archBtn.addEventListener('click', archBridge);
+            resetBtn.addEventListener('click', resetBridge);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isArch) {
+                        archBridge();
+                    } else {
+                        resetBridge();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBridge();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to arch ----
+            canvas.addEventListener('click', function(e) {
+                if (!isArch) {
+                    archBridge();
+                } else {
+                    resetBridge();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🌈 Rainbow Bridge · Click Arch or press Space to create the rainbow!');
+        })();
+    </script>
+</body>
+</html>

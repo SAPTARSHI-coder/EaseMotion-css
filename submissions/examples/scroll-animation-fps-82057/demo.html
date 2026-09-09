@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Animation FPS Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">HEADLESS CHROME PERFORMANCE</span>
+      <h1>Scroll Animation FPS</h1>
+      <p>
+        A reproducible scrolling workload for measuring animation frame
+        rate, CSS bundle size, and execution time.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run Scroll Benchmark</button>
+      <span id="message">Ready to measure scroll rendering.</span>
+    </div>
+
+    <section class="scroll-stage" id="scrollStage">
+      <article class="scroll-card">
+        <span>01</span>
+        <h2>Scroll Rendering</h2>
+        <p>
+          The benchmark moves through a controlled scrolling workload
+          while requestAnimationFrame callbacks are counted.
+        </p>
+      </article>
+
+      <article class="scroll-card">
+        <span>02</span>
+        <h2>GPU-Friendly Motion</h2>
+        <p>
+          Visual effects use transforms and opacity to reduce expensive
+          layout work during scrolling.
+        </p>
+      </article>
+
+      <article class="scroll-card">
+        <span>03</span>
+        <h2>Frame Throughput</h2>
+        <p>
+          Frame callbacks are measured over a fixed-duration animation
+          workload.
+        </p>
+      </article>
+
+      <article class="scroll-card">
+        <span>04</span>
+        <h2>CI Validation</h2>
+        <p>
+          Performance budgets can be enforced automatically in CI.
+        </p>
+      </article>
+
+      <article class="scroll-card">
+        <span>05</span>
+        <h2>Responsive Layout</h2>
+        <p>
+          The workload adapts to desktop, tablet, and mobile viewport
+          sizes.
+        </p>
+      </article>
+
+      <article class="scroll-card">
+        <span>06</span>
+        <h2>Reproducible Test</h2>
+        <p>
+          A fixed duration and viewport make automated measurements more
+          consistent.
+        </p>
+      </article>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>FPS</h2>
+        <p>
+          Counts requestAnimationFrame callbacks during the scroll
+          workload.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Bundle</h2>
+        <p>
+          Measures the byte size of the stylesheet used by this example.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Execution</h2>
+        <p>
+          Measures the total duration of the benchmark workload.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const stage = document.getElementById("scrollStage");
+    const cards = [...document.querySelectorAll(".scroll-card")];
+
+    const runButton =
+      document.getElementById("runBenchmark");
+
+    const fpsOutput =
+      document.getElementById("fps");
+
+    const bundleOutput =
+      document.getElementById("bundle");
+
+    const executionOutput =
+      document.getElementById("execution");
+
+    const statusOutput =
+      document.getElementById("status");
+
+    const statusText =
+      document.getElementById("statusText");
+
+    const message =
+      document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    runButton.addEventListener("click", async () => {
+      runButton.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering scroll workload";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed =
+            time - animationStart;
+
+          const progress =
+            Math.min(elapsed / duration, 1);
+
+          const maxScroll =
+            stage.scrollHeight -
+            stage.clientHeight;
+
+          const scrollPosition =
+            progress * maxScroll;
+
+          stage.scrollTop = scrollPosition;
+
+          cards.forEach((card, index) => {
+            const distance =
+              Math.abs(
+                card.offsetTop -
+                scrollPosition -
+                stage.clientHeight / 2
+              );
+
+            const scale =
+              Math.max(
+                0.94,
+                1 - distance / 5000
+              );
+
+            const opacity =
+              Math.max(
+                0.65,
+                1 - distance / 1500
+              );
+
+            card.style.transform =
+              `scale(${scale})`;
+
+            card.style.opacity = opacity;
+          });
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs =
+        performance.now() - start;
+
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response =
+          await fetch("style.css", {
+            cache: "no-store"
+          });
+
+        const css =
+          await response.text();
+
+        bundleBytes =
+          new Blob([css]).size;
+      } catch (error) {
+        console.warn(
+          "Unable to measure CSS bundle:",
+          error
+        );
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budget passed"
+          : "Performance budget failed";
+
+      message.textContent =
+        passed
+          ? "Scroll benchmark completed."
+          : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs:
+          Number(executionMs.toFixed(2)),
+        minimumFps:
+          BUDGET.minimumFps,
+        maximumBundleBytes:
+          BUDGET.maximumBundleBytes,
+        maximumExecutionMs:
+          BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      stage.scrollTop = 0;
+
+      cards.forEach((card) => {
+        card.style.transform = "";
+        card.style.opacity = "";
+      });
+
+      runButton.disabled = false;
+    });
+  </script>
+</body>
+</html>

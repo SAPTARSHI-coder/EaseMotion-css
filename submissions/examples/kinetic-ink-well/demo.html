@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinetic Ink Well</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="ink-app">
+
+    <section class="ink-card">
+
+      <div class="ink-header">
+        <div>
+          <span class="eyebrow">LIQUID INTERACTION</span>
+          <h1>Kinetic Ink Well</h1>
+          <p>
+            Move across the surface, tap to create ripples,
+            and watch the ink respond.
+          </p>
+        </div>
+
+        <div class="density">
+          <span>INK DENSITY</span>
+          <strong id="densityValue">42%</strong>
+        </div>
+      </div>
+
+      <div class="ink-stage" id="inkStage">
+        <canvas id="inkCanvas"></canvas>
+
+        <div class="surface-label">
+          <span class="drop-icon">●</span>
+          <span id="status">Surface is calm</span>
+        </div>
+
+        <div class="reservoir">
+          <div class="reservoir-track">
+            <div
+              class="reservoir-fill"
+              id="reservoirFill">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ink-controls">
+        <button id="rippleBtn">
+          Create Ripple
+        </button>
+
+        <button id="dropBtn">
+          Drop Ink
+        </button>
+
+        <button id="resetBtn">
+          Reset
+        </button>
+      </div>
+
+      <div class="hint">
+        Click the surface · Move your pointer · Press Space for ripple · R to reset
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("inkCanvas");
+    const stage = document.getElementById("inkStage");
+    const ctx = canvas.getContext("2d");
+
+    const statusText = document.getElementById("status");
+    const densityValue = document.getElementById("densityValue");
+    const reservoirFill = document.getElementById("reservoirFill");
+
+    let width = 0;
+    let height = 0;
+
+    let pointer = {
+      x: -100,
+      y: -100,
+      active: false
+    };
+
+    let density = 42;
+    let ripples = [];
+    let droplets = [];
+    let particles = [];
+
+    let lastDrop = 0;
+    let lastFrame = performance.now();
+
+    function resize() {
+      const rect = stage.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      createParticles();
+    }
+
+    function createParticles() {
+      particles = [];
+
+      const count = Math.max(45, Math.floor(width * height / 9000));
+
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: Math.random() * 1.5 + 0.4,
+          phase: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.01 + 0.004
+        });
+      }
+    }
+
+    function addRipple(x, y, power = 1) {
+      ripples.push({
+        x,
+        y,
+        radius: 2,
+        alpha: 0.75 * power,
+        speed: 2.2 + Math.random() * 1.2,
+        width: 1 + Math.random() * 2
+      });
+
+      if (ripples.length > 20) {
+        ripples.shift();
+      }
+
+      density = Math.min(100, density + 3 * power);
+
+      statusText.textContent = "Surface disturbed";
+    }
+
+    function addDroplet() {
+      droplets.push({
+        x: Math.random() * width,
+        y: -10,
+        velocity: 1.8 + Math.random() * 2,
+        size: 2 + Math.random() * 2,
+        life: 1
+      });
+    }
+
+    function update(delta, now) {
+
+      for (const ripple of ripples) {
+        ripple.radius += ripple.speed * delta;
+        ripple.alpha *= 0.985;
+      }
+
+      ripples = ripples.filter(
+        ripple => ripple.alpha > 0.025 && ripple.radius < width
+      );
+
+      for (const drop of droplets) {
+        drop.velocity += 0.035 * delta;
+        drop.y += drop.velocity * delta;
+
+        if (drop.y >= height * 0.5) {
+          addRipple(drop.x, height * 0.5, 0.45);
+          drop.life = 0;
+        }
+      }
+
+      droplets = droplets.filter(drop => drop.life > 0);
+
+      if (now - lastDrop > 2500 + Math.random() * 2500) {
+        addDroplet();
+        lastDrop = now;
+      }
+
+      density *= 0.9994;
+
+      if (pointer.active) {
+        density += 0.025;
+      }
+
+      density = Math.max(0, Math.min(100, density));
+
+      densityValue.textContent = Math.round(density) + "%";
+      reservoirFill.style.width = density + "%";
+    }
+
+    function drawBackground(time) {
+
+      const gradient = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.45,
+        20,
+        width * 0.5,
+        height * 0.5,
+        Math.max(width, height)
+      );
+
+      gradient.addColorStop(0, "#303039");
+      gradient.addColorStop(0.5, "#17171d");
+      gradient.addColorStop(1, "#08080b");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const glow = ctx.createRadialGradient(
+        pointer.x,
+        pointer.y,
+        0,
+        pointer.x,
+        pointer.y,
+        150
+      );
+
+      glow.addColorStop(0, "rgba(255,255,255,0.08)");
+      glow.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawSurface(time) {
+
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.roundRect(
+        24,
+        24,
+        width - 48,
+        height - 48,
+        24
+      );
+
+      ctx.clip();
+
+      const surface = ctx.createRadialGradient(
+        width * 0.45,
+        height * 0.42,
+        20,
+        width * 0.5,
+        height * 0.5,
+        width * 0.7
+      );
+
+      surface.addColorStop(0, "#22232c");
+      surface.addColorStop(0.6, "#111218");
+      surface.addColorStop(1, "#050509");
+
+      ctx.fillStyle = surface;
+      ctx.fillRect(0, 0, width, height);
+
+      drawWaves(time);
+      drawParticles(time);
+      drawRipples();
+      drawPointer();
+
+      ctx.restore();
+    }
+
+    function drawWaves(time) {
+
+      ctx.beginPath();
+
+      const step = 14;
+
+      for (let x = 0; x <= width; x += step) {
+
+        const wave =
+          Math.sin(x * 0.018 + time * 0.001) * 2 +
+          Math.sin(x * 0.043 - time * 0.0007) * 1.5;
+
+        const pointerInfluence =
+          pointer.active
+            ? Math.max(
+                0,
+                1 -
+                Math.hypot(x - pointer.x, height * 0.5 - pointer.y) / 180
+              )
+            : 0;
+
+        const y =
+          height * 0.5 +
+          wave +
+          pointerInfluence *
+          Math.sin(time * 0.01 + x * 0.04) *
+          12;
+
+        if (x === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+
+      ctx.strokeStyle = "rgba(255,255,255,0.035)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    function drawParticles(time) {
+
+      for (const particle of particles) {
+
+        const pulse =
+          Math.sin(
+            particle.phase +
+            time * particle.speed
+          ) * 0.5 + 0.5;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          particle.x,
+          particle.y,
+          particle.size * pulse,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle =
+          `rgba(255,255,255,${0.025 + pulse * 0.04})`;
+
+        ctx.fill();
+      }
+    }
+
+    function drawRipples() {
+
+      for (const ripple of ripples) {
+
+        ctx.beginPath();
+
+        ctx.arc(
+          ripple.x,
+          ripple.y,
+          ripple.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+          `rgba(255,255,255,${ripple.alpha})`;
+
+        ctx.lineWidth = ripple.width;
+        ctx.stroke();
+
+        ctx.beginPath();
+
+        ctx.arc(
+          ripple.x,
+          ripple.y,
+          ripple.radius * 0.82,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+          `rgba(120,150,255,${ripple.alpha * 0.18})`;
+
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    function drawPointer() {
+
+      if (!pointer.active) {
+        return;
+      }
+
+      const glow = ctx.createRadialGradient(
+        pointer.x,
+        pointer.y,
+        0,
+        pointer.x,
+        pointer.y,
+        70
+      );
+
+      glow.addColorStop(
+        0,
+        "rgba(255,255,255,0.08)"
+      );
+
+      glow.addColorStop(
+        1,
+        "rgba(255,255,255,0)"
+      );
+
+      ctx.fillStyle = glow;
+
+      ctx.beginPath();
+      ctx.arc(
+        pointer.x,
+        pointer.y,
+        70,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+    }
+
+    function render(now) {
+
+      const delta = Math.min(
+        2,
+        (now - lastFrame) / 16.67
+      );
+
+      lastFrame = now;
+
+      update(delta, now);
+
+      ctx.clearRect(0, 0, width, height);
+
+      drawBackground(now);
+      drawSurface(now);
+
+      requestAnimationFrame(render);
+    }
+
+    canvas.addEventListener("pointermove", event => {
+
+      const rect = canvas.getBoundingClientRect();
+
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+
+      if (Math.random() < 0.08) {
+        addRipple(
+          pointer.x,
+          pointer.y,
+          0.18
+        );
+      }
+    });
+
+    canvas.addEventListener("pointerleave", () => {
+      pointer.active = false;
+      statusText.textContent = "Surface is calm";
+    });
+
+    canvas.addEventListener("pointerdown", event => {
+
+      const rect = canvas.getBoundingClientRect();
+
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      addRipple(x, y, 1);
+    });
+
+    document.getElementById("rippleBtn")
+      .addEventListener("click", () => {
+        addRipple(
+          width / 2,
+          height / 2,
+          1
+        );
+      });
+
+    document.getElementById("dropBtn")
+      .addEventListener("click", () => {
+        addDroplet();
+        statusText.textContent = "Ink droplet released";
+      });
+
+    document.getElementById("resetBtn")
+      .addEventListener("click", () => {
+
+        ripples = [];
+        droplets = [];
+        density = 42;
+
+        statusText.textContent =
+          "Surface is calm";
+      });
+
+    document.addEventListener("keydown", event => {
+
+      if (event.code === "Space") {
+        event.preventDefault();
+
+        addRipple(
+          width / 2,
+          height / 2,
+          1
+        );
+      }
+
+      if (event.key.toLowerCase() === "r") {
+
+        ripples = [];
+        droplets = [];
+        density = 42;
+
+        statusText.textContent =
+          "Surface is calm";
+      }
+    });
+
+    window.addEventListener("resize", resize);
+
+    resize();
+    requestAnimationFrame(render);
+  </script>
+
+</body>
+</html>

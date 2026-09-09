@@ -1,0 +1,2 @@
+# Interactive Tab Bar (Retro)
+A classic folder-style tab system styled like a green monochrome terminal. The active tab physically overlaps the main content border, and switching tabs triggers a CSS-only typing animation using `clip-path`.

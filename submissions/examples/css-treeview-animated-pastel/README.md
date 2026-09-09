@@ -1,0 +1,2 @@
+# Animated Treeview (Pastel)
+A soft, bouncy file tree. Branches are color-coded utilizing pastel backgrounds to distinguish high-level categories. Toggling a branch initiates a spring-like `translateY` animation alongside standard expansion, and rotates the plus icon 45 degrees into an 'X'.

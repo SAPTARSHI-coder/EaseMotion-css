@@ -1,0 +1,2 @@
+# Floating File Dropzone (Minimalist)
+A stark, ultra-clean upload button that behaves like a dropzone card. Stripping away standard dashed borders, this component relies on a clean `box-shadow` elevation shift and a sleek `rotate(90deg)` animation on the plus icon during hover.

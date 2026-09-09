@@ -1,0 +1,5 @@
+# A11y Command Palette ARIA Combobox Active Descendant
+
+1. What does this do? Provides a fully WCAG 2.1 AA compliant reference implementation for a Command Palette (spotlight search) utilizing the `combobox` ARIA role with the `aria-activedescendant` pattern. It includes Arrow key navigation, Enter selection, Esc to dismiss, and explicit high-contrast support via `forced-colors: active`.
+2. How is it used? This is an audit-proven reference implementation. Copy the HTML structure (with exact `aria-*` and `role` attributes), the vanilla JavaScript keyboard handlers that manage the `aria-activedescendant` attribute on the input, and the `.palette-option.active` / `forced-colors` CSS rules into your project.
+3. Why is it useful? Automated accessibility tools like axe-core cannot test the complex JavaScript logic required to manage focus within a composite widget like a combobox. Implementing `aria-activedescendant` incorrectly can trap screen reader users. This component serves as a verified template for building custom styled command palettes that behave exactly like native OS search menus.

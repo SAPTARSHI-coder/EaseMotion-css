@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fishing Bobber · Bobber Bobs on Water Surface</title>
+    <meta name="description" content="Interactive fishing bobber floating on water surface with bobbing animation, ripples, and gentle waves.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎣 FISHING BOBBER</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="bobberCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎣 FISHING BOBBER</span>
+            <small>click → bob · ripples · splash</small>
+        </div>
+        <div class="hint">
+            <span>🌊 click to make the bobber dip and create ripples</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('bobberCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Bobber Class ----
+            class Bobber {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H * 0.45;
+                    this.baseY = this.y;
+                    this.radius = 18;
+                    
+                    // Bobbing
+                    this.bobPhase = 0;
+                    this.bobSpeed = 0.03;
+                    this.bobAmount = 0;
+                    this.bobTarget = 0;
+                    
+                    // Float
+                    this.floatPhase = Math.random() * Math.PI * 2;
+                    this.floatSpeed = 0.008;
+                    this.floatAmount = 3;
+                    
+                    // Ripples
+                    this.ripples = [];
+                    
+                    // Line
+                    this.lineAngle = 0;
+                    this.lineLength = 120;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    this.bobPhase += this.bobSpeed * dt;
+                    
+                    // Smooth bob interpolation
+                    this.bobAmount += (this.bobTarget - this.bobAmount) * 0.06 * dt;
+                    
+                    // Float drift
+                    this.floatPhase += this.floatSpeed * dt;
+                    const floatOffset = Math.sin(this.floatPhase) * this.floatAmount;
+                    
+                    // Bob motion
+                    const bobOffset = Math.sin(this.bobPhase) * this.bobAmount * 12;
+                    
+                    // Final Y position
+                    this.y = this.baseY + floatOffset + bobOffset;
+                    
+                    // Line sway
+                    this.lineAngle = Math.sin(this.bobPhase * 0.5 + 1) * 0.03 + 
+                                    Math.sin(this.floatPhase * 0.7) * 0.02;
+                    
+                    // Update ripples
+                    this.ripples = this.ripples.filter(r => r.life > 0);
+                    for (let r of this.ripples) {
+                        r.radius += r.speed * dt;
+                        r.life -= r.decay * dt;
+                        r.alpha = r.life * 0.6;
+                    }
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const r = this.radius;
+                    
+                    // ---- Draw ripples ----
+                    for (let ripple of this.ripples) {
+                        ctx.save();
+                        ctx.globalAlpha = ripple.alpha;
+                        ctx.strokeStyle = `rgba(200, 240, 255, ${0.3 + Math.sin(ripple.phase) * 0.1})`;
+                        ctx.lineWidth = 1.5 + ripple.life * 0.5;
+                        ctx.shadowColor = 'rgba(100, 200, 255, 0.1)';
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.arc(x, y, ripple.radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Inner glow
+                        ctx.strokeStyle = `rgba(200, 240, 255, ${0.1 * ripple.life})`;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(x, y, ripple.radius * 0.6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    
+                    // ---- Fishing line ----
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(150, 180, 200, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + r * 0.5);
+                    const lineEndX = x + Math.sin(this.lineAngle) * this.lineLength;
+                    const lineEndY = y + r * 0.5 + this.lineLength;
+                    ctx.quadraticCurveTo(
+                        x + Math.sin(this.lineAngle * 0.5) * 20,
+                        y + r * 0.5 + this.lineLength * 0.5,
+                        lineEndX,
+                        lineEndY
+                    );
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // ---- Bobber body ----
+                    ctx.save();
+                    ctx.translate(x, y);
+                    
+                    // Glow
+                    ctx.shadowColor = 'rgba(255, 100, 50, 0.2)';
+                    ctx.shadowBlur = 30;
+                    
+                    // Top (red/orange)
+                    const gradTop = ctx.createRadialGradient(
+                        -r * 0.2, -r * 0.3, 0,
+                        0, 0, r
+                    );
+                    gradTop.addColorStop(0, '#ff6b35');
+                    gradTop.addColorStop(0.5, '#e85530');
+                    gradTop.addColorStop(0.8, '#cc4420');
+                    gradTop.addColorStop(1, '#aa3318');
+                    ctx.fillStyle = gradTop;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -r * 0.2, r * 0.7, r * 0.6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Bottom (white)
+                    const gradBot = ctx.createRadialGradient(
+                        r * 0.2, r * 0.3, 0,
+                        0, 0, r
+                    );
+                    gradBot.addColorStop(0, '#ffffff');
+                    gradBot.addColorStop(0.4, '#f0f0f0');
+                    gradBot.addColorStop(0.7, '#e0e0e0');
+                    gradBot.addColorStop(1, '#c0c0c0');
+                    ctx.fillStyle = gradBot;
+                    ctx.beginPath();
+                    ctx.ellipse(0, r * 0.35, r * 0.6, r * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(-r * 0.15, -r * 0.35, r * 0.2, r * 0.15, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Top highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(r * 0.1, -r * 0.15, r * 0.15, r * 0.1, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Bobber ring
+                    ctx.strokeStyle = 'rgba(50, 50, 50, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, r * 0.65, r * 0.1, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Bobber tip (on top)
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ff6b35';
+                    ctx.beginPath();
+                    ctx.ellipse(0, -r * 0.7, r * 0.08, r * 0.15, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                    
+                    // ---- Water line reflection ----
+                    ctx.save();
+                    ctx.globalAlpha = 0.1;
+                    ctx.fillStyle = 'rgba(200, 230, 255, 0.2)';
+                    ctx.beginPath();
+                    ctx.ellipse(x, y + r * 0.8, r * 0.8, r * 0.15, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                addRipple() {
+                    this.ripples.push({
+                        radius: 5,
+                        speed: 1.5 + Math.random() * 1,
+                        life: 1,
+                        decay: 0.008 + Math.random() * 0.008,
+                        alpha: 0.6,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // ---- Create Bobber ----
+            let bobber;
+
+            function createBobber() {
+                bobber = new Bobber();
+            }
+
+            // ---- Trigger Bob ----
+            function triggerBob() {
+                bobber.bobTarget = 1;
+                bobber.addRipple();
+                
+                // Create splash particles
+                const numParticles = 15 + Math.floor(Math.random() * 10);
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = -Math.PI/2 + (Math.random() - 0.5) * Math.PI * 1.2;
+                    const speed = 1 + Math.random() * 3;
+                    splashParticles.push({
+                        x: bobber.x + (Math.random() - 0.5) * 20,
+                        y: bobber.y + (Math.random() - 0.5) * 10,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1,
+                        size: 2 + Math.random() * 4,
+                        life: 1,
+                        decay: 0.02 + Math.random() * 0.03,
+                        gravity: 0.06,
+                        alpha: 0.8
+                    });
+                }
+                
+                // Reset bob after delay
+                setTimeout(() => {
+                    bobber.bobTarget = 0;
+                }, 200 + Math.random() * 200);
+            }
+
+            // ---- Splash Particles ----
+            let splashParticles = [];
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Sky gradient
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.4);
+                skyGrad.addColorStop(0, '#1a2a3a');
+                skyGrad.addColorStop(0.5, '#2a4a6a');
+                skyGrad.addColorStop(1, '#3a5a7a');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H * 0.4);
+                
+                // Water gradient
+                const waterGrad = ctx.createLinearGradient(0, H * 0.35, 0, H);
+                waterGrad.addColorStop(0, '#3a6a8a');
+                waterGrad.addColorStop(0.3, '#2a5a7a');
+                waterGrad.addColorStop(0.6, '#1a4a6a');
+                waterGrad.addColorStop(0.8, '#0d3a5a');
+                waterGrad.addColorStop(1, '#0a1a2a');
+                ctx.fillStyle = waterGrad;
+                ctx.fillRect(0, H * 0.35, W, H * 0.65);
+                
+                // Horizon line
+                ctx.strokeStyle = 'rgba(200, 230, 255, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H * 0.4);
+                ctx.lineTo(W, H * 0.4);
+                ctx.stroke();
+                
+                // Water surface waves
+                ctx.save();
+                ctx.globalAlpha = 0.15;
+                ctx.strokeStyle = 'rgba(200, 240, 255, 0.2)';
+                ctx.lineWidth = 1;
+                for (let w = 0; w < 3; w++) {
+                    ctx.beginPath();
+                    for (let x = 0; x <= W; x += 2) {
+                        const y = H * 0.4 + Math.sin(x * 0.02 + time * 0.02 + w * 2) * 4 +
+                                 Math.sin(x * 0.03 + time * 0.015 + w * 1.5) * 3;
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+                
+                // Light reflections on water
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 157 + 20) % W;
+                    const y = H * 0.4 + 20 + (i * 73 + time * 0.01 * 5) % (H * 0.5);
+                    const size = 15 + Math.sin(time * 0.01 + i * 2) * 10 + 10;
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+                    gradient.addColorStop(0, `rgba(200, 240, 255, ${0.02 + Math.sin(time * 0.01 + i) * 0.015})`);
+                    gradient.addColorStop(1, 'rgba(200, 240, 255, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x - size, y - size, size * 2, size * 2);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                // Update splash particles
+                splashParticles = splashParticles.filter(p => p.life > 0);
+                for (let p of splashParticles) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.life -= p.decay;
+                    p.alpha = p.life * 0.8;
+                    
+                    // Draw particle
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = `rgba(200, 240, 255, ${p.alpha})`;
+                    ctx.shadowColor = 'rgba(200, 240, 255, 0.2)';
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Draw bobber
+                if (bobber) {
+                    bobber.update();
+                    bobber.draw(ctx);
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetBobber() {
+                splashParticles = [];
+                createBobber();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetBobber);
+            canvas.addEventListener('click', triggerBob);
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                triggerBob();
+            });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    triggerBob();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBobber();
+                }
+            });
+
+            // ---- Initialize ----
+            createBobber();
+            animate();
+
+            console.log('🎣 Fishing Bobber · Click or press Space to bob the bobber!');
+        })();
+    </script>
+</body>
+</html>

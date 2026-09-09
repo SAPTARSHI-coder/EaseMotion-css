@@ -1,0 +1,2 @@
+# Responsive Stepper (Neumorphism)
+A soft-UI progress stepper. The inactive nodes and container utilize soft outer shadows, while the active node presses into the page using inset shadows. On mobile, the flex layout dynamically pivots to a vertical stepper track.

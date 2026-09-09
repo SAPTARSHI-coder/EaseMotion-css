@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Rise · Curtain Rises to Reveal</title>
+    <meta name="description" content="Interactive curtain rise animation with draping fabric, folds, and a dramatic reveal effect.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎭 CURTAIN RISE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="curtainCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="rise-btn" id="riseBtn">🎭 RISE</button>
+                <button class="lower-btn" id="lowerBtn">⬇️ LOWER</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Folds</label>
+                <input type="range" id="foldsSlider" min="4" max="12" value="8">
+                <span id="foldsLabel">8</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎭 CURTAIN RISE</span>
+            <small>drape · reveal · theatre</small>
+        </div>
+        <div class="hint">
+            <span>🎭 click to raise the curtain and reveal what's behind</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('curtainCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const riseBtn = document.getElementById('riseBtn');
+            const lowerBtn = document.getElementById('lowerBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const foldsSlider = document.getElementById('foldsSlider');
+            const foldsLabel = document.getElementById('foldsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numFolds = 8;
+            let time = 0;
+            let riseProgress = 0;
+            let targetProgress = 0;
+            let isRising = false;
+            let isLowering = false;
+            let isRevealed = false;
+
+            // ---- Curtain Parameters ----
+            const curtainColor1 = '#8b1a1a';
+            const curtainColor2 = '#6b0f0f';
+            const curtainColor3 = '#4a0a0a';
+            const highlightColor = '#a82828';
+
+            // ---- Generate Background (revealed content) ----
+            function drawBackground() {
+                // Gradient sky
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                skyGrad.addColorStop(0, '#0a1a2a');
+                skyGrad.addColorStop(0.3, '#1a2a3a');
+                skyGrad.addColorStop(0.6, '#2a3a4a');
+                skyGrad.addColorStop(0.8, '#1a2a3a');
+                skyGrad.addColorStop(1, '#0a1a2a');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Stars
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.6);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Stage text
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.05)';
+                ctx.font = '60px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✨', W/2, H/2 - 20);
+                ctx.font = '20px monospace';
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.08)';
+                ctx.fillText('THE STAGE', W/2, H/2 + 30);
+                ctx.restore();
+            }
+
+            // ---- Draw Curtain ----
+            function drawCurtain(progress) {
+                const rise = Math.min(1, progress);
+                const curtainHeight = H - 60;
+                const visibleHeight = curtainHeight * (1 - rise);
+                const startY = H - 50 - visibleHeight;
+                const foldWidth = (W - 20) / numFolds;
+                const waveAmplitude = 15 + rise * 20;
+                const waveFrequency = 0.03 + rise * 0.02;
+                
+                ctx.save();
+                
+                // Curtain shadow
+                if (rise > 0.1) {
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = -5;
+                }
+                
+                // Draw each fold
+                for (let i = 0; i < numFolds; i++) {
+                    const x = 10 + i * foldWidth;
+                    const nextX = x + foldWidth;
+                    const waveOffset = Math.sin(i * 1.2 + time * 0.02) * 3;
+                    
+                    // Fold shading
+                    const foldGrad = ctx.createLinearGradient(x, 0, x + foldWidth, 0);
+                    const shade1 = i % 2 === 0 ? curtainColor1 : curtainColor2;
+                    const shade2 = i % 2 === 0 ? curtainColor2 : curtainColor3;
+                    foldGrad.addColorStop(0, shade1);
+                    foldGrad.addColorStop(0.3, curtainColor1);
+                    foldGrad.addColorStop(0.5, highlightColor);
+                    foldGrad.addColorStop(0.7, curtainColor1);
+                    foldGrad.addColorStop(1, shade2);
+                    
+                    ctx.fillStyle = foldGrad;
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 10;
+                    
+                    // Curtain shape with draping
+                    ctx.beginPath();
+                    ctx.moveTo(x, startY + waveOffset);
+                    
+                    // Top edge with wave
+                    const topWave = Math.sin(x * waveFrequency + time * 0.02) * waveAmplitude;
+                    ctx.lineTo(x, startY + topWave * 0.3);
+                    
+                    // Drape curve
+                    const midX = (x + nextX) / 2;
+                    const midY = startY + visibleHeight * 0.4 + 
+                                Math.sin(x * waveFrequency * 0.5 + time * 0.015) * waveAmplitude * 0.5;
+                    
+                    ctx.quadraticCurveTo(
+                        midX,
+                        midY + Math.sin(i * 0.5 + time * 0.01) * 5,
+                        nextX,
+                        startY + Math.sin(nextX * waveFrequency + time * 0.02) * waveAmplitude * 0.3
+                    );
+                    
+                    // Bottom edge
+                    const bottomWave = Math.sin(nextX * waveFrequency * 1.3 + time * 0.025) * waveAmplitude * 0.5;
+                    ctx.lineTo(nextX, startY + visibleHeight + bottomWave * 0.3);
+                    
+                    // Right edge (down)
+                    ctx.lineTo(nextX, H - 50 + Math.sin(nextX * waveFrequency * 0.7 + time * 0.02) * 5);
+                    
+                    // Bottom drape
+                    const bottomMidX = (x + nextX) / 2;
+                    const bottomMidY = H - 50 + Math.sin(bottomMidX * waveFrequency * 0.7 + time * 0.02) * 8;
+                    ctx.quadraticCurveTo(
+                        bottomMidX,
+                        bottomMidY + 5,
+                        x,
+                        H - 50 + Math.sin(x * waveFrequency * 0.7 + time * 0.02) * 5
+                    );
+                    
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Fold highlight
+                    if (i % 2 === 0) {
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = 'rgba(255,200,150,0.03)';
+                        ctx.beginPath();
+                        const hx = x + foldWidth * 0.3;
+                        const hy = startY + visibleHeight * 0.2;
+                        ctx.arc(hx, hy, foldWidth * 0.15, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                // Curtain rod
+                ctx.shadowBlur = 0;
+                const rodGrad = ctx.createLinearGradient(0, 50, 0, 60);
+                rodGrad.addColorStop(0, '#8a7a6a');
+                rodGrad.addColorStop(0.3, '#b8a898');
+                rodGrad.addColorStop(0.5, '#c8b8a8');
+                rodGrad.addColorStop(0.7, '#b8a898');
+                rodGrad.addColorStop(1, '#7a6a5a');
+                ctx.fillStyle = rodGrad;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(0, 48, W, 14);
+                
+                // Rod ends
+                ctx.fillStyle = '#8a7a6a';
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+                ctx.arc(8, 55, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(W - 8, 55, 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Rod ring details
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.1)';
+                for (let i = 0; i < numFolds; i++) {
+                    const rx = 15 + i * foldWidth + foldWidth * 0.3;
+                    ctx.fillRect(rx, 48, 4, 14);
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                drawBackground();
+                drawCurtain(riseProgress);
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const status = isRevealed ? '🎭 REVEALED' : 
+                              isRising ? '🔄 RISING...' : 
+                              isLowering ? '⬇️ LOWERING...' : 
+                              '🎭 CLOSED';
+                ctx.fillText(status, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const progressPercent = Math.round(riseProgress * 100);
+                ctx.fillText(`Open: ${progressPercent}%`, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Smooth transition
+                const dt = 0.02 * (speed / 5);
+                const diff = targetProgress - riseProgress;
+                if (Math.abs(diff) > 0.001) {
+                    riseProgress += diff * dt * 2;
+                } else {
+                    riseProgress = targetProgress;
+                }
+                
+                // Update states
+                if (riseProgress >= 1) {
+                    isRevealed = true;
+                    isRising = false;
+                    isLowering = false;
+                } else if (riseProgress <= 0) {
+                    isRevealed = false;
+                    isRising = false;
+                    isLowering = false;
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Rise ----
+            function riseCurtain() {
+                targetProgress = 1;
+                isRising = true;
+                isLowering = false;
+                isRevealed = false;
+            }
+
+            // ---- Lower ----
+            function lowerCurtain() {
+                targetProgress = 0;
+                isLowering = true;
+                isRising = false;
+                isRevealed = false;
+            }
+
+            // ---- Reset ----
+            function resetCurtain() {
+                targetProgress = 0;
+                riseProgress = 0;
+                isRising = false;
+                isLowering = false;
+                isRevealed = false;
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            foldsSlider.addEventListener('input', function() {
+                numFolds = parseInt(this.value);
+                foldsLabel.textContent = numFolds;
+            });
+
+            // ---- Event Listeners ----
+            riseBtn.addEventListener('click', riseCurtain);
+            lowerBtn.addEventListener('click', lowerCurtain);
+            resetBtn.addEventListener('click', resetCurtain);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (riseProgress < 0.5) {
+                        riseCurtain();
+                    } else {
+                        lowerCurtain();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCurtain();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🎭 Curtain Rise · Click Rise or press Space to raise the curtain!');
+        })();
+    </script>
+</body>
+</html>

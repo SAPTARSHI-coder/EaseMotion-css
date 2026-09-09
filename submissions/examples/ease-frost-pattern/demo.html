@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frost Pattern · intricate ice patterns</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="frost-container">
+      <div class="frost-display" id="frostDisplay">
+        <!-- Canvas for frost pattern -->
+        <canvas id="frostCanvas"></canvas>
+        
+        <!-- Frost Info -->
+        <div class="frost-info">
+          <span class="info-label">❄️ Crystals</span>
+          <span class="info-value" id="crystalCount">0</span>
+        </div>
+
+        <!-- Frost Controls -->
+        <div class="frost-controls">
+          <div class="control-group">
+            <label class="control-label">❄️ Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="50">
+            <span class="control-value" id="growthValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="classic" title="Classic">❄️</button>
+              <button class="style-btn" data-style="fern" title="Fern">🌿</button>
+              <button class="style-btn" data-style="star" title="Star">⭐</button>
+              <button class="style-btn" data-style="dendrite" title="Dendrite">🌲</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Frost Text -->
+        <div class="frost-text">
+          <span class="text-label">❄️ Frost</span>
+          <span class="text-message" id="frostMessage">Intricate ice patterns forming</span>
+        </div>
+      </div>
+      
+      <div class="frost-status">
+        <span id="frostStatus">❄️ Frost patterns forming intricate ice crystals</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-grow" id="growBtn">❄️ Grow</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>❄️ frost patterns · 4 styles · crystal growth</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('frostCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('frostDisplay');
+      const crystalCount = document.getElementById('crystalCount');
+      const frostStatus = document.getElementById('frostStatus');
+      const frostMessage = document.getElementById('frostMessage');
+      const growBtn = document.getElementById('growBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const growthSlider = document.getElementById('growthSlider');
+      const growthValue = document.getElementById('growthValue');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let crystals = [];
+      let animationId = null;
+      let time = 0;
+      let currentStyle = 'classic';
+      let growth = 50;
+
+      // Style configurations
+      const styles = {
+        classic: { name: 'Classic', branchAngle: 0.6, branchLength: 0.6, branches: 6, variation: 0.3 },
+        fern: { name: 'Fern', branchAngle: 0.8, branchLength: 0.7, branches: 8, variation: 0.4 },
+        star: { name: 'Star', branchAngle: 0.4, branchLength: 0.5, branches: 5, variation: 0.2 },
+        dendrite: { name: 'Dendrite', branchAngle: 0.7, branchLength: 0.8, branches: 6, variation: 0.5 }
+      };
+
+      // Crystal class
+      class FrostCrystal {
+        constructor(x, y, angle, size, depth, maxDepth, style) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.angle = angle || Math.random() * Math.PI * 2;
+          this.size = size || 3 + Math.random() * 5;
+          this.depth = depth || 0;
+          this.maxDepth = maxDepth || 3 + Math.floor(Math.random() * 3);
+          this.style = style || currentStyle;
+          this.children = [];
+          this.growProgress = 0;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 0.5;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.width = 0.5 + Math.random() * 1;
+          this.branches = [];
+          this.growing = true;
+          
+          // Generate branch points
+          this.generateBranches();
+        }
+
+        generateBranches() {
+          const styleData = styles[this.style];
+          const numBranches = styleData.branches + Math.floor(Math.random() * 2);
+          this.branches = [];
+          for (let i = 0; i < numBranches; i++) {
+            const angle = (i / numBranches) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+            const length = this.size * (0.3 + Math.random() * 0.3);
+            this.branches.push({
+              angle: angle,
+              length: length,
+              width: this.width * (0.3 + Math.random() * 0.3)
+            });
+          }
+        }
+
+        update(growth, time) {
+          const growFactor = growth / 100;
+          this.growProgress += (growFactor - this.growProgress) * 0.05;
+          this.phase += 0.01 * this.speed;
+          this.opacity = 0.3 + this.growProgress * 0.5;
+          
+          // Generate children
+          if (this.depth < this.maxDepth && this.growProgress > 0.3) {
+            const childProgress = (this.growProgress - 0.3) / 0.7;
+            if (Math.random() < childProgress * 0.15) {
+              const styleData = styles[this.style];
+              const numChildren = 2 + Math.floor(Math.random() * 2);
+              for (let i = 0; i < numChildren; i++) {
+                if (this.children.length < this.branches.length * 2) {
+                  const childAngle = this.angle + (Math.random() - 0.5) * styleData.branchAngle * 2;
+                  const childSize = this.size * (0.4 + Math.random() * 0.3);
+                  const child = new FrostCrystal(
+                    this.x, this.y,
+                    childAngle,
+                    childSize,
+                    this.depth + 1,
+                    this.maxDepth,
+                    this.style
+                  );
+                  child.width = this.width * (0.3 + Math.random() * 0.3);
+                  child.opacity = this.opacity * 0.7;
+                  this.children.push(child);
+                }
+              }
+            }
+          }
+          
+          // Update children
+          this.children.forEach(child => {
+            child.update(growth, time);
+          });
+        }
+
+        draw(ctx, growth) {
+          const growFactor = growth / 100;
+          const progress = Math.min(1, this.growProgress / growFactor);
+          if (progress < 0.01) return;
+          
+          ctx.save();
+          ctx.globalAlpha = this.opacity * (0.3 + progress * 0.5);
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle);
+          
+          // Glow
+          ctx.shadowColor = 'rgba(200, 220, 255, 0.1)';
+          ctx.shadowBlur = 5;
+          
+          // Draw branches
+          this.branches.forEach(branch => {
+            const length = branch.length * progress;
+            const width = branch.width * (0.3 + progress * 0.5);
+            
+            ctx.save();
+            ctx.rotate(branch.angle);
+            
+            // Branch glow
+            ctx.shadowColor = 'rgba(200, 220, 255, 0.15)';
+            ctx.shadowBlur = 3;
+            
+            // Branch gradient
+            const grad = ctx.createLinearGradient(0, 0, length, 0);
+            grad.addColorStop(0, 'rgba(200, 220, 255, 0.8)');
+            grad.addColorStop(0.5, 'rgba(180, 210, 240, 0.6)');
+            grad.addColorStop(1, 'rgba(160, 200, 230, 0.3)');
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            
+            // Draw branch with slight curve
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            const midX = length * 0.5 + Math.sin(this.phase + branch.angle) * 2;
+            const midY = Math.sin(this.phase * 0.7 + branch.angle) * 2;
+            ctx.quadraticCurveTo(midX, midY, length, 0);
+            ctx.stroke();
+            
+            // Branch tip highlight
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = this.opacity * 0.3 * progress;
+            ctx.fillStyle = 'rgba(220, 240, 255, 0.3)';
+            ctx.beginPath();
+            ctx.arc(length, 0, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          });
+          
+          // Center dot
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = this.opacity * 0.2 * progress;
+          ctx.fillStyle = 'rgba(220, 240, 255, 0.3)';
+          ctx.beginPath();
+          ctx.arc(0, 0, this.width * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+          
+          // Draw children
+          this.children.forEach(child => {
+            child.draw(ctx, growth);
+          });
+        }
+      }
+
+      // Generate crystals
+      function generateCrystals() {
+        const count = 5 + Math.floor(Math.random() * 5);
+        crystals = [];
+        for (let i = 0; i < count; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const angle = Math.random() * Math.PI * 2;
+          const size = 5 + Math.random() * 8;
+          const crystal = new FrostCrystal(x, y, angle, size, 0, 3 + Math.floor(Math.random() * 3), currentStyle);
+          crystal.speed = 0.3 + Math.random() * 0.5;
+          crystals.push(crystal);
+        }
+        crystalCount.textContent = countCrystals(crystals);
+      }
+
+      // Count total crystals
+      function countCrystals(crystalList) {
+        let count = 0;
+        crystalList.forEach(c => {
+          count++;
+          if (c.children.length > 0) {
+            count += countCrystals(c.children);
+          }
+        });
+        return count;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Dark cold background
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.3, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(0.7, 'rgba(10, 15, 25, 0.5)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Subtle frost texture
+        for (let i = 0; i < 40; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 1 + Math.random() * 3;
+          const alpha = 0.02 + Math.random() * 0.03;
+          ctx.fillStyle = `rgba(200, 220, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateCrystals();
+      }
+
+      // Animation loop
+      function animate() {
+        const growth = parseInt(growthSlider.value);
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw crystals
+        crystals.forEach(crystal => {
+          crystal.update(growth, time);
+          crystal.draw(ctx, growth);
+        });
+        
+        // Update crystal count
+        crystalCount.textContent = countCrystals(crystals);
+        
+        // Update status
+        if (growth > 70) {
+          frostStatus.textContent = '❄️ Frost patterns spreading rapidly! ✨';
+          frostStatus.style.color = '#fbbf24';
+        } else if (growth > 30) {
+          frostStatus.textContent = '❄️ Intricate ice crystals forming';
+          frostStatus.style.color = '#818cf8';
+        } else {
+          frostStatus.textContent = '❄️ Frost patterns forming intricate ice crystals';
+          frostStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message
+        const styleData = styles[currentStyle];
+        frostMessage.textContent = `${styleData.name} frost patterns forming`;
+        frostMessage.style.color = '#e2e8f0';
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleData = styles[style];
+        frostStatus.textContent = `🎨 Style: ${styleData.name}`;
+        frostStatus.style.color = '#e2e8f0';
+        generateCrystals();
+        setTimeout(() => {
+          if (growth < 10) {
+            frostStatus.textContent = '❄️ Frost patterns forming intricate ice crystals';
+            frostStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetFrost() {
+        growthSlider.value = 50;
+        growthValue.textContent = '50%';
+        generateCrystals();
+        frostStatus.textContent = '🔄 Reset complete';
+        frostStatus.style.color = '#94a3b8';
+        frostMessage.textContent = 'Intricate ice patterns forming';
+        frostMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          frostStatus.textContent = '❄️ Frost patterns forming intricate ice crystals';
+          frostStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        growthValue.textContent = this.value + '%';
+      });
+
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      if (growBtn) {
+        growBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          frostStatus.textContent = '❄️ Frost growing!';
+          frostStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            frostStatus.textContent = '❄️ Frost patterns forming intricate ice crystals';
+            frostStatus.style.color = '#94a3b8';
+          }, 1500);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetFrost();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'g' || key === 'G') {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          frostStatus.textContent = '❄️ Frost growing!';
+          frostStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            frostStatus.textContent = '❄️ Frost patterns forming intricate ice crystals';
+            frostStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetFrost();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('❄️ Frost Pattern ready · shortcuts: [G] Grow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

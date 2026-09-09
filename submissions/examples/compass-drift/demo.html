@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compass Drift</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="compass-page">
+
+    <section class="compass-card">
+
+      <div class="compass-header">
+        <div>
+          <p class="eyebrow">NAVIGATION SYSTEM</p>
+          <h1>Compass Drift</h1>
+          <p class="subtitle">
+            A magnetic compass that gently drifts with invisible forces.
+          </p>
+        </div>
+
+        <div class="status" id="status">
+          <span class="status-dot"></span>
+          <span id="statusText">Drifting</span>
+        </div>
+      </div>
+
+      <div class="compass-display">
+
+        <div class="compass-dial" id="compassDial">
+
+          <div class="direction north">N</div>
+          <div class="direction east">E</div>
+          <div class="direction south">S</div>
+          <div class="direction west">W</div>
+
+          <div class="minor-mark mark-1"></div>
+          <div class="minor-mark mark-2"></div>
+          <div class="minor-mark mark-3"></div>
+          <div class="minor-mark mark-4"></div>
+          <div class="minor-mark mark-5"></div>
+          <div class="minor-mark mark-6"></div>
+          <div class="minor-mark mark-7"></div>
+          <div class="minor-mark mark-8"></div>
+
+          <div class="compass-center">
+
+            <div class="needle" id="needle">
+              <div class="needle-north"></div>
+              <div class="needle-south"></div>
+            </div>
+
+            <div class="center-dot"></div>
+
+          </div>
+
+        </div>
+
+        <div class="heading-info">
+          <span class="heading-label">CURRENT HEADING</span>
+          <strong id="headingValue">0°</strong>
+          <span class="direction-name" id="directionName">North</span>
+        </div>
+
+      </div>
+
+      <div class="controls">
+
+        <div class="control-group">
+          <div class="control-top">
+            <label for="headingSlider">Heading</label>
+            <span id="headingSliderValue">0°</span>
+          </div>
+
+          <input
+            id="headingSlider"
+            class="control-slider"
+            type="range"
+            min="0"
+            max="360"
+            value="0"
+          >
+        </div>
+
+        <div class="control-group">
+          <div class="control-top">
+            <label for="driftSlider">Drift Intensity</label>
+            <span id="driftSliderValue">35%</span>
+          </div>
+
+          <input
+            id="driftSlider"
+            class="control-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="35"
+          >
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button class="action-button primary" id="driftButton">
+          Disable Drift
+        </button>
+
+        <button class="action-button" id="resetButton">
+          Reset North
+        </button>
+
+      </div>
+
+      <div class="footer-info">
+        <span>← → Rotate</span>
+        <span>D Toggle Drift</span>
+        <span>R Reset</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const needle = document.getElementById("needle");
+    const headingValue = document.getElementById("headingValue");
+    const directionName = document.getElementById("directionName");
+    const headingSlider = document.getElementById("headingSlider");
+    const driftSlider = document.getElementById("driftSlider");
+    const headingSliderValue = document.getElementById("headingSliderValue");
+    const driftSliderValue = document.getElementById("driftSliderValue");
+    const driftButton = document.getElementById("driftButton");
+    const resetButton = document.getElementById("resetButton");
+    const statusText = document.getElementById("statusText");
+
+    let targetHeading = 0;
+    let currentHeading = 0;
+    let driftIntensity = 35;
+    let driftEnabled = true;
+
+    let driftTarget = 0;
+    let driftTimer = 0;
+
+    const directions = [
+      { name: "North", min: 337.5, max: 360 },
+      { name: "North", min: 0, max: 22.5 },
+      { name: "Northeast", min: 22.5, max: 67.5 },
+      { name: "East", min: 67.5, max: 112.5 },
+      { name: "Southeast", min: 112.5, max: 157.5 },
+      { name: "South", min: 157.5, max: 202.5 },
+      { name: "Southwest", min: 202.5, max: 247.5 },
+      { name: "West", min: 247.5, max: 292.5 },
+      { name: "Northwest", min: 292.5, max: 337.5 }
+    ];
+
+    function normalizeAngle(angle) {
+      return ((angle % 360) + 360) % 360;
+    }
+
+    function getDirection(angle) {
+      const normalized = normalizeAngle(angle);
+
+      for (const direction of directions) {
+        if (
+          normalized >= direction.min &&
+          normalized < direction.max
+        ) {
+          return direction.name;
+        }
+      }
+
+      return "North";
+    }
+
+    function shortestDifference(from, to) {
+      return ((to - from + 540) % 360) - 180;
+    }
+
+    function updateDisplay() {
+      const normalized = normalizeAngle(currentHeading);
+
+      needle.style.transform =
+        `translate(-50%, -50%) rotate(${currentHeading}deg)`;
+
+      headingValue.textContent =
+        `${Math.round(normalized)}°`;
+
+      headingSliderValue.textContent =
+        `${Math.round(normalized)}°`;
+
+      directionName.textContent =
+        getDirection(normalized);
+    }
+
+    function updateDriftTarget() {
+      if (!driftEnabled) {
+        driftTarget = 0;
+        return;
+      }
+
+      const maxDrift = driftIntensity * 0.18;
+
+      driftTarget =
+        (Math.random() * 2 - 1) * maxDrift;
+    }
+
+    function animationLoop(time) {
+
+      if (!driftTimer || time - driftTimer > 900) {
+        updateDriftTarget();
+        driftTimer = time;
+      }
+
+      const desiredHeading =
+        targetHeading + driftTarget;
+
+      const difference =
+        shortestDifference(currentHeading, desiredHeading);
+
+      currentHeading += difference * 0.08;
+
+      updateDisplay();
+
+      requestAnimationFrame(animationLoop);
+    }
+
+    headingSlider.addEventListener("input", (event) => {
+      targetHeading = Number(event.target.value);
+    });
+
+    driftSlider.addEventListener("input", (event) => {
+      driftIntensity = Number(event.target.value);
+      driftSliderValue.textContent =
+        `${driftIntensity}%`;
+    });
+
+    driftButton.addEventListener("click", () => {
+      driftEnabled = !driftEnabled;
+
+      driftButton.textContent =
+        driftEnabled ? "Disable Drift" : "Enable Drift";
+
+      statusText.textContent =
+        driftEnabled ? "Drifting" : "Locked";
+
+      if (!driftEnabled) {
+        driftTarget = 0;
+      }
+    });
+
+    resetButton.addEventListener("click", () => {
+      targetHeading = 0;
+      headingSlider.value = 0;
+      driftTarget = 0;
+    });
+
+    document.addEventListener("keydown", (event) => {
+
+      if (event.key === "ArrowRight") {
+        targetHeading =
+          normalizeAngle(targetHeading + 5);
+      }
+
+      if (event.key === "ArrowLeft") {
+        targetHeading =
+          normalizeAngle(targetHeading - 5);
+      }
+
+      if (event.key.toLowerCase() === "d") {
+        driftButton.click();
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        resetButton.click();
+      }
+
+      headingSlider.value = targetHeading;
+    });
+
+    updateDisplay();
+    requestAnimationFrame(animationLoop);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Elastic Drag-to-Dismiss & Swipe Gesture Cards Demo | EaseMotion CSS
+    </title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Elastic Swipe Cards</h1>
+        <p>
+          Drag, flick, or use arrow keys to dismiss cards with spring physics
+        </p>
+      </header>
+
+      <div class="card-stack" id="cardStack">
+        <!-- Cards dynamically rendered or initial static stack -->
+      </div>
+
+      <div class="controls">
+        <button
+          class="btn-action btn-dismiss"
+          id="btnDismiss"
+          title="Swipe Left (Arrow Left)"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <button
+          class="btn-action btn-reset"
+          id="btnReset"
+          title="Reset Card Stack"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Reset Stack
+        </button>
+
+        <button
+          class="btn-action btn-like"
+          id="btnLike"
+          title="Swipe Right (Arrow Right)"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const INITIAL_CARDS = [
+        {
+          id: 1,
+          tag: "Design System",
+          title: "EaseMotion Engine v1.2",
+          subtitle:
+            "Declarative animation DSL with zero-dependency CSS keyframe compiler and tree-shaking.",
+          bg: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: 2,
+          tag: "Interactive UI",
+          title: "Elastic Spring Physics",
+          subtitle:
+            "Customizable resistance thresholds, rotation dampening, and spring snap-back easing curves.",
+          bg: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: 3,
+          tag: "Accessibility",
+          title: "Prefers-Reduced-Motion",
+          subtitle:
+            "Full standard accessibility compliance with smooth fallback states for low-motion settings.",
+          bg: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: 4,
+          tag: "Architecture",
+          title: "Human-Readable CSS",
+          subtitle:
+            "Self-documenting utility naming built for high performance and developer happiness.",
+          bg: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+        },
+      ];
+
+      const cardStackEl = document.getElementById("cardStack");
+      const btnDismiss = document.getElementById("btnDismiss");
+      const btnLike = document.getElementById("btnLike");
+      const btnReset = document.getElementById("btnReset");
+
+      let cardsData = [...INITIAL_CARDS];
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      const THRESHOLD = 120; // threshold in px to trigger swipe
+
+      function renderStack() {
+        cardStackEl.innerHTML = "";
+
+        if (cardsData.length === 0) {
+          cardStackEl.innerHTML = `
+          <div class="empty-state">
+            <p>All cards have been swiped!</p>
+            <button class="btn-action btn-reset" onclick="resetCards()">Reset Stack</button>
+          </div>
+        `;
+          return;
+        }
+
+        cardsData.forEach((data, index) => {
+          const card = document.createElement("div");
+          card.className = "ease-swipe-card";
+          card.setAttribute("data-index", index);
+          card.setAttribute("data-id", data.id);
+
+          card.innerHTML = `
+          <div class="card-badge badge-like">LIKE</div>
+          <div class="card-badge badge-dismiss">DISMISS</div>
+          <div class="card-image-wrap">
+            <img src="${data.bg}" alt="${data.title}" />
+            <span class="card-tag">${data.tag}</span>
+          </div>
+          <div class="card-details">
+            <h2 class="card-title">${data.title}</h2>
+            <p class="card-subtitle">${data.subtitle}</p>
+          </div>
+        `;
+
+          cardStackEl.appendChild(card);
+
+          // Only top card is draggable
+          if (index === 0) {
+            initCardDrag(card);
+          }
+        });
+      }
+
+      function initCardDrag(card) {
+        const badgeLike = card.querySelector(".badge-like");
+        const badgeDismiss = card.querySelector(".badge-dismiss");
+
+        function onPointerDown(e) {
+          isDragging = true;
+          startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+          startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+          card.classList.add("is-dragging");
+          card.setPointerCapture(e.pointerId);
+        }
+
+        function onPointerMove(e) {
+          if (!isDragging) return;
+          const x =
+            (e.clientX || (e.touches && e.touches[0].clientX) || 0) - startX;
+          const y =
+            (e.clientY || (e.touches && e.touches[0].clientY) || 0) - startY;
+          currentX = x;
+          currentY = y;
+
+          // Apply elastic dampening resistance when dragged far
+          const dampening = Math.abs(x) > THRESHOLD ? 0.75 : 1.0;
+          const rotate = x * 0.08 * dampening;
+
+          card.style.transform = `translate(${x * dampening}px, ${y * dampening}px) rotate(${rotate}deg)`;
+
+          // Update action badge opacity
+          const progress = Math.min(Math.abs(x) / THRESHOLD, 1);
+          if (x > 0) {
+            badgeLike.style.opacity = progress;
+            badgeDismiss.style.opacity = 0;
+          } else if (x < 0) {
+            badgeDismiss.style.opacity = progress;
+            badgeLike.style.opacity = 0;
+          } else {
+            badgeLike.style.opacity = 0;
+            badgeDismiss.style.opacity = 0;
+          }
+        }
+
+        function onPointerUp(e) {
+          if (!isDragging) return;
+          isDragging = false;
+          card.classList.remove("is-dragging");
+
+          if (currentX > THRESHOLD) {
+            swipeCard("right", card);
+          } else if (currentX < -THRESHOLD) {
+            swipeCard("left", card);
+          } else {
+            // Snap back with elastic spring animation
+            card.classList.add("is-snapping");
+            badgeLike.style.opacity = 0;
+            badgeDismiss.style.opacity = 0;
+
+            setTimeout(() => {
+              card.classList.remove("is-snapping");
+              card.style.transform = "";
+            }, 350);
+          }
+
+          currentX = 0;
+          currentY = 0;
+        }
+
+        card.addEventListener("pointerdown", onPointerDown);
+        card.addEventListener("pointermove", onPointerMove);
+        card.addEventListener("pointerup", onPointerUp);
+        card.addEventListener("pointercancel", onPointerUp);
+      }
+
+      function swipeCard(direction, card = null) {
+        const topCard =
+          card || cardStackEl.querySelector('.ease-swipe-card[data-index="0"]');
+        if (!topCard) return;
+
+        const animationClass =
+          direction === "right"
+            ? "ease-swipe-out-right"
+            : "ease-swipe-out-left";
+        topCard.classList.add(animationClass);
+
+        setTimeout(() => {
+          cardsData.shift();
+          renderStack();
+        }, 350);
+      }
+
+      function resetCards() {
+        cardsData = [...INITIAL_CARDS];
+        renderStack();
+      }
+
+      // Button Triggers
+      btnDismiss.addEventListener("click", () => swipeCard("left"));
+      btnLike.addEventListener("click", () => swipeCard("right"));
+      btnReset.addEventListener("click", resetCards);
+
+      // Keyboard Shortcuts
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          swipeCard("left");
+        } else if (e.key === "ArrowRight") {
+          swipeCard("right");
+        } else if (e.key === "r" || e.key === "R") {
+          resetCards();
+        }
+      });
+
+      // Initial Render
+      renderStack();
+    </script>
+  </body>
+</html>

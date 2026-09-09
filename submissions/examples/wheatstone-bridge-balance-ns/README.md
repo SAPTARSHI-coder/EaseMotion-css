@@ -1,0 +1,16 @@
+# Wheatstone Bridge Balance
+
+## What does this do?
+Renders a self-contained CSS-only `ease-wheatstone-bridge-balance` demo: Wheatstone bridge needle centering at null balance.
+
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-wheatstone-bridge-balance`. No build step or JavaScript is required for the effect.
+
+```html
+<section class="ease-wheatstone-bridge-balance">
+  <div class="ease-wheatstone-bridge-balance__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.

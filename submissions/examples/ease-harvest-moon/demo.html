@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvest Moon · Large Orange Moon Rises</title>
+    <meta name="description" content="Interactive harvest moon rising with large orange moon, atmospheric glow, and serene night effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌕 HARVEST MOON</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="moonCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="rise-btn" id="riseBtn">🌕 RISE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Glow</label>
+                <input type="range" id="glowSlider" min="1" max="10" value="5">
+                <span id="glowLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌕 HARVEST MOON</span>
+            <small>rise · orange · glow</small>
+        </div>
+        <div class="hint">
+            <span>🌕 click to watch the harvest moon rise</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('moonCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const riseBtn = document.getElementById('riseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const glowSlider = document.getElementById('glowSlider');
+            const glowLabel = document.getElementById('glowLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let glowIntensity = 5;
+            let time = 0;
+            let moonY = H + 80;
+            let targetY = H + 80;
+            let isRisen = false;
+            let riseCount = 0;
+            let fireflies = [];
+            let stars = [];
+
+            // ---- Firefly Class ----
+            class Firefly {
+                constructor() {
+                    this.x = Math.random() * W;
+                    this.y = 100 + Math.random() * (H - 150);
+                    this.size = 2 + Math.random() * 3;
+                    this.speed = 0.2 + Math.random() * 0.3;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.speedPhase = 0.01 + Math.random() * 0.02;
+                    this.alpha = 0.2 + Math.random() * 0.4;
+                    this.hue = 30 + Math.random() * 20;
+                }
+
+                update() {
+                    this.phase += this.speedPhase;
+                    this.x += Math.sin(this.phase) * this.speed;
+                    this.y += Math.cos(this.phase * 0.7) * this.speed * 0.5;
+                    this.alpha = 0.1 + Math.sin(this.phase * 1.5) * 0.15 + 0.25;
+                    
+                    if (this.x < -10) this.x = W + 10;
+                    if (this.x > W + 10) this.x = -10;
+                    if (this.y < -10) this.y = H + 10;
+                    if (this.y > H + 10) this.y = -10;
+                }
+
+                draw(ctx) {
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 3
+                    );
+                    grad.addColorStop(0, `hsla(${this.hue}, 100%, 80%, ${this.alpha * 0.5})`);
+                    grad.addColorStop(0.5, `hsla(${this.hue + 10}, 100%, 70%, ${this.alpha * 0.2})`);
+                    grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = `hsla(${this.hue}, 100%, 90%, ${this.alpha})`;
+                    ctx.shadowColor = `hsla(${this.hue}, 100%, 80%, ${this.alpha * 0.3})`;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Create Fireflies ----
+            function createFireflies() {
+                fireflies = [];
+                for (let i = 0; i < 20; i++) {
+                    fireflies.push(new Firefly());
+                }
+            }
+
+            // ---- Draw Stars ----
+            function drawStars(ctx) {
+                for (let i = 0; i < 50; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.7);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.4})`;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Draw Moon ----
+            function drawMoon(ctx, x, y) {
+                const progress = Math.min(1, (H - y) / 100);
+                const glow = glowIntensity / 10;
+                const moonRadius = 70 * progress;
+                
+                // Outer glow
+                const outerGrad = ctx.createRadialGradient(x, y, 0, x, y, moonRadius * 3);
+                outerGrad.addColorStop(0, `rgba(255, 200, 100, ${0.08 * glow * progress})`);
+                outerGrad.addColorStop(0.3, `rgba(255, 180, 80, ${0.05 * glow * progress})`);
+                outerGrad.addColorStop(0.6, `rgba(255, 150, 50, ${0.02 * glow * progress})`);
+                outerGrad.addColorStop(1, 'rgba(255, 150, 50, 0)');
+                ctx.fillStyle = outerGrad;
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(x, y, moonRadius * 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Moon body (harvest moon - large orange)
+                const grad = ctx.createRadialGradient(
+                    x - moonRadius * 0.2, y - moonRadius * 0.2, 0,
+                    x, y, moonRadius
+                );
+                grad.addColorStop(0, '#ffe8b0');
+                grad.addColorStop(0.3, '#f5c842');
+                grad.addColorStop(0.6, '#e8a820');
+                grad.addColorStop(0.8, '#d4881a');
+                grad.addColorStop(1, '#b86810');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 40 * glow * progress;
+                ctx.beginPath();
+                ctx.arc(x, y, moonRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Moon craters (texture)
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.1 * progress;
+                ctx.fillStyle = 'rgba(180, 120, 60, 0.3)';
+                const craters = [
+                    { x: -20, y: -25, r: 12 },
+                    { x: 25, y: -15, r: 8 },
+                    { x: -30, y: 15, r: 10 },
+                    { x: 15, y: 25, r: 6 },
+                    { x: -10, y: 30, r: 7 }
+                ];
+                for (let c of craters) {
+                    ctx.beginPath();
+                    ctx.arc(x + c.x, y + c.y, c.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                
+                // Moon glow ring
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = `rgba(255, 200, 100, ${0.05 * glow * progress})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, moonRadius * 0.9, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // ---- Draw Landscape ----
+            function drawLandscape(ctx) {
+                // Sky - deep night with warm horizon
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, '#050a12');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#0d1a2a');
+                grad.addColorStop(0.8, '#1a0a0a');
+                grad.addColorStop(1, '#0d0a08');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Horizon glow (warm)
+                const horizonGrad = ctx.createRadialGradient(300, H * 0.85, 0, 300, H * 0.85, 300);
+                horizonGrad.addColorStop(0, `rgba(255, 150, 50, 0.05)`);
+                horizonGrad.addColorStop(0.5, `rgba(255, 120, 30, 0.02)`);
+                horizonGrad.addColorStop(1, 'rgba(255, 100, 20, 0)');
+                ctx.fillStyle = horizonGrad;
+                ctx.beginPath();
+                ctx.arc(300, H * 0.85, 300, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Stars
+                drawStars(ctx);
+                
+                // Silhouette trees/landscape
+                ctx.fillStyle = 'rgba(10, 8, 6, 0.4)';
+                // Trees
+                for (let i = 0; i < 8; i++) {
+                    const x = i * 85 + 20;
+                    const h = 30 + Math.sin(i * 1.5 + 0.5) * 15;
+                    ctx.beginPath();
+                    ctx.moveTo(x, H - 30);
+                    ctx.quadraticCurveTo(x - 15, H - 30 - h, x, H - 30 - h - 15);
+                    ctx.quadraticCurveTo(x + 15, H - 30 - h, x + 20, H - 30);
+                    ctx.fill();
+                }
+                
+                // Ground
+                const groundGrad = ctx.createLinearGradient(0, H - 30, 0, H);
+                groundGrad.addColorStop(0, 'rgba(20, 15, 10, 0)');
+                groundGrad.addColorStop(0.3, 'rgba(20, 15, 10, 0.2)');
+                groundGrad.addColorStop(0.7, 'rgba(20, 15, 10, 0.4)');
+                groundGrad.addColorStop(1, 'rgba(20, 15, 10, 0.6)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 30, W, 30);
+            }
+
+            // ---- Rise Moon ----
+            function riseMoon() {
+                if (isRisen) return;
+                targetY = 120 + Math.random() * 30;
+                isRisen = true;
+                riseCount++;
+                createFireflies();
+            }
+
+            // ---- Reset ----
+            function resetMoon() {
+                targetY = H + 80;
+                moonY = H + 80;
+                isRisen = false;
+                fireflies = [];
+                time = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                drawLandscape(ctx);
+                
+                // Draw fireflies
+                for (let f of fireflies) {
+                    f.draw(ctx);
+                }
+                
+                // Draw moon
+                drawMoon(ctx, 300, moonY);
+                
+                // Status
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Rises: ${riseCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isRisen ? '🌕 RISEN' : '🌑 NIGHT';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Smooth moon movement
+                const dt = 0.02 * (speed / 5);
+                const diff = targetY - moonY;
+                if (Math.abs(diff) > 0.5) {
+                    moonY += diff * 0.025 * dt * 5;
+                } else {
+                    moonY = targetY;
+                }
+                
+                // Update fireflies
+                for (let f of fireflies) {
+                    f.update();
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            glowSlider.addEventListener('input', function() {
+                glowIntensity = parseInt(this.value);
+                glowLabel.textContent = glowIntensity;
+            });
+
+            // ---- Event Listeners ----
+            riseBtn.addEventListener('click', riseMoon);
+            resetBtn.addEventListener('click', resetMoon);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isRisen) {
+                        riseMoon();
+                    } else {
+                        resetMoon();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMoon();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to rise ----
+            canvas.addEventListener('click', function(e) {
+                if (!isRisen) {
+                    riseMoon();
+                } else {
+                    resetMoon();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🌕 Harvest Moon · Click Rise or press Space to watch the moon rise!');
+        })();
+    </script>
+</body>
+</html>

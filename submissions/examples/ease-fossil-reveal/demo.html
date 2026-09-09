@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fossil Reveal · fossil emerges from stone</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="fossil-container">
+      <div class="fossil-display" id="fossilDisplay">
+        <!-- Canvas for fossil reveal -->
+        <canvas id="fossilCanvas"></canvas>
+        
+        <!-- Fossil Info -->
+        <div class="fossil-info">
+          <span class="info-label">🪨 Reveal</span>
+          <span class="info-value" id="revealLevel">0%</span>
+        </div>
+
+        <!-- Fossil Controls -->
+        <div class="fossil-controls">
+          <div class="control-group">
+            <label class="control-label">🪨 Reveal</label>
+            <input type="range" class="control-slider" id="revealSlider" min="0" max="100" value="0">
+            <span class="control-value" id="revealValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🦴 Fossil</label>
+            <div class="fossil-options">
+              <button class="fossil-btn active" data-fossil="dinosaur" title="Dinosaur">🦕</button>
+              <button class="fossil-btn" data-fossil="ammonite" title="Ammonite">🐚</button>
+              <button class="fossil-btn" data-fossil="trilobite" title="Trilobite">🪸</button>
+              <button class="fossil-btn" data-fossil="fern" title="Fern">🌿</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fossil Text -->
+        <div class="fossil-text">
+          <span class="text-label">🪨 Fossil</span>
+          <span class="text-message" id="fossilMessage">A fossil slowly emerges from stone</span>
+        </div>
+      </div>
+      
+      <div class="fossil-status">
+        <span id="fossilStatus">🪨 Click to reveal the fossil from stone</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reveal" id="revealBtn">🪨 Reveal</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🪨 fossil reveal · 4 types · emerges from stone</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('fossilCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('fossilDisplay');
+      const revealLevel = document.getElementById('revealLevel');
+      const revealValue = document.getElementById('revealValue');
+      const fossilStatus = document.getElementById('fossilStatus');
+      const fossilMessage = document.getElementById('fossilMessage');
+      const revealBtn = document.getElementById('revealBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const revealSlider = document.getElementById('revealSlider');
+      const fossilBtns = document.querySelectorAll('.fossil-btn');
+
+      // State
+      let reveal = 0; // 0-100
+      let targetReveal = 0;
+      let currentFossil = 'dinosaur';
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+
+      // Fossil configurations
+      const fossilData = {
+        dinosaur: {
+          name: 'Dinosaur',
+          icon: '🦕',
+          color: '#8b7355',
+          light: '#a89070',
+          dark: '#6b5a3a',
+          points: [
+            { x: 50, y: 20 }, { x: 55, y: 25 }, { x: 60, y: 30 },
+            { x: 65, y: 28 }, { x: 70, y: 35 }, { x: 72, y: 45 },
+            { x: 68, y: 55 }, { x: 60, y: 60 }, { x: 55, y: 65 },
+            { x: 45, y: 60 }, { x: 40, y: 55 }, { x: 35, y: 45 },
+            { x: 38, y: 35 }, { x: 42, y: 28 }, { x: 48, y: 25 }
+          ]
+        },
+        ammonite: {
+          name: 'Ammonite',
+          icon: '🐚',
+          color: '#a08060',
+          light: '#c0a080',
+          dark: '#806040',
+          points: (() => {
+            const pts = [];
+            for (let i = 0; i < 30; i++) {
+              const angle = (i / 30) * Math.PI * 4;
+              const radius = 15 + i * 0.5;
+              pts.push({
+                x: 50 + Math.cos(angle) * radius * 0.5,
+                y: 50 + Math.sin(angle) * radius * 0.4
+              });
+            }
+            return pts;
+          })()
+        },
+        trilobite: {
+          name: 'Trilobite',
+          icon: '🪸',
+          color: '#7a8a70',
+          light: '#9aaa90',
+          dark: '#5a6a50',
+          points: [
+            { x: 50, y: 30 }, { x: 55, y: 32 }, { x: 60, y: 35 },
+            { x: 62, y: 40 }, { x: 60, y: 45 }, { x: 55, y: 50 },
+            { x: 50, y: 52 }, { x: 45, y: 50 }, { x: 40, y: 45 },
+            { x: 38, y: 40 }, { x: 40, y: 35 }, { x: 45, y: 32 },
+            { x: 48, y: 30 }, { x: 52, y: 30 }
+          ]
+        },
+        fern: {
+          name: 'Fern',
+          icon: '🌿',
+          color: '#6a8a5a',
+          light: '#8aaa7a',
+          dark: '#4a6a3a',
+          points: (() => {
+            const pts = [];
+            for (let i = 0; i < 20; i++) {
+              const t = i / 20;
+              const angle = t * Math.PI * 1.5 + 0.3;
+              const radius = 30 * t;
+              pts.push({
+                x: 50 + Math.cos(angle) * radius * 0.4,
+                y: 20 + Math.sin(angle) * radius * 0.3
+              });
+              pts.push({
+                x: 50 - Math.cos(angle) * radius * 0.4,
+                y: 20 + Math.sin(angle) * radius * 0.3
+              });
+            }
+            return pts;
+          })()
+        }
+      };
+
+      // Particle class
+      class StoneParticle {
+        constructor(x, y) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.size = 1 + Math.random() * 3;
+          this.speed = 0.2 + Math.random() * 0.5;
+          this.angle = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.color = ['#6b5a3a', '#8b7355', '#5a4a3a', '#7a6a4a'][Math.floor(Math.random() * 4)];
+        }
+
+        update() {
+          this.x += Math.cos(this.angle) * this.speed * 0.1;
+          this.y += Math.sin(this.angle) * this.speed * 0.1;
+          this.life -= 0.005;
+          return this.life > 0;
+        }
+
+        draw(ctx) {
+          const alpha = (this.life / this.maxLife) * this.opacity;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = 'rgba(0,0,0,0.05)';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Draw fossil
+      function drawFossil(reveal, type) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const data = fossilData[type];
+        const progress = reveal / 100;
+        const scale = 0.4 + progress * 0.6;
+        const opacity = 0.1 + progress * 0.9;
+
+        // Background
+        drawBackground();
+
+        // Stone texture
+        drawStoneTexture(reveal);
+
+        // Fossil glow
+        if (progress > 0.1) {
+          const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60 * scale);
+          glowGrad.addColorStop(0, data.light + '33');
+          glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = glowGrad;
+          ctx.globalAlpha = progress * 0.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 60 * scale, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+
+        // Draw fossil
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = opacity;
+
+        // Fossil shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        // Fossil shape
+        const grad = ctx.createRadialGradient(-10, -10, 0, 0, 0, 40);
+        grad.addColorStop(0, data.light);
+        grad.addColorStop(0.4, data.color);
+        grad.addColorStop(0.8, data.dark);
+        grad.addColorStop(1, data.dark + '88');
+        ctx.fillStyle = grad;
+        ctx.shadowBlur = 5;
+
+        // Draw fossil points
+        if (data.points.length > 0) {
+          ctx.beginPath();
+          for (let i = 0; i < data.points.length; i++) {
+            const p = data.points[i];
+            const x = (p.x - 50) * 1.2;
+            const y = (p.y - 50) * 1.2;
+            if (i === 0) ctx.moveTo(x, y);
+            else {
+              const prev = data.points[i - 1];
+              const px = (prev.x - 50) * 1.2;
+              const py = (prev.y - 50) * 1.2;
+              const cpX = (px + x) / 2;
+              const cpY = (py + y) / 2;
+              ctx.quadraticCurveTo(cpX, cpY, x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Fossil detail lines
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = opacity * 0.15;
+        ctx.strokeStyle = data.dark;
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < data.points.length - 1; i += 2) {
+          const p1 = data.points[i];
+          const p2 = data.points[i + 1] || data.points[0];
+          const x1 = (p1.x - 50) * 1.2;
+          const y1 = (p1.y - 50) * 1.2;
+          const x2 = (p2.x - 50) * 1.2;
+          const y2 = (p2.y - 50) * 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // Update reveal display
+        const percent = Math.round(reveal);
+        revealLevel.textContent = percent + '%';
+        revealValue.textContent = percent + '%';
+
+        // Update status
+        if (reveal > 90) {
+          fossilStatus.textContent = '🪨 Fossil fully revealed! ✨';
+          fossilStatus.style.color = '#fbbf24';
+        } else if (reveal > 40) {
+          fossilStatus.textContent = '🪨 Fossil emerging from stone...';
+          fossilStatus.style.color = '#818cf8';
+        } else if (reveal > 5) {
+          fossilStatus.textContent = '🪨 Fossil beginning to appear...';
+          fossilStatus.style.color = '#94a3b8';
+        } else {
+          fossilStatus.textContent = '🪨 Click to reveal the fossil from stone';
+          fossilStatus.style.color = '#94a3b8';
+        }
+
+        // Update button
+        if (reveal > 90) {
+          revealBtn.textContent = '🪨 Fully Revealed!';
+          revealBtn.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+          revealBtn.style.borderColor = '#fcd34d';
+        } else if (reveal > 5) {
+          revealBtn.textContent = '🪨 Revealing...';
+          revealBtn.style.background = 'linear-gradient(135deg, #818cf8, #6366f1)';
+          revealBtn.style.borderColor = '#818cf8';
+        } else {
+          revealBtn.textContent = '🪨 Reveal';
+          revealBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          revealBtn.style.borderColor = '#818cf8';
+        }
+
+        // Update message
+        fossilMessage.textContent = `${data.name} fossil emerging from stone`;
+        fossilMessage.style.color = data.color;
+      }
+
+      // Draw stone texture
+      function drawStoneTexture(reveal) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const progress = reveal / 100;
+
+        // Stone base
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.5);
+        grad.addColorStop(0, '#6b5a4a');
+        grad.addColorStop(0.3, '#5a4a3a');
+        grad.addColorStop(0.7, '#4a3a2a');
+        grad.addColorStop(1, '#3a2a1a');
+        ctx.fillStyle = grad;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(0, 0, w, h);
+        ctx.shadowBlur = 0;
+
+        // Stone texture
+        for (let i = 0; i < 40; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 2 + Math.random() * 6;
+          const alpha = 0.05 + Math.random() * 0.1;
+          ctx.fillStyle = `rgba(80, 60, 40, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(x, y, size, size * 0.5, Math.random() * Math.PI, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Stone cracks
+        if (progress < 0.8) {
+          const crackAlpha = (1 - progress / 0.8) * 0.3;
+          ctx.strokeStyle = `rgba(30, 20, 10, ${crackAlpha})`;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 5 + Math.floor((1 - progress) * 10); i++) {
+            const x = Math.random() * w;
+            const y = Math.random() * h;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.quadraticCurveTo(
+              x + (Math.random() - 0.5) * 20,
+              y + (Math.random() - 0.5) * 20,
+              x + (Math.random() - 0.5) * 30,
+              y + (Math.random() - 0.5) * 30
+            );
+            ctx.stroke();
+          }
+        }
+
+        // Stone particles
+        if (progress > 0.2 && progress < 0.9 && Math.random() < progress * 0.3) {
+          const cx = w / 2;
+          const cy = h / 2;
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 30 + Math.random() * 80 * progress;
+          const x = cx + Math.cos(angle) * dist;
+          const y = cy + Math.sin(angle) * dist;
+          particles.push(new StoneParticle(x, y));
+        }
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        
+        // Smooth interpolation
+        reveal += (targetReveal - reveal) * 0.06;
+        reveal = Math.max(0, Math.min(100, reveal));
+
+        // Update particles
+        particles = particles.filter(p => {
+          const alive = p.update();
+          if (alive) p.draw(ctx);
+          return alive;
+        });
+
+        drawFossil(reveal, currentFossil);
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set reveal
+      function setReveal(value) {
+        targetReveal = Math.max(0, Math.min(100, parseInt(value)));
+        revealSlider.value = targetReveal;
+        revealValue.textContent = Math.round(targetReveal) + '%';
+      }
+
+      // Toggle reveal
+      function toggleReveal() {
+        if (reveal > 80) {
+          setReveal(0);
+          revealBtn.textContent = '🪨 Reveal';
+          revealBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          revealBtn.style.borderColor = '#818cf8';
+          fossilStatus.textContent = '🔄 Reset complete';
+          fossilStatus.style.color = '#94a3b8';
+          setTimeout(() => {
+            fossilStatus.textContent = '🪨 Click to reveal the fossil from stone';
+            fossilStatus.style.color = '#94a3b8';
+          }, 1000);
+        } else {
+          setReveal(100);
+        }
+      }
+
+      // Set fossil type
+      function setFossil(type) {
+        currentFossil = type;
+        fossilBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.fossil === type);
+        });
+        const data = fossilData[type];
+        fossilStatus.textContent = `🦴 Fossil: ${data.name}`;
+        fossilStatus.style.color = data.color;
+        if (reveal > 20) {
+          // Create particles on change
+          for (let i = 0; i < 10; i++) {
+            particles.push(new StoneParticle());
+          }
+        }
+        setTimeout(() => {
+          if (reveal < 10) {
+            fossilStatus.textContent = '🪨 Click to reveal the fossil from stone';
+            fossilStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetFossil() {
+        setReveal(0);
+        reveal = 0;
+        targetReveal = 0;
+        particles = [];
+        fossilStatus.textContent = '🔄 Reset complete';
+        fossilStatus.style.color = '#94a3b8';
+        fossilMessage.textContent = 'A fossil slowly emerges from stone';
+        fossilMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          fossilStatus.textContent = '🪨 Click to reveal the fossil from stone';
+          fossilStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      revealSlider.addEventListener('input', function() {
+        setReveal(this.value);
+      });
+
+      fossilBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setFossil(this.dataset.fossil);
+        });
+      });
+
+      if (revealBtn) {
+        revealBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleReveal();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetFossil();
+        });
+      }
+
+      // Click on display to toggle
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          toggleReveal();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleReveal();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetFossil();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🪨 Fossil Reveal ready · shortcuts: [Space] Reveal, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

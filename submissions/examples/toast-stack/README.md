@@ -1,24 +1,5 @@
-# Stacked Toast Notifications Layout
+# Toast Stack
 
-## Description
-This submission resolves Issue #68975 by implementing a modern, stacked toast notification layout natively in CSS. It automatically positions and styles incoming toasts so that the newest is displayed prominently on top, while older toasts visually recede backwards in the z-axis using CSS scale and translate transformations.
-
-## Features
-- Pure CSS 3D depth stack effect.
-- Uses structural pseudo-classes (`:nth-last-child()`) to automatically style elements based on their position in the DOM.
-- No JavaScript logic needed for the layout itself (JS is only used to append or remove elements in the demo).
-- Smooth transitions for `transform` and `opacity`.
-- Older notifications gracefully fade and shrink into the background before disappearing.
-
-## Usage
-Create a container element with the `.ease-toast-container` class, and append new notifications as `.ease-toast` elements at the end of the container. 
-
-```html
-<div class="ease-toast-container">
-  <div class="ease-toast">Notification 1 (Oldest)</div>
-  <div class="ease-toast">Notification 2</div>
-  <div class="ease-toast">Notification 3 (Newest)</div>
-</div>
-```
-
-The newest element (the last child) will automatically be styled to stay at the front.
+1. What does this do? Stacked toast notifications that slide in from the side (translateX) and fade in, cascading with a staggered delay; the latest toast appears on top.
+2. How is it used? Build a `.toast-stack` column of `.toast-stack__toast` items, each with a `.toast-stack__icon` and `.toast-stack__message`. Severity modifiers (`is-success`, `is-info`, `is-warning`) set the accent bar and icon color. The toasts animate in on load with staggered delays. Adjust the accent color via `--ts-accent`.
+3. Why is it useful? It provides a notification queue affordance using only CSS (no JavaScript), with severity variants and `prefers-reduced-motion` support.

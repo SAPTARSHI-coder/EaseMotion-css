@@ -1,0 +1,2 @@
+# Floating Drawer (Glassmorphism)
+A stunning floating sidebar. Rather than pinning to the absolute edge of the screen, the drawer floats with a margin, fully rendered in frosted glass over an ambient background gradient orb.

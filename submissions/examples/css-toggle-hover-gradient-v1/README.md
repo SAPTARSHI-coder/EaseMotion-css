@@ -1,0 +1,2 @@
+# Hover Toggle (Gradient)
+A visually striking toggle switch. It utilizes a `::before` pseudo-element with a linear gradient that slides in to fill the track when checked, and swaps its gradient color scheme smoothly on hover.

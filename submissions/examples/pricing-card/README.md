@@ -1,15 +1,5 @@
-# Animated Pricing Card
+# Pricing Card
 
-**What does this do?**
-Provides a complete, responsive Pricing Card UI component designed with an integrated `pricing-hover-ag` interaction that smoothly scales the card up and casts a deep shadow, simulating physical elevation.
-
-**How is it used?**
-Use the provided HTML structure and apply the `.pricing-hover-ag` class to the main `.pricing-card-ag` container.
-```html
-<div class="pricing-card-ag pricing-hover-ag">
-  <!-- Content... -->
-</div>
-```
-
-**Why is it useful?**
-Pricing cards are a staple of SaaS marketing pages. This implementation not only provides a clean, modern structural layout (including typography, pricing, and feature lists) but also integrates a high-quality hover physics interaction to encourage user engagement and clicks without needing complex CSS frameworks.
+1. What does this do? A highlighted pricing card with a bold monthly price, a feature checklist, a "Most popular" badge, and a gradient CTA button.
+2. How is it used? Build a `.pricing-card` (add `is-featured` for the highlighted variant) with `.pricing-card__plan`, `.pricing-card__price` (currency + amount + period), `.pricing-card__tagline`, a `.pricing-card__features` list, and a `.pricing-card__cta` button. Customize the accent, ink, and muted colors and the hover speed via `--pc-accent`, `--pc-ink`, `--pc-muted`, and `--pc-speed`.
+3. Why is it useful? It gives a polished, conversion-focused price card with a gradient CTA and `prefers-reduced-motion` support using only CSS (no JavaScript).

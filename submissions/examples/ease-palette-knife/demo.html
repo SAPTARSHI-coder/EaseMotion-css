@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette Knife · Thick Paint Application</title>
+    <meta name="description" content="Interactive palette knife painting with thick, textured paint application and blending effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 PALETTE KNIFE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="knifeCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#ff6b6b">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="10" max="60" value="30">
+                <span id="sizeLabel">30</span>
+                <label>Texture</label>
+                <select id="textureSelect">
+                    <option value="smooth">Smooth</option>
+                    <option value="rough" selected>Rough</option>
+                    <option value="heavily">Heavily Textured</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 PALETTE KNIFE</span>
+            <small>thick paint · textured · expressive</small>
+        </div>
+        <div class="hint">
+            <span>🔪 drag to apply thick, textured paint strokes</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('knifeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const textureSelect = document.getElementById('textureSelect');
+            const clearBtn = document.getElementById('clearBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isDrawing = false;
+            let currentColor = '#ff6b6b';
+            let brushSize = 30;
+            let texture = 'rough';
+            
+            // ---- Paint strokes ----
+            let strokes = [];
+            let activeStroke = null;
+
+            // ---- Palette Knife Stroke Class ----
+            class PaletteKnifeStroke {
+                constructor(x, y, color, size, texture) {
+                    this.points = [{ x, y }];
+                    this.color = color;
+                    this.size = size;
+                    this.texture = texture;
+                    this.time = 0;
+                    this.opacity = 1;
+                    this.pressure = 0.3 + Math.random() * 0.7;
+                }
+
+                addPoint(x, y) {
+                    this.points.push({ x, y });
+                }
+
+                draw(ctx) {
+                    if (this.points.length < 2) return;
+                    
+                    const points = this.points;
+                    const color = this.color;
+                    const baseSize = this.size;
+                    const texture = this.texture;
+                    
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i + 1];
+                        const t = i / (points.length - 1);
+                        
+                        // Thick paint variation
+                        const sizeVar = 0.8 + Math.sin(t * Math.PI * 1.5 + this.time) * 0.2;
+                        const size = baseSize * (0.7 + t * 0.3) * sizeVar * this.pressure;
+                        
+                        // Apply thick paint texture
+                        this.applyThickPaint(ctx, p1.x, p1.y, p2.x, p2.y, size, color, texture, t);
+                    }
+                }
+
+                applyThickPaint(ctx, x1, y1, x2, y2, size, color, texture, t) {
+                    const steps = 10;
+                    const colorObj = this.hexToRgb(color);
+                    
+                    for (let s = 0; s < steps; s++) {
+                        const progress = s / steps;
+                        const x = x1 + (x2 - x1) * progress;
+                        const y = y1 + (y2 - y1) * progress;
+                        
+                        // Knife stroke characteristics
+                        let dotSize, spreadX, spreadY, alpha;
+                        const seed = (s * 11 + t * 17) % 1;
+                        
+                        switch(texture) {
+                            case 'smooth':
+                                dotSize = size * 0.6 * (0.8 + Math.sin(s * 2 + t * 3 + this.time) * 0.2);
+                                spreadX = size * 0.2;
+                                spreadY = size * 0.1;
+                                alpha = 0.7 + Math.sin(s * 1.5 + t * 2 + this.time) * 0.2;
+                                break;
+                            case 'rough':
+                                dotSize = size * (0.4 + Math.random() * 0.4);
+                                spreadX = size * 0.4;
+                                spreadY = size * 0.25;
+                                alpha = 0.5 + Math.random() * 0.4;
+                                break;
+                            case 'heavily':
+                                dotSize = size * (0.5 + Math.sin(s * 3 + t * 5 + this.time) * 0.3 + 0.2);
+                                spreadX = size * 0.5;
+                                spreadY = size * 0.3;
+                                alpha = 0.4 + Math.sin(s * 2 + t * 3 + this.time) * 0.3 + 0.3;
+                                break;
+                            default:
+                                dotSize = size * 0.5;
+                                spreadX = size * 0.3;
+                                spreadY = size * 0.2;
+                                alpha = 0.6;
+                        }
+                        
+                        // Knife edge direction (elongated strokes)
+                        const angle = Math.atan2(y2 - y1, x2 - x1) + (Math.random() - 0.5) * 0.3;
+                        const spread = (Math.random() - 0.5) * spreadX;
+                        const spreadY2 = (Math.random() - 0.5) * spreadY;
+                        
+                        // Color variation (thick paint mixes)
+                        const r = Math.min(255, Math.max(0, colorObj.r + (Math.random() - 0.5) * 40));
+                        const g = Math.min(255, Math.max(0, colorObj.g + (Math.random() - 0.5) * 40));
+                        const b = Math.min(255, Math.max(0, colorObj.b + (Math.random() - 0.5) * 40));
+                        
+                        // Shadow for thick paint
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                        ctx.shadowBlur = 4;
+                        ctx.shadowOffsetX = 1;
+                        ctx.shadowOffsetY = 1;
+                        
+                        ctx.globalAlpha = alpha * this.opacity * (0.5 + t * 0.5);
+                        ctx.fillStyle = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+                        
+                        // Draw thick paint blob
+                        const finalSize = dotSize * (0.7 + Math.sin(s * 1.5 + t * 2 + this.time) * 0.2);
+                        const cx = x + Math.cos(angle) * spread;
+                        const cy = y + Math.sin(angle) * spread + spreadY2;
+                        
+                        // Elongated shape for knife stroke
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy, finalSize * 0.7, finalSize * 0.45, angle, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Additional texture for thick paint
+                        if (texture === 'heavily') {
+                            ctx.shadowBlur = 0;
+                            ctx.globalAlpha = alpha * this.opacity * 0.3;
+                            ctx.fillStyle = `rgb(${Math.min(255, r + 30)}, ${Math.min(255, g + 30)}, ${Math.min(255, b + 30)})`;
+                            ctx.beginPath();
+                            ctx.ellipse(cx - finalSize * 0.3, cy - finalSize * 0.2, finalSize * 0.3, finalSize * 0.15, angle + 0.5, 0, Math.PI * 2);
+                            ctx.fill();
+                            
+                            // Impasto texture bumps
+                            if (Math.random() < 0.3) {
+                                ctx.fillStyle = `rgb(${Math.min(255, r + 50)}, ${Math.min(255, g + 50)}, ${Math.min(255, b + 50)})`;
+                                ctx.globalAlpha = alpha * this.opacity * 0.15;
+                                ctx.beginPath();
+                                ctx.arc(cx + finalSize * 0.4, cy - finalSize * 0.2, finalSize * 0.15, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
+                        
+                        // Knife texture lines
+                        if (s % 2 === 0 && texture !== 'smooth') {
+                            ctx.shadowBlur = 0;
+                            ctx.globalAlpha = alpha * this.opacity * 0.08;
+                            ctx.fillStyle = `rgb(${Math.min(255, r + 20)}, ${Math.min(255, g + 20)}, ${Math.min(255, b + 20)})`;
+                            ctx.beginPath();
+                            ctx.ellipse(cx + finalSize * 0.2, cy - finalSize * 0.1, finalSize * 0.2, finalSize * 0.05, angle + 0.2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    }
+                }
+
+                hexToRgb(hex) {
+                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result ? {
+                        r: parseInt(result[1], 16),
+                        g: parseInt(result[2], 16),
+                        b: parseInt(result[3], 16)
+                    } : { r: 255, g: 100, b: 100 };
+                }
+
+                update() {
+                    this.time += 0.015;
+                }
+            }
+
+            // ---- Drawing functions ----
+            function startDrawing(x, y) {
+                isDrawing = true;
+                activeStroke = new PaletteKnifeStroke(x, y, currentColor, brushSize, texture);
+                strokes.push(activeStroke);
+            }
+
+            function draw(x, y) {
+                if (!isDrawing || !activeStroke) return;
+                
+                const dist = Math.sqrt((x - activeStroke.points[activeStroke.points.length - 1].x) ** 2 + 
+                                      (y - activeStroke.points[activeStroke.points.length - 1].y) ** 2);
+                if (dist > 1.5) {
+                    activeStroke.addPoint(x, y);
+                }
+            }
+
+            function endDrawing() {
+                isDrawing = false;
+                activeStroke = null;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Semi-transparent clear for paint blending
+                ctx.fillStyle = 'rgba(245, 240, 235, 0.05)';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                if (activeStroke) {
+                    activeStroke.update();
+                }
+                
+                render();
+                
+                for (let stroke of strokes) {
+                    stroke.draw(ctx);
+                }
+                
+                // Ambient texture particles
+                for (let i = 0; i < 6; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 20) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 2) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const alpha = 0.02 + Math.sin(time * 0.015 + i * 1.5) * 0.015;
+                    ctx.fillStyle = `rgba(180, 160, 140, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                startDrawing(pos.x, pos.y);
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                draw(pos.x, pos.y);
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                endDrawing();
+            }
+
+            // ---- Clear ----
+            function clearCanvas() {
+                strokes = [];
+                activeStroke = null;
+                ctx.fillStyle = '#f5f0eb';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Reset ----
+            function resetCanvas() {
+                clearCanvas();
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Color Control ----
+            colorPicker.addEventListener('input', function() {
+                currentColor = this.value;
+            });
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                brushSize = parseInt(this.value);
+                sizeLabel.textContent = brushSize;
+            });
+
+            // ---- Texture Control ----
+            textureSelect.addEventListener('change', function() {
+                texture = this.value;
+            });
+
+            // ---- Event Listeners ----
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetCanvas);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'c' || e.key === 'C') {
+                    clearCanvas();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCanvas();
+                }
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            ctx.fillStyle = '#f5f0eb';
+            ctx.fillRect(0, 0, W, H);
+            animate();
+
+            console.log('🎨 Palette Knife · Drag to apply thick paint with texture!');
+        })();
+    </script>
+</body>
+</html>

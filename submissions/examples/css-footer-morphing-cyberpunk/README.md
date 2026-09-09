@@ -1,0 +1,2 @@
+# Morphing Footer (Cyberpunk)
+A dark, gritty terminal-style footer. It features a persistent scanline background, jagged `steps()` animations on hover states, and a call-to-action button that morphs its background fill across the element in a choppy, low-framerate sweep.

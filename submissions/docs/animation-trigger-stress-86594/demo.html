@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rapid Animation Trigger Stress Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">EaseMotion CSS Regression Test</p>
+      <h1>Rapid Animation Trigger Stress Test</h1>
+
+      <p class="description">
+        Validate animation behavior during rapid triggers, repeated class
+        changes, hover-like interactions, and concurrent animations.
+      </p>
+    </header>
+
+    <section class="card">
+      <h2>Animation Playground</h2>
+
+      <div id="animationArea" class="animation-area">
+        <div class="animated-box" data-index="1"></div>
+        <div class="animated-box" data-index="2"></div>
+        <div class="animated-box" data-index="3"></div>
+      </div>
+
+      <div class="controls">
+        <button id="singleTrigger">Single Trigger</button>
+        <button id="rapidTrigger">Rapid Trigger</button>
+        <button id="hoverTest">Rapid Hover / Unhover</button>
+        <button id="concurrentTest">Concurrent Animations</button>
+        <button id="stressTest" class="primary">Run Stress Test</button>
+        <button id="reset">Reset</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Validation Results</h2>
+
+      <div class="metrics">
+        <div class="metric">
+          <span>Total Triggers</span>
+          <strong id="triggerCount">0</strong>
+        </div>
+
+        <div class="metric">
+          <span>Completed Animations</span>
+          <strong id="completedCount">0</strong>
+        </div>
+
+        <div class="metric">
+          <span>Duplicate Executions</span>
+          <strong id="duplicateCount">0</strong>
+        </div>
+
+        <div class="metric">
+          <span>Active Animations</span>
+          <strong id="activeCount">0</strong>
+        </div>
+
+        <div class="metric">
+          <span>Final State</span>
+          <strong id="finalState">idle</strong>
+        </div>
+
+        <div class="metric">
+          <span>Stress Result</span>
+          <strong id="stressResult">READY</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Event Log</h2>
+
+      <ol id="eventLog" class="event-log">
+        <li class="empty">No animation events yet.</li>
+      </ol>
+    </section>
+
+    <p id="status" class="status">
+      Ready for testing.
+    </p>
+  </main>
+
+  <script>
+    const boxes = Array.from(
+      document.querySelectorAll(".animated-box")
+    );
+
+    const triggerCount = document.getElementById("triggerCount");
+    const completedCount = document.getElementById("completedCount");
+    const duplicateCount = document.getElementById("duplicateCount");
+    const activeCount = document.getElementById("activeCount");
+    const finalState = document.getElementById("finalState");
+    const stressResult = document.getElementById("stressResult");
+    const eventLog = document.getElementById("eventLog");
+    const status = document.getElementById("status");
+
+    let totalTriggers = 0;
+    let completedAnimations = 0;
+    let duplicateExecutions = 0;
+    let activeAnimations = 0;
+    let lastTriggerTime = 0;
+    let triggerSequence = 0;
+
+    function addLog(message) {
+      const empty = eventLog.querySelector(".empty");
+
+      if (empty) {
+        empty.remove();
+      }
+
+      const item = document.createElement("li");
+      item.textContent = message;
+
+      eventLog.prepend(item);
+
+      while (eventLog.children.length > 12) {
+        eventLog.lastElementChild.remove();
+      }
+    }
+
+    function updateMetrics() {
+      triggerCount.textContent = totalTriggers;
+      completedCount.textContent = completedAnimations;
+      duplicateCount.textContent = duplicateExecutions;
+      activeCount.textContent = activeAnimations;
+
+      finalState.textContent =
+        activeAnimations === 0 ? "idle" : "animating";
+    }
+
+    function triggerAnimation(box) {
+      const now = performance.now();
+
+      totalTriggers += 1;
+      triggerSequence += 1;
+
+      if (
+        lastTriggerTime !== 0 &&
+        now - lastTriggerTime < 5 &&
+        box.classList.contains("is-animating")
+      ) {
+        duplicateExecutions += 1;
+      }
+
+      lastTriggerTime = now;
+
+      box.classList.remove("is-animating");
+
+      void box.offsetWidth;
+
+      box.classList.add("is-animating");
+
+      activeAnimations += 1;
+
+      addLog(
+        "Trigger #" +
+        triggerSequence +
+        " → Element " +
+        box.dataset.index
+      );
+
+      updateMetrics();
+    }
+
+    function handleAnimationEnd(event) {
+      const box = event.currentTarget;
+
+      if (!box.classList.contains("is-animating")) {
+        return;
+      }
+
+      box.classList.remove("is-animating");
+
+      activeAnimations = Math.max(0, activeAnimations - 1);
+      completedAnimations += 1;
+
+      addLog(
+        "Completed → Element " +
+        box.dataset.index
+      );
+
+      updateMetrics();
+    }
+
+    boxes.forEach((box) => {
+      box.addEventListener(
+        "animationend",
+        handleAnimationEnd
+      );
+    });
+
+    function singleTrigger() {
+      triggerAnimation(boxes[0]);
+
+      status.textContent =
+        "Single animation triggered.";
+    }
+
+    async function rapidTrigger() {
+      status.textContent =
+        "Running rapid animation triggers...";
+
+      for (let i = 0; i < 15; i += 1) {
+        triggerAnimation(
+          boxes[i % boxes.length]
+        );
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 15);
+        });
+      }
+
+      status.textContent =
+        "Rapid trigger test completed.";
+
+      updateMetrics();
+    }
+
+    async function hoverTest() {
+      status.textContent =
+        "Simulating rapid hover/unhover...";
+
+      const box = boxes[1];
+
+      for (let i = 0; i < 20; i += 1) {
+        box.classList.add("is-hovering");
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 8);
+        });
+
+        box.classList.remove("is-hovering");
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 8);
+        });
+      }
+
+      status.textContent =
+        "Rapid hover/unhover test completed.";
+    }
+
+    async function concurrentTest() {
+      status.textContent =
+        "Running concurrent animations...";
+
+      boxes.forEach((box) => {
+        triggerAnimation(box);
+      });
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 900);
+      });
+
+      updateMetrics();
+
+      status.textContent =
+        "Concurrent animation test completed.";
+    }
+
+    async function stressTest() {
+      stressResult.textContent = "RUNNING";
+      status.textContent =
+        "Running complete animation stress test...";
+
+      const initialDuplicates = duplicateExecutions;
+
+      for (let cycle = 0; cycle < 5; cycle += 1) {
+        for (let i = 0; i < 10; i += 1) {
+          triggerAnimation(
+            boxes[i % boxes.length]
+          );
+
+          await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+          });
+        }
+      }
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+
+      const finalDuplicates =
+        duplicateExecutions - initialDuplicates;
+
+      const deterministic =
+        activeAnimations === 0 &&
+        finalState.textContent === "idle";
+
+      const passed =
+        deterministic &&
+        finalDuplicates === 0;
+
+      stressResult.textContent =
+        passed ? "PASS" : "FAIL";
+
+      status.textContent = passed
+        ? "Stress test passed: final state is deterministic."
+        : "Stress test failed: inspect the validation results.";
+
+      updateMetrics();
+    }
+
+    function resetTest() {
+      boxes.forEach((box) => {
+        box.classList.remove(
+          "is-animating",
+          "is-hovering"
+        );
+      });
+
+      totalTriggers = 0;
+      completedAnimations = 0;
+      duplicateExecutions = 0;
+      activeAnimations = 0;
+      lastTriggerTime = 0;
+      triggerSequence = 0;
+
+      stressResult.textContent = "READY";
+
+      eventLog.innerHTML =
+        '<li class="empty">No animation events yet.</li>';
+
+      status.textContent =
+        "Test reset.";
+
+      updateMetrics();
+    }
+
+    document
+      .getElementById("singleTrigger")
+      .addEventListener("click", singleTrigger);
+
+    document
+      .getElementById("rapidTrigger")
+      .addEventListener("click", rapidTrigger);
+
+    document
+      .getElementById("hoverTest")
+      .addEventListener("click", hoverTest);
+
+    document
+      .getElementById("concurrentTest")
+      .addEventListener("click", concurrentTest);
+
+    document
+      .getElementById("stressTest")
+      .addEventListener("click", stressTest);
+
+    document
+      .getElementById("reset")
+      .addEventListener("click", resetTest);
+
+    updateMetrics();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Interactive Stepper (Pastel)
+A playful, bouncy stepper tracker. The progress bar fills utilizing a continuous linear gradient spanning three pastel colors, while the active node springs outward with a soft corresponding box-shadow.

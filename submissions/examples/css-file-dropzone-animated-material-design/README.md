@@ -1,0 +1,2 @@
+# Animated File Dropzone (Material Design)
+A Google Material Design inspired upload target. Interacting with the hit area triggers an expansive, slow-moving radial ripple effect originating from the center, serving as a background state indicator while the primary icon elevates.

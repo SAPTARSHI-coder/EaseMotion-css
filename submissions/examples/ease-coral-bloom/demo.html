@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coral Bloom · Coral Polyps Extend & Retract</title>
+    <meta name="description" content="Interactive coral bloom animation with polyps extending and retracting, swaying in ocean currents with vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪸 CORAL BLOOM</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="coralCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="radio" id="speed1" name="speed" value="1"><label for="speed1">Slow</label>
+                <input type="radio" id="speed2" name="speed" value="2" checked><label for="speed2">Normal</label>
+                <input type="radio" id="speed3" name="speed" value="3"><label for="speed3">Fast</label>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🪸 CORAL BLOOM</span>
+            <small>polyps extend · retract · sway</small>
+        </div>
+        <div class="hint">
+            <span>🌊 coral polyps pulse with ocean currents</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('coralCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedRadios = document.querySelectorAll('input[name="speed"]');
+
+            let isAnimating = true;
+            let speed = 2;
+            let time = 0;
+
+            // ---- Coral Polyp Class ----
+            class CoralPolyp {
+                constructor(x, y, size) {
+                    this.x = x;
+                    this.y = y;
+                    this.baseX = x;
+                    this.baseY = y;
+                    this.size = size || 8 + Math.random() * 12;
+                    this.color = this.randomColor();
+                    
+                    // Extend/retract
+                    this.extendPhase = Math.random() * Math.PI * 2;
+                    this.extendSpeed = 0.02 + Math.random() * 0.03;
+                    this.extendAmount = 0.3 + Math.random() * 0.4;
+                    
+                    // Sway
+                    this.swayPhase = Math.random() * Math.PI * 2;
+                    this.swaySpeed = 0.01 + Math.random() * 0.02;
+                    this.swayAmount = 0.1 + Math.random() * 0.15;
+                    
+                    // Tentacles
+                    this.tentacleCount = 5 + Math.floor(Math.random() * 6);
+                    this.tentacles = [];
+                    for (let i = 0; i < this.tentacleCount; i++) {
+                        this.tentacles.push({
+                            angle: (i / this.tentacleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5,
+                            length: this.size * (0.6 + Math.random() * 0.6),
+                            phase: Math.random() * Math.PI * 2,
+                            speed: 0.02 + Math.random() * 0.03
+                        });
+                    }
+                }
+
+                randomColor() {
+                    const colors = [
+                        { main: '#ff6b6b', light: '#ff9a9a', dark: '#cc4444' },
+                        { main: '#ff9ff3', light: '#ffb8f5', dark: '#cc66cc' },
+                        { main: '#feca57', light: '#ffe08a', dark: '#cc9933' },
+                        { main: '#48dbfb', light: '#8ae5fc', dark: '#1a9bbf' },
+                        { main: '#1dd1a1', light: '#5eddb8', dark: '#0f8f6f' },
+                        { main: '#ff6bcd', light: '#ff99dd', dark: '#cc4499' },
+                        { main: '#54a0ff', light: '#88bbff', dark: '#3366cc' },
+                        { main: '#ff9f43', light: '#ffbe76', dark: '#cc7733' }
+                    ];
+                    return colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                update() {
+                    const dt = speed / 2;
+                    time += 0.01 * dt;
+                    
+                    // Extend/retract
+                    this.extendPhase += this.extendSpeed * dt;
+                    const extend = 0.5 + Math.sin(this.extendPhase) * 0.5;
+                    const scale = 0.6 + extend * this.extendAmount;
+                    
+                    // Sway
+                    this.swayPhase += this.swaySpeed * dt;
+                    const sway = Math.sin(this.swayPhase) * this.swayAmount;
+                    this.x = this.baseX + sway * this.size * 0.5;
+                    
+                    // Store scale for drawing
+                    this.currentScale = scale;
+                    
+                    // Update tentacle phases
+                    for (let t of this.tentacles) {
+                        t.phase += t.speed * dt;
+                    }
+                }
+
+                draw(ctx) {
+                    const scale = this.currentScale;
+                    const size = this.size * scale;
+                    
+                    // ---- Glow ----
+                    ctx.save();
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, size * 2
+                    );
+                    gradient.addColorStop(0, this.color.light + '40');
+                    gradient.addColorStop(0.5, this.color.main + '20');
+                    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // ---- Tentacles ----
+                    for (let t of this.tentacles) {
+                        this.drawTentacle(ctx, t, size);
+                    }
+
+                    // ---- Body (polyp head) ----
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    
+                    // Shadow
+                    ctx.shadowColor = this.color.main;
+                    ctx.shadowBlur = 20;
+                    
+                    // Main body
+                    const gradient2 = ctx.createRadialGradient(
+                        -size * 0.2, -size * 0.3, 0,
+                        0, 0, size
+                    );
+                    gradient2.addColorStop(0, this.color.light);
+                    gradient2.addColorStop(0.6, this.color.main);
+                    gradient2.addColorStop(1, this.color.dark);
+                    ctx.fillStyle = gradient2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Inner glow
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = this.color.light;
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.1, -size * 0.1, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.15, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Center dot
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+
+                drawTentacle(ctx, tentacle, size) {
+                    const segments = 6;
+                    const length = tentacle.length * (0.7 + Math.sin(tentacle.phase) * 0.3);
+                    
+                    ctx.save();
+                    ctx.shadowColor = this.color.main;
+                    ctx.shadowBlur = 10;
+                    ctx.lineWidth = 1.5 + Math.sin(tentacle.phase) * 0.5;
+                    ctx.strokeStyle = this.color.light;
+                    ctx.globalAlpha = 0.6 + Math.sin(tentacle.phase) * 0.3;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    
+                    for (let i = 1; i <= segments; i++) {
+                        const t = i / segments;
+                        const angle = tentacle.angle + 
+                            Math.sin(t * 4 + tentacle.phase + time * 0.02) * 0.3;
+                        const dist = t * length;
+                        const x = this.x + Math.cos(angle) * dist;
+                        const y = this.y + Math.sin(angle) * dist;
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    ctx.stroke();
+                    
+                    // Glow trail
+                    ctx.shadowBlur = 20;
+                    ctx.globalAlpha = 0.2;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Coral Branch Class ----
+            class CoralBranch {
+                constructor(x, y, depth) {
+                    this.x = x;
+                    this.y = y;
+                    this.depth = depth || 0;
+                    this.polyps = [];
+                    this.branches = [];
+                    
+                    if (this.depth < 3) {
+                        // Create branches
+                        const numBranches = 2 + Math.floor(Math.random() * 2);
+                        for (let i = 0; i < numBranches; i++) {
+                            const angle = (i / numBranches) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                            const dist = 20 + Math.random() * 30;
+                            const bx = this.x + Math.cos(angle) * dist;
+                            const by = this.y + Math.sin(angle) * dist - 5;
+                            this.branches.push(new CoralBranch(bx, by, this.depth + 1));
+                        }
+                    }
+                    
+                    // Create polyps on this branch
+                    const numPolyps = 1 + Math.floor(Math.random() * 3);
+                    for (let i = 0; i < numPolyps; i++) {
+                        const angle = (i / numPolyps) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                        const dist = 5 + Math.random() * 10;
+                        const px = this.x + Math.cos(angle) * dist;
+                        const py = this.y + Math.sin(angle) * dist;
+                        this.polyps.push(new CoralPolyp(px, py, 6 + Math.random() * 8));
+                    }
+                }
+
+                update() {
+                    for (let p of this.polyps) p.update();
+                    for (let b of this.branches) b.update();
+                }
+
+                draw(ctx) {
+                    // Draw branches
+                    for (let b of this.branches) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                        ctx.restore();
+                        b.draw(ctx);
+                    }
+                    
+                    // Draw polyps
+                    for (let p of this.polyps) p.draw(ctx);
+                }
+            }
+
+            // ---- Coral Colony ----
+            let colony = [];
+
+            function createColony() {
+                colony = [];
+                const numBranches = 3 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < numBranches; i++) {
+                    const x = 50 + i * (W - 100) / (numBranches - 1);
+                    const y = H - 50 - Math.random() * 30;
+                    colony.push(new CoralBranch(x, y, 0));
+                }
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Ocean gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                gradient.addColorStop(0, '#0a1628');
+                gradient.addColorStop(0.3, '#0d2137');
+                gradient.addColorStop(0.6, '#0a1a2a');
+                gradient.addColorStop(0.8, '#0d1a25');
+                gradient.addColorStop(1, '#050a12');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Ocean floor
+                const floorGrad = ctx.createLinearGradient(0, H - 50, 0, H);
+                floorGrad.addColorStop(0, 'rgba(139, 69, 19, 0.1)');
+                floorGrad.addColorStop(1, 'rgba(139, 69, 19, 0.3)');
+                ctx.fillStyle = floorGrad;
+                ctx.fillRect(0, H - 50, W, 50);
+                
+                // Light rays
+                for (let i = 0; i < 6; i++) {
+                    const x = 50 + i * 100 + Math.sin(time * 0.005 + i) * 20;
+                    const gradient2 = ctx.createLinearGradient(x, 0, x + 15, H);
+                    gradient2.addColorStop(0, 'rgba(100, 200, 255, 0.02)');
+                    gradient2.addColorStop(0.5, 'rgba(100, 200, 255, 0.01)');
+                    gradient2.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                    ctx.fillStyle = gradient2;
+                    ctx.fillRect(x, 0, 15, H);
+                }
+                
+                // Bubbles
+                for (let i = 0; i < 20; i++) {
+                    const x = (i * 173 + 30) % W;
+                    const y = (i * 97 + time * (0.2 + i * 0.005) * 5) % H;
+                    const size = 1 + (i % 4) * 0.5;
+                    ctx.fillStyle = `rgba(200, 240, 255, ${0.02 + Math.sin(time * 0.01 + i) * 0.01})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                for (let c of colony) {
+                    c.update();
+                    c.draw(ctx);
+                }
+                
+                // Ambient particles
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 193 + 50) % W;
+                    const y = (i * 127 + time * (0.05 + i * 0.003) * 3) % H;
+                    const size = 0.5 + Math.sin(time * 0.015 + i * 2) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgba(150, 200, 255, ${0.01 + Math.sin(time * 0.008 + i) * 0.008})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetCoral() {
+                createColony();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        speed = parseInt(this.value);
+                    }
+                });
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetCoral);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCoral();
+                }
+            });
+
+            // ---- Initialize ----
+            createColony();
+            animate();
+
+            console.log('🪸 Coral Bloom · Press Space to pause · R to reset');
+        })();
+    </script>
+</body>
+</html>

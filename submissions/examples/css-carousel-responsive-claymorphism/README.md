@@ -1,0 +1,2 @@
+# Responsive Carousel (Claymorphism)
+A pillowy, highly rounded 3D slider. It utilizes bouncy `cubic-bezier(0.34, 1.56, 0.64, 1)` transitions for both the track movement and the card scaling. The active pagination dots press physically into the surface.

@@ -1,0 +1,2 @@
+# Hover Breadcrumb (SaaS Modern)
+A highly polished, professional navigation trail. The interactive links feature a soft background highlight on hover, subtly elevating via a small `translateY` offset while shifting to the primary brand color to encourage clickability.
