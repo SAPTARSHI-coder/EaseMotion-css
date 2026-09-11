@@ -1,0 +1,2 @@
+# Morphing Pagination (Material Design)
+A clean, shadow-elevated Material Design pagination block. The active state indicator is an absolute positioned circular background that morphs its `left` position smoothly across the parent container using a `cubic-bezier(0.4, 0, 0.2, 1)` curve when a new radio button is checked.

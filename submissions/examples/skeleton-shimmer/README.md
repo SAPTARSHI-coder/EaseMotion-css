@@ -1,5 +1,5 @@
-# Skeleton Shimmer Utility (`em-skeleton-shimmer`)
+# Skeleton Shimmer
 
-1. **What does this do?** Adds an animated `em-skeleton-shimmer` CSS loading utility class with a smooth linear gradient sweep for placeholder elements.
-2. **How is it used?** Apply `.em-skeleton-shimmer` to any loading placeholder element (e.g., `<div class="skeleton-line em-skeleton-shimmer"></div>`).
-3. **Why is it useful?** It provides modern, fluid loading feedback for skeleton UI states across card components, images, and text placeholders.
+1. What does this do? Shimmering placeholder blocks (avatar + text lines) that sweep with a light gradient while content loads.
+2. How is it used? Build a `.skeleton-shimmer` block with a `.skeleton-shimmer__avatar` and a `.skeleton-shimmer__lines` group of `.skeleton-shimmer__line` spans. Each block carries a base color with a transparent-to-light gradient overlay that animates its background-position to create the moving shimmer. Adjust the base color, shine tint, and sweep speed via `--ss-base`, `--ss-shine`, and `--ss-speed`.
+3. Why is it useful? It shows a polished loading placeholder using only CSS (no JavaScript), and renders a static gray block under `prefers-reduced-motion`.

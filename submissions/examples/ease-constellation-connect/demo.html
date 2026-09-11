@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constellation Connect · dots connect to form constellations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="constellation-container">
+      <div class="constellation-display" id="constellationDisplay">
+        <!-- Canvas for constellation -->
+        <canvas id="constellationCanvas"></canvas>
+        
+        <!-- Constellation Info -->
+        <div class="constellation-info">
+          <span class="info-label">⭐ Stars</span>
+          <span class="info-value" id="starCount">0</span>
+        </div>
+
+        <!-- Constellation Controls -->
+        <div class="constellation-controls">
+          <div class="control-group">
+            <label class="control-label">🔗 Connect</label>
+            <input type="range" class="control-slider" id="connectSlider" min="0" max="100" value="50">
+            <span class="control-value" id="connectValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">✨ Constellation</label>
+            <div class="constellation-options">
+              <button class="constellation-btn active" data-constellation="ursa-major" title="Ursa Major">🐻</button>
+              <button class="constellation-btn" data-constellation="orion" title="Orion">🏹</button>
+              <button class="constellation-btn" data-constellation="cassiopeia" title="Cassiopeia">👑</button>
+              <button class="constellation-btn" data-constellation="lyra" title="Lyra">🎵</button>
+              <button class="constellation-btn" data-constellation="random" title="Random">🎲</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Constellation Text -->
+        <div class="constellation-text">
+          <span class="text-label">⭐ Constellation</span>
+          <span class="text-message" id="constellationMessage">Connect the stars to reveal the constellation</span>
+        </div>
+      </div>
+      
+      <div class="constellation-status">
+        <span id="constellationStatus">⭐ Connect the stars to form constellations</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>⭐ constellation connect · 5 patterns · interactive</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('constellationCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('constellationDisplay');
+      const starCount = document.getElementById('starCount');
+      const constellationStatus = document.getElementById('constellationStatus');
+      const constellationMessage = document.getElementById('constellationMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const connectSlider = document.getElementById('connectSlider');
+      const connectValue = document.getElementById('connectValue');
+      const constellationBtns = document.querySelectorAll('.constellation-btn');
+
+      // State
+      let stars = [];
+      let connections = [];
+      let animationId = null;
+      let time = 0;
+      let currentConstellation = 'ursa-major';
+      let connectProgress = 0.5;
+
+      // Constellation patterns
+      const constellations = {
+        'ursa-major': {
+          name: 'Ursa Major',
+          icon: '🐻',
+          stars: [
+            { x: 20, y: 30 }, { x: 35, y: 25 }, { x: 50, y: 20 },
+            { x: 65, y: 35 }, { x: 75, y: 50 }, { x: 70, y: 65 },
+            { x: 60, y: 75 }, { x: 45, y: 70 }, { x: 35, y: 60 }
+          ],
+          connections: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,0]]
+        },
+        'orion': {
+          name: 'Orion',
+          icon: '🏹',
+          stars: [
+            { x: 30, y: 20 }, { x: 35, y: 40 }, { x: 40, y: 55 },
+            { x: 45, y: 70 }, { x: 55, y: 25 }, { x: 58, y: 45 },
+            { x: 60, y: 60 }, { x: 70, y: 20 }, { x: 75, y: 40 }
+          ],
+          connections: [[0,1],[1,2],[2,3],[4,5],[5,6],[7,8],[1,4],[2,5],[3,6]]
+        },
+        'cassiopeia': {
+          name: 'Cassiopeia',
+          icon: '👑',
+          stars: [
+            { x: 20, y: 40 }, { x: 35, y: 25 }, { x: 50, y: 35 },
+            { x: 65, y: 20 }, { x: 80, y: 45 }
+          ],
+          connections: [[0,1],[1,2],[2,3],[3,4]]
+        },
+        'lyra': {
+          name: 'Lyra',
+          icon: '🎵',
+          stars: [
+            { x: 50, y: 20 }, { x: 45, y: 35 }, { x: 55, y: 35 },
+            { x: 40, y: 50 }, { x: 50, y: 55 }, { x: 60, y: 50 },
+            { x: 50, y: 70 }
+          ],
+          connections: [[0,1],[0,2],[1,3],[1,4],[2,5],[3,6],[4,6],[5,6]]
+        }
+      };
+
+      // Generate random constellation
+      function generateRandomConstellation() {
+        const count = 8 + Math.floor(Math.random() * 5);
+        const stars = [];
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: 10 + Math.random() * 80,
+            y: 10 + Math.random() * 80
+          });
+        }
+        return stars;
+      }
+
+      // Get constellation data
+      function getConstellationData(name) {
+        if (name === 'random') {
+          return {
+            name: 'Random',
+            icon: '🎲',
+            stars: generateRandomConstellation(),
+            connections: []
+          };
+        }
+        return constellations[name];
+      }
+
+      // Generate constellation
+      function generateConstellation(name) {
+        const data = getConstellationData(name);
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        stars = data.stars.map(star => ({
+          x: (star.x / 100) * w,
+          y: (star.y / 100) * h,
+          size: 3 + Math.random() * 3,
+          targetX: (star.x / 100) * w,
+          targetY: (star.y / 100) * h,
+          phase: Math.random() * Math.PI * 2,
+          twinkleSpeed: 0.01 + Math.random() * 0.02,
+          brightness: 0.5 + Math.random() * 0.5
+        }));
+        
+        connections = data.connections || [];
+        starCount.textContent = stars.length;
+        
+        const nameDisplay = data.name;
+        constellationStatus.textContent = `⭐ ${nameDisplay} constellation revealed!`;
+        constellationStatus.style.color = '#fbbf24';
+        constellationMessage.textContent = `${stars.length} stars connected in ${nameDisplay}`;
+        constellationMessage.style.color = '#fbbf24';
+        
+        setTimeout(() => {
+          constellationStatus.textContent = '⭐ Connect the stars to form constellations';
+          constellationStatus.style.color = '#94a3b8';
+          constellationMessage.textContent = 'Connect the stars to reveal the constellation';
+          constellationMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Draw constellation
+      function drawConstellation(progress) {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Clear and draw background
+        drawBackground();
+        
+        // Draw connections
+        const connectThreshold = progress;
+        connections.forEach(([i, j]) => {
+          if (i < stars.length && j < stars.length) {
+            const s1 = stars[i];
+            const s2 = stars[j];
+            const alpha = connectThreshold * 0.6;
+            
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#818cf8';
+            ctx.lineWidth = 0.5 + connectThreshold * 1.5;
+            ctx.shadowColor = '#818cf8';
+            ctx.shadowBlur = 5 * connectThreshold;
+            
+            // Glowing line
+            const grad = ctx.createLinearGradient(s1.x, s1.y, s2.x, s2.y);
+            grad.addColorStop(0, `rgba(129, 140, 248, ${0.1 + connectThreshold * 0.2})`);
+            grad.addColorStop(0.5, `rgba(167, 139, 250, ${0.2 + connectThreshold * 0.3})`);
+            grad.addColorStop(1, `rgba(129, 140, 248, ${0.1 + connectThreshold * 0.2})`);
+            ctx.strokeStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(s1.x, s1.y);
+            ctx.lineTo(s2.x, s2.y);
+            ctx.stroke();
+            
+            // Pulse along the line
+            if (connectThreshold > 0.5) {
+              const pulsePos = (Math.sin(time * 0.5 + i + j) * 0.5 + 0.5) * connectThreshold;
+              const px = s1.x + (s2.x - s1.x) * pulsePos;
+              const py = s1.y + (s2.y - s1.y) * pulsePos;
+              ctx.globalAlpha = 0.2 * connectThreshold;
+              ctx.fillStyle = '#a78bfa';
+              ctx.shadowColor = '#a78bfa';
+              ctx.shadowBlur = 15;
+              ctx.beginPath();
+              ctx.arc(px, py, 2 + connectThreshold * 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            
+            ctx.restore();
+          }
+        });
+        
+        // Draw stars
+        stars.forEach((star, index) => {
+          // Twinkle
+          star.phase += star.twinkleSpeed;
+          const twinkle = 0.5 + Math.sin(star.phase) * 0.5;
+          const brightness = star.brightness * (0.5 + twinkle * 0.5);
+          const size = star.size * (0.7 + twinkle * 0.3);
+          
+          // Glow
+          ctx.save();
+          const glowSize = size * 4 * (0.5 + twinkle * 0.5);
+          const grad = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, glowSize);
+          grad.addColorStop(0, `rgba(167, 139, 250, ${0.1 + brightness * 0.1})`);
+          grad.addColorStop(0.5, `rgba(129, 140, 248, ${0.05 + brightness * 0.05})`);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = '#818cf8';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Star core
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = '#a78bfa';
+          ctx.fillStyle = '#e2e8f0';
+          ctx.globalAlpha = 0.3 + brightness * 0.7;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, size * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Star highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = brightness * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(star.x - size * 0.2, star.y - size * 0.2, size * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Star cross
+          ctx.globalAlpha = brightness * 0.15;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 0.5;
+          const crossSize = size * 2;
+          ctx.beginPath();
+          ctx.moveTo(star.x - crossSize, star.y);
+          ctx.lineTo(star.x + crossSize, star.y);
+          ctx.moveTo(star.x, star.y - crossSize);
+          ctx.lineTo(star.x, star.y + crossSize);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Deep space
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(5, 5, 20, 0.4)');
+        grad.addColorStop(0.5, 'rgba(10, 5, 25, 0.5)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Background stars
+        for (let i = 0; i < 60; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.3 + Math.random() * 1;
+          const alpha = 0.1 + Math.random() * 0.2;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 1;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const progress = connectSlider.value / 100;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawConstellation(progress);
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set constellation
+      function setConstellation(name) {
+        currentConstellation = name;
+        constellationBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.constellation === name);
+        });
+        generateConstellation(name);
+      }
+
+      // Reset
+      function resetConstellation() {
+        // Cycle through constellations
+        const names = ['ursa-major', 'orion', 'cassiopeia', 'lyra', 'random'];
+        const currentIndex = names.indexOf(currentConstellation);
+        const nextIndex = (currentIndex + 1) % names.length;
+        setConstellation(names[nextIndex]);
+        connectSlider.value = 0;
+        connectValue.textContent = '0%';
+        constellationStatus.textContent = '🔄 Reset complete';
+        constellationStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          constellationStatus.textContent = '⭐ Connect the stars to form constellations';
+          constellationStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateConstellation(currentConstellation);
+      }
+
+      // Event listeners
+      connectSlider.addEventListener('input', function() {
+        connectValue.textContent = this.value + '%';
+      });
+
+      constellationBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setConstellation(this.dataset.constellation);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetConstellation();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetConstellation();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('⭐ Constellation Connect ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

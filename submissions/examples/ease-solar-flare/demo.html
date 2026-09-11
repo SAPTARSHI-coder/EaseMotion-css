@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Flare · sun-like flare erupts on click</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="solar-container">
+      <div class="solar-display" id="solarDisplay">
+        <!-- Canvas for solar flare -->
+        <canvas id="solarCanvas"></canvas>
+        
+        <!-- Solar Info -->
+        <div class="solar-info">
+          <span class="info-label">☀️ Flares</span>
+          <span class="info-value" id="flareCount">0</span>
+        </div>
+
+        <!-- Solar Controls -->
+        <div class="solar-controls">
+          <div class="control-group">
+            <label class="control-label">🔥 Intensity</label>
+            <input type="range" class="control-slider" id="intensitySlider" min="0" max="100" value="50">
+            <span class="control-value" id="intensityValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌞 Size</label>
+            <input type="range" class="control-slider" id="sizeSlider" min="0" max="100" value="50">
+            <span class="control-value" id="sizeValue">50%</span>
+          </div>
+        </div>
+
+        <!-- Solar Text -->
+        <div class="solar-text">
+          <span class="text-label">☀️ Solar Flare</span>
+          <span class="text-message" id="solarMessage">Click to unleash a solar flare</span>
+        </div>
+      </div>
+      
+      <div class="solar-status">
+        <span id="solarStatus">☀️ Click to unleash a solar flare eruption</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-erupt" id="eruptBtn">☀️ Erupt</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>☀️ solar flare · plasma eruption · 4 flare types</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('solarCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('solarDisplay');
+      const flareCount = document.getElementById('flareCount');
+      const solarStatus = document.getElementById('solarStatus');
+      const solarMessage = document.getElementById('solarMessage');
+      const eruptBtn = document.getElementById('eruptBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+
+      // State
+      let flares = [];
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+      let totalFlares = 0;
+
+      // Flare types
+      const flareTypes = [
+        { name: 'Classic', colors: ['#fbbf24', '#f59e0b', '#f97316', '#ef4444'] },
+        { name: 'Plasma', colors: ['#f472b6', '#ec4899', '#f43f5e', '#fb923c'] },
+        { name: 'Blue', colors: ['#60a5fa', '#3b82f6', '#8b5cf6', '#a78bfa'] },
+        { name: 'White', colors: ['#f8fafc', '#e2e8f0', '#cbd5e1', '#94a3b8'] }
+      ];
+
+      let currentType = 0;
+
+      // Flare class
+      class Flare {
+        constructor(x, y, intensity, size) {
+          this.x = x || canvas.width / 2;
+          this.y = y || canvas.height / 2;
+          this.intensity = intensity / 100;
+          this.size = 30 + (size / 100) * 80;
+          this.phase = 0;
+          this.life = 1;
+          this.maxLife = 1 + this.intensity * 0.5;
+          this.particles = [];
+          this.type = flareTypes[currentType];
+          
+          // Generate flare particles
+          const count = 30 + Math.floor(this.intensity * 50);
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = this.size * (0.2 + Math.random() * 0.8);
+            const speed = 1 + Math.random() * 3 * this.intensity;
+            const size = 2 + Math.random() * 6;
+            const color = this.type.colors[Math.floor(Math.random() * this.type.colors.length)];
+            
+            this.particles.push({
+              x: this.x,
+              y: this.y,
+              targetX: this.x + Math.cos(angle) * distance * (1 + this.intensity * 0.5),
+              targetY: this.y + Math.sin(angle) * distance * (1 + this.intensity * 0.5),
+              size: size,
+              color: color,
+              speed: speed * (0.3 + Math.random() * 0.3),
+              angle: angle,
+              distance: distance,
+              phase: Math.random() * Math.PI * 2,
+              trail: [],
+              life: 0.5 + Math.random() * 0.5
+            });
+          }
+        }
+
+        update() {
+          this.phase += 0.02;
+          this.life -= 0.005 / this.maxLife;
+          
+          let alive = false;
+          
+          this.particles.forEach(p => {
+            // Move outward with some wobble
+            const progress = 1 - p.life;
+            const currentDist = p.distance * progress * 1.5;
+            const angleOffset = Math.sin(this.phase * 2 + p.phase) * 0.1;
+            
+            p.x += Math.cos(p.angle + angleOffset) * p.speed * 0.5 * this.intensity;
+            p.y += Math.sin(p.angle + angleOffset) * p.speed * 0.5 * this.intensity;
+            
+            // Trail
+            p.trail.push({ x: p.x, y: p.y, life: 1 });
+            if (p.trail.length > 15) {
+              p.trail.shift();
+            }
+            p.trail.forEach(t => t.life -= 0.05);
+            
+            p.life -= 0.005 * this.intensity;
+            if (p.life > 0) alive = true;
+          });
+          
+          return this.life > 0 || alive;
+        }
+
+        draw(ctx) {
+          // Draw flare glow
+          ctx.save();
+          const glowSize = this.size * (1 + this.life * 0.5) * this.intensity;
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize * 2);
+          grad.addColorStop(0, 'rgba(255, 200, 100, 0.1)');
+          grad.addColorStop(0.3, 'rgba(255, 150, 50, 0.05)');
+          grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize * 2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw particles
+          this.particles.forEach(p => {
+            if (p.life <= 0) return;
+            
+            // Trail
+            p.trail.forEach(t => {
+              if (t.life > 0) {
+                ctx.save();
+                ctx.globalAlpha = t.life * 0.15;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, p.size * 0.3 * t.life, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+              }
+            });
+            
+            // Particle glow
+            ctx.save();
+            const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+            glow.addColorStop(0, p.color + '88');
+            glow.addColorStop(0.3, p.color + '44');
+            glow.addColorStop(1, 'transparent');
+            ctx.fillStyle = glow;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 20;
+            ctx.globalAlpha = p.life * 0.8;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Core
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life * 0.9;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Highlight
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = p.life * 0.3;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(p.x - p.size * 0.2, p.y - p.size * 0.2, p.size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+          
+          ctx.restore();
+        }
+      }
+
+      // Draw sun background
+      function drawSun() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.15;
+        
+        // Sun glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 4);
+        grad.addColorStop(0, 'rgba(255, 200, 100, 0.08)');
+        grad.addColorStop(0.3, 'rgba(255, 150, 50, 0.05)');
+        grad.addColorStop(0.7, 'rgba(255, 100, 0, 0.02)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sun body
+        const sunGrad = ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, 0, cx, cy, radius);
+        sunGrad.addColorStop(0, '#fbbf24');
+        sunGrad.addColorStop(0.4, '#f59e0b');
+        sunGrad.addColorStop(0.8, '#f97316');
+        sunGrad.addColorStop(1, '#ef4444');
+        ctx.fillStyle = sunGrad;
+        ctx.shadowColor = 'rgba(255, 200, 100, 0.2)';
+        ctx.shadowBlur = 30;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Space background
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(5, 5, 20, 0.4)');
+        grad.addColorStop(0.5, 'rgba(10, 5, 20, 0.5)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Stars
+        for (let i = 0; i < 80; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.1 + Math.random() * 0.3;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Erupt solar flare
+      function eruptFlare(x, y) {
+        const intensity = parseInt(intensitySlider.value);
+        const size = parseInt(sizeSlider.value);
+        
+        const flare = new Flare(x, y, intensity, size);
+        flares.push(flare);
+        totalFlares++;
+        flareCount.textContent = totalFlares;
+        
+        solarStatus.textContent = `☀️ Solar flare erupted! (${totalFlares})`;
+        solarStatus.style.color = '#fbbf24';
+        solarMessage.textContent = '💥 Solar flare eruption!';
+        solarMessage.style.color = '#fbbf24';
+        
+        setTimeout(() => {
+          solarStatus.textContent = '☀️ Click to unleash a solar flare eruption';
+          solarStatus.style.color = '#94a3b8';
+          solarMessage.textContent = 'Click to unleash a solar flare';
+          solarMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawSun();
+        
+        // Update and draw flares
+        flares = flares.filter(f => {
+          const alive = f.update();
+          if (alive) f.draw(ctx);
+          return alive;
+        });
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetSolar() {
+        flares = [];
+        totalFlares = 0;
+        flareCount.textContent = '0';
+        solarStatus.textContent = '🔄 Reset complete';
+        solarStatus.style.color = '#94a3b8';
+        solarMessage.textContent = 'Click to unleash a solar flare';
+        solarMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          solarStatus.textContent = '☀️ Click to unleash a solar flare eruption';
+          solarStatus.style.color = '#94a3b8';
+        }, 1000);
+        // Cycle flare type
+        currentType = (currentType + 1) % flareTypes.length;
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        eruptFlare(x, y);
+      });
+
+      if (eruptBtn) {
+        eruptBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          eruptFlare(cx + (Math.random() - 0.5) * 100, cy + (Math.random() - 0.5) * 100);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetSolar();
+        });
+      }
+
+      // Slider updates
+      intensitySlider.addEventListener('input', function() {
+        intensityValue.textContent = this.value + '%';
+      });
+
+      sizeSlider.addEventListener('input', function() {
+        sizeValue.textContent = this.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          eruptFlare(cx + (Math.random() - 0.5) * 100, cy + (Math.random() - 0.5) * 100);
+        } else if (key === 'e' || key === 'E') {
+          e.preventDefault();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          eruptFlare(cx + (Math.random() - 0.5) * 100, cy + (Math.random() - 0.5) * 100);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetSolar();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('☀️ Solar Flare ready · shortcuts: [Space/E] Erupt, [R] Reset');
+    })();
+  </script>
+</body>
+</html>
