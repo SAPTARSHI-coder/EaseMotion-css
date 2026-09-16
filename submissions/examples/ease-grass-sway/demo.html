@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grass Sway · grass blades sway in wind direction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="grass-container">
+      <div class="grass-display" id="grassDisplay">
+        <!-- Canvas for grass sway -->
+        <canvas id="grassCanvas"></canvas>
+        
+        <!-- Grass Info -->
+        <div class="grass-info">
+          <span class="info-label">🌿 Blades</span>
+          <span class="info-value" id="bladeCount">0</span>
+        </div>
+
+        <!-- Grass Controls -->
+        <div class="grass-controls">
+          <div class="control-group">
+            <label class="control-label">🌬️ Wind</label>
+            <input type="range" class="control-slider" id="windSlider" min="0" max="100" value="50">
+            <span class="control-value" id="windValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌿 Density</label>
+            <input type="range" class="control-slider" id="densitySlider" min="1" max="10" value="5">
+            <span class="control-value" id="densityValue">5</span>
+          </div>
+        </div>
+
+        <!-- Grass Text -->
+        <div class="grass-text">
+          <span class="text-label">🌿 Grass Sway</span>
+          <span class="text-message" id="grassMessage">Grass blades sway in the wind</span>
+        </div>
+      </div>
+      
+      <div class="grass-status">
+        <span id="grassStatus">🌬️ Grass swaying in the gentle breeze</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌿 grass sway · wind direction · 4 seasons</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('grassCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('grassDisplay');
+      const bladeCount = document.getElementById('bladeCount');
+      const grassStatus = document.getElementById('grassStatus');
+      const grassMessage = document.getElementById('grassMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const windSlider = document.getElementById('windSlider');
+      const windValue = document.getElementById('windValue');
+      const densitySlider = document.getElementById('densitySlider');
+      const densityValue = document.getElementById('densityValue');
+
+      // State
+      let grassBlades = [];
+      let animationId = null;
+      let time = 0;
+      let seasonIndex = 0;
+
+      // Seasons
+      const seasons = [
+        { name: 'Spring', color: '#4ade80', dark: '#22c55e', light: '#86efac', ground: '#2d6a3a' },
+        { name: 'Summer', color: '#22c55e', dark: '#16a34a', light: '#4ade80', ground: '#1a5a2a' },
+        { name: 'Autumn', color: '#f97316', dark: '#ea580c', light: '#fb923c', ground: '#6a4a2a' },
+        { name: 'Winter', color: '#94a3b8', dark: '#64748b', light: '#cbd5e1', ground: '#4a5a6a' }
+      ];
+
+      // Grass blade class
+      class GrassBlade {
+        constructor(x, y, height, width, color, season) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || canvas.height - 10 - Math.random() * 20;
+          this.height = height || 15 + Math.random() * 35;
+          this.width = width || 1 + Math.random() * 2;
+          this.color = color || seasons[seasonIndex % seasons.length].color;
+          this.season = season || seasonIndex;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 1;
+          this.windResponse = 0.5 + Math.random() * 0.5;
+          this.curve = 0.3 + Math.random() * 0.5;
+          this.bend = 0;
+          this.baseX = this.x;
+          this.points = [];
+          this.segments = 4 + Math.floor(Math.random() * 3);
+          this.leafWidth = this.width * (0.3 + Math.random() * 0.3);
+        }
+
+        update(wind, time) {
+          const windForce = (wind / 100) * 0.8;
+          const sway = Math.sin(time * this.speed + this.phase) * this.windResponse * 0.3;
+          const windSway = windForce * this.windResponse * 0.6;
+          this.bend = sway + windSway;
+          
+          // Generate points along the blade
+          this.points = [];
+          for (let i = 0; i <= this.segments; i++) {
+            const t = i / this.segments;
+            const yOffset = -t * this.height;
+            const bendAmount = this.bend * t * t * this.curve;
+            const xOffset = bendAmount * this.height * 0.3;
+            
+            // Wind ripple effect
+            const ripple = Math.sin(time * 2 + this.phase + t * 3) * 0.5 * windForce * t;
+            
+            this.points.push({
+              x: this.baseX + xOffset + ripple * 3,
+              y: this.y + yOffset,
+              t: t
+            });
+          }
+        }
+
+        draw(ctx) {
+          if (this.points.length < 2) return;
+          
+          const seasonData = seasons[this.season % seasons.length];
+          const color = seasonData.color;
+          const darkColor = seasonData.dark;
+          const lightColor = seasonData.light;
+          
+          ctx.save();
+          
+          // Draw blade with gradient
+          for (let i = 0; i < this.points.length - 1; i++) {
+            const p1 = this.points[i];
+            const p2 = this.points[i + 1];
+            const t = p1.t;
+            const alpha = 0.4 + t * 0.6;
+            const width = this.width * (1 - t * 0.3);
+            const nextWidth = this.width * (1 - (t + 1/this.segments) * 0.3);
+            
+            // Color variation along blade
+            const colorMix = 0.3 + t * 0.7;
+            const r = parseInt(color.slice(1,3), 16);
+            const g = parseInt(color.slice(3,5), 16);
+            const b = parseInt(color.slice(5,7), 16);
+            const dr = parseInt(darkColor.slice(1,3), 16);
+            const dg = parseInt(darkColor.slice(3,5), 16);
+            const db = parseInt(darkColor.slice(5,7), 16);
+            
+            const cr = Math.round(r + (dr - r) * t);
+            const cg = Math.round(g + (dg - g) * t);
+            const cb = Math.round(b + (db - b) * t);
+            
+            ctx.globalAlpha = alpha * 0.8;
+            ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+            ctx.shadowColor = 'rgba(0,0,0,0.05)';
+            ctx.shadowBlur = 2;
+            
+            // Draw blade segment
+            ctx.beginPath();
+            ctx.moveTo(p1.x - width/2, p1.y);
+            ctx.quadraticCurveTo(
+              (p1.x + p2.x)/2 - (width + nextWidth)/4,
+              (p1.y + p2.y)/2,
+              p2.x - nextWidth/2,
+              p2.y
+            );
+            ctx.quadraticCurveTo(
+              (p1.x + p2.x)/2 + (width + nextWidth)/4,
+              (p1.y + p2.y)/2,
+              p1.x + width/2,
+              p1.y
+            );
+            ctx.closePath();
+            ctx.fill();
+            
+            // Light reflection on blade
+            if (t < 0.7) {
+              ctx.globalAlpha = alpha * 0.1;
+              ctx.fillStyle = lightColor;
+              ctx.beginPath();
+              ctx.moveTo(p1.x - width/4, p1.y);
+              ctx.quadraticCurveTo(
+                (p1.x + p2.x)/2 - (width + nextWidth)/8,
+                (p1.y + p2.y)/2,
+                p2.x - nextWidth/4,
+                p2.y
+              );
+              ctx.quadraticCurveTo(
+                (p1.x + p2.x)/2 - (width + nextWidth)/12,
+                (p1.y + p2.y)/2,
+                p1.x - width/6,
+                p1.y
+              );
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate grass
+      function generateGrass() {
+        const density = densitySlider.value / 10;
+        const count = Math.floor(80 + density * 200);
+        const season = seasons[seasonIndex % seasons.length];
+        
+        grassBlades = [];
+        for (let i = 0; i < count; i++) {
+          const x = Math.random() * canvas.width;
+          const y = canvas.height - 5 - Math.random() * 15;
+          const height = 20 + Math.random() * 40 * (0.5 + density * 0.5);
+          const width = 1 + Math.random() * 2.5;
+          const blade = new GrassBlade(x, y, height, width, season.color, seasonIndex);
+          blade.speed = 0.3 + Math.random() * 1.2;
+          blade.windResponse = 0.3 + Math.random() * 0.7;
+          blade.curve = 0.2 + Math.random() * 0.6;
+          grassBlades.push(blade);
+        }
+        bladeCount.textContent = grassBlades.length;
+      }
+
+      // Draw ground
+      function drawGround() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const seasonData = seasons[seasonIndex % seasons.length];
+        const groundY = h - 15;
+        
+        // Ground base
+        const grad = ctx.createLinearGradient(0, groundY, 0, h);
+        grad.addColorStop(0, seasonData.ground);
+        grad.addColorStop(0.3, seasonData.dark);
+        grad.addColorStop(1, '#1a1a2a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, groundY, w, h - groundY);
+        
+        // Ground texture
+        for (let i = 0; i < 40; i++) {
+          const x = Math.random() * w;
+          const y = groundY + Math.random() * 15;
+          const width = 2 + Math.random() * 4;
+          const height = 1 + Math.random() * 2;
+          ctx.fillStyle = `rgba(0,0,0,${0.05 + Math.random() * 0.05})`;
+          ctx.fillRect(x, y, width, height);
+        }
+        
+        // Ground highlight
+        ctx.fillStyle = `rgba(255,255,255,0.02)`;
+        for (let i = 0; i < 20; i++) {
+          const x = Math.random() * w;
+          const y = groundY + Math.random() * 10;
+          const width = 3 + Math.random() * 6;
+          const height = 0.5 + Math.random() * 1;
+          ctx.fillRect(x, y, width, height);
+        }
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const seasonData = seasons[seasonIndex % seasons.length];
+        
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+        grad.addColorStop(0, 'rgba(20, 30, 50, 0.2)');
+        grad.addColorStop(0.3, 'rgba(30, 50, 70, 0.25)');
+        grad.addColorStop(0.7, 'rgba(40, 60, 80, 0.3)');
+        grad.addColorStop(1, seasonData.color + '11');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h * 0.7);
+        
+        // Clouds
+        for (let i = 0; i < 4; i++) {
+          const x = (i * w * 0.25 + Math.sin(i * 2) * 30) % w;
+          const y = 10 + i * 25 + Math.sin(i * 1.5) * 10;
+          const radius = 40 + i * 15;
+          const grad2 = ctx.createRadialGradient(x, y, 0, x, y, radius);
+          grad2.addColorStop(0, `rgba(200, 210, 220, ${0.02 + i * 0.005})`);
+          grad2.addColorStop(1, 'rgba(200, 210, 220, 0)');
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateGrass();
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const wind = parseInt(windSlider.value);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawGround();
+        
+        // Update and draw grass blades
+        grassBlades.forEach(blade => {
+          blade.update(wind, time);
+          blade.draw(ctx);
+        });
+        
+        // Update status based on wind
+        if (wind > 70) {
+          grassStatus.textContent = '🌬️ Strong wind bending the grass!';
+          grassStatus.style.color = '#fbbf24';
+        } else if (wind > 30) {
+          grassStatus.textContent = '🌿 Grass swaying in the breeze';
+          grassStatus.style.color = '#818cf8';
+        } else {
+          grassStatus.textContent = '🌬️ Grass swaying gently in the wind';
+          grassStatus.style.color = '#94a3b8';
+        }
+        
+        // Update season message
+        const seasonData = seasons[seasonIndex % seasons.length];
+        grassMessage.textContent = `${seasonData.name} grass swaying in the wind`;
+        grassMessage.style.color = seasonData.color;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset (cycle season)
+      function resetGrass() {
+        seasonIndex = (seasonIndex + 1) % seasons.length;
+        generateGrass();
+        const seasonData = seasons[seasonIndex % seasons.length];
+        grassStatus.textContent = `🍃 Season: ${seasonData.name}`;
+        grassStatus.style.color = seasonData.color;
+        grassMessage.textContent = `${seasonData.name} grass swaying in the wind`;
+        grassMessage.style.color = seasonData.color;
+        setTimeout(() => {
+          grassStatus.textContent = '🌬️ Grass swaying in the gentle breeze';
+          grassStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Event listeners
+      windSlider.addEventListener('input', function() {
+        windValue.textContent = this.value + '%';
+      });
+
+      densitySlider.addEventListener('input', function() {
+        densityValue.textContent = this.value;
+        generateGrass();
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetGrass();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetGrass();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌿 Grass Sway ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

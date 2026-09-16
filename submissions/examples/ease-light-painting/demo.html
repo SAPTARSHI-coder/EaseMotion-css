@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light Painting · draw with light trails</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="lightpaint-container">
+      <div class="lightpaint-display" id="lightpaintDisplay">
+        <!-- Canvas for light painting -->
+        <canvas id="lightpaintCanvas"></canvas>
+        
+        <!-- Light Painting Info -->
+        <div class="lightpaint-info">
+          <span class="info-label">💡 Strokes</span>
+          <span class="info-value" id="strokeCount">0</span>
+        </div>
+
+        <!-- Light Painting Controls -->
+        <div class="lightpaint-controls">
+          <div class="control-group">
+            <label class="control-label">🌈 Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="#fbbf24" style="background:#fbbf24;"></button>
+              <button class="color-btn" data-color="#f472b6" style="background:#f472b6;"></button>
+              <button class="color-btn" data-color="#60a5fa" style="background:#60a5fa;"></button>
+              <button class="color-btn" data-color="#34d399" style="background:#34d399;"></button>
+              <button class="color-btn" data-color="#a78bfa" style="background:#a78bfa;"></button>
+              <button class="color-btn" data-color="#f97316" style="background:#f97316;"></button>
+              <button class="color-btn" data-color="#ef4444" style="background:#ef4444;"></button>
+              <button class="color-btn" data-color="#ec4899" style="background:#ec4899;"></button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">✨ Glow</label>
+            <input type="range" class="control-slider" id="glowSlider" min="1" max="10" value="5">
+            <span class="control-value" id="glowValue">5</span>
+          </div>
+        </div>
+
+        <!-- Light Painting Text -->
+        <div class="lightpaint-text">
+          <span class="text-label">💡 Light Painting</span>
+          <span class="text-message" id="lightpaintMessage">Click and drag to paint with light</span>
+        </div>
+      </div>
+      
+      <div class="lightpaint-status">
+        <span id="lightpaintStatus">💡 Click and drag to create light trails</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>💡 light painting · 8 colors · glow control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('lightpaintCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('lightpaintDisplay');
+      const strokeCount = document.getElementById('strokeCount');
+      const lightpaintStatus = document.getElementById('lightpaintStatus');
+      const lightpaintMessage = document.getElementById('lightpaintMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const glowSlider = document.getElementById('glowSlider');
+      const glowValue = document.getElementById('glowValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let isDrawing = false;
+      let strokeCountNum = 0;
+      let currentColor = '#fbbf24';
+      let currentGlow = 5;
+      let lastX = 0;
+      let lastY = 0;
+      let lightTrails = [];
+      let glowParticles = [];
+
+      // Light trail class
+      class LightTrail {
+        constructor(x, y, color, glow) {
+          this.points = [{ x, y }];
+          this.color = color;
+          this.glow = glow;
+          this.life = 1;
+          this.maxLife = 200;
+          this.brightness = 1;
+        }
+
+        addPoint(x, y) {
+          this.points.push({ x, y });
+          if (this.points.length > 50) {
+            this.points.shift();
+          }
+        }
+
+        draw(ctx) {
+          if (this.points.length < 2) return;
+          
+          const glowSize = 5 + this.glow * 3;
+          const alpha = this.life / this.maxLife;
+          
+          ctx.save();
+          
+          // Draw glow trail
+          for (let i = 0; i < this.points.length - 1; i++) {
+            const p1 = this.points[i];
+            const p2 = this.points[i + 1];
+            const t = i / this.points.length;
+            const size = glowSize * (0.1 + t * 0.9) * alpha;
+            const opacity = 0.1 + t * 0.7 * alpha;
+            
+            // Glow
+            const grad = ctx.createRadialGradient(p2.x, p2.y, 0, p2.x, p2.y, size * 3);
+            grad.addColorStop(0, this.color + '88');
+            grad.addColorStop(0.3, this.color + '44');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.globalAlpha = opacity * 0.3;
+            ctx.fillStyle = grad;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = size * 2;
+            ctx.beginPath();
+            ctx.arc(p2.x, p2.y, size * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Core trail
+            ctx.globalAlpha = opacity * 0.6;
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = size;
+            ctx.beginPath();
+            ctx.arc(p2.x, p2.y, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+
+        update() {
+          this.life--;
+          this.brightness = this.life / this.maxLife;
+          return this.life > 0;
+        }
+      }
+
+      // Glow particle class
+      class GlowParticle {
+        constructor(x, y, color, glow) {
+          this.x = x;
+          this.y = y;
+          this.color = color;
+          this.size = 1 + Math.random() * 3 * (glow / 5);
+          this.speed = 0.2 + Math.random() * 0.5;
+          this.angle = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.phase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.x += Math.cos(this.angle) * this.speed * 0.3;
+          this.y += Math.sin(this.angle) * this.speed * 0.3;
+          this.phase += 0.02;
+          this.life -= 0.01;
+          this.angle += 0.02;
+          
+          return this.life > 0;
+        }
+
+        draw(ctx) {
+          const alpha = (this.life / this.maxLife) * 0.3;
+          const size = this.size * (0.3 + Math.sin(this.phase) * 0.2 + 0.5);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 10, 20, 0.3)');
+        grad.addColorStop(0.5, 'rgba(5, 5, 15, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        const trail = new LightTrail(lastX, lastY, currentColor, currentGlow);
+        lightTrails.push(trail);
+        
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+        
+        lightpaintStatus.textContent = '💡 Painting with light...';
+        lightpaintStatus.style.color = currentColor;
+        lightpaintMessage.textContent = '💡 Light painting...';
+        lightpaintMessage.style.color = currentColor;
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        // Add point to current trail
+        if (lightTrails.length > 0) {
+          const currentTrail = lightTrails[lightTrails.length - 1];
+          currentTrail.addPoint(x, y);
+        }
+        
+        // Create glow particles
+        const glowSize = currentGlow;
+        for (let i = 0; i < 2 + Math.floor(glowSize / 3); i++) {
+          const particle = new GlowParticle(x, y, currentColor, glowSize);
+          glowParticles.push(particle);
+        }
+        
+        lastX = x;
+        lastY = y;
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          lightpaintStatus.textContent = '💡 Light trail complete!';
+          lightpaintStatus.style.color = '#4ade80';
+          lightpaintMessage.textContent = 'Click and drag to paint with light';
+          lightpaintMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            lightpaintStatus.textContent = '💡 Click and drag to create light trails';
+            lightpaintStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        lightpaintStatus.textContent = `🎨 Color selected`;
+        lightpaintStatus.style.color = color;
+        setTimeout(() => {
+          lightpaintStatus.textContent = '💡 Click and drag to create light trails';
+          lightpaintStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Set glow
+      function setGlow(value) {
+        currentGlow = parseInt(value);
+        glowValue.textContent = currentGlow;
+        lightpaintStatus.textContent = `✨ Glow: ${currentGlow}/10`;
+        lightpaintStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          lightpaintStatus.textContent = '💡 Click and drag to create light trails';
+          lightpaintStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        lightTrails = [];
+        glowParticles = [];
+        strokeCountNum = 0;
+        strokeCount.textContent = '0';
+        drawBackground();
+        lightpaintStatus.textContent = '🧹 Canvas cleared';
+        lightpaintStatus.style.color = '#94a3b8';
+        lightpaintMessage.textContent = 'Click and drag to paint with light';
+        lightpaintMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          lightpaintStatus.textContent = '💡 Click and drag to create light trails';
+          lightpaintStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Animation loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw trails
+        lightTrails = lightTrails.filter(trail => {
+          const alive = trail.update();
+          if (alive) trail.draw(ctx);
+          return alive;
+        });
+        
+        // Update and draw particles
+        glowParticles = glowParticles.filter(p => {
+          const alive = p.update();
+          if (alive) p.draw(ctx);
+          return alive;
+        });
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Color buttons
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      // Glow slider
+      glowSlider.addEventListener('input', function() {
+        setGlow(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('💡 Light Painting ready · shortcuts: [C] Clear');
+    })();
+  </script>
+</body>
+</html>

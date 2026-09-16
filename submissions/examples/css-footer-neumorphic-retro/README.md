@@ -1,0 +1,2 @@
+# Neumorphic Footer (Retro)
+A unique blend of soft-UI elevation applied to a 90s-beige computer hardware color palette. The footer track is recessed using deep inset shadows, while the branding elements and links sit physically on top as clickable, compressible 3D plastic buttons.

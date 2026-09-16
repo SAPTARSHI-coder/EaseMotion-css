@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wand Effect · sparkles trail from wand movement</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="wand-container">
+      <div class="wand-display" id="wandDisplay">
+        <!-- Wand -->
+        <div class="wand" id="wand">
+          <div class="wand-tip"></div>
+          <div class="wand-stick"></div>
+          <div class="wand-handle"></div>
+          <div class="wand-sparkle" id="wandSparkle">✨</div>
+        </div>
+
+        <!-- Sparkle Trail Container -->
+        <div class="sparkle-trail" id="sparkleTrail"></div>
+
+        <!-- Sparkle Counter -->
+        <div class="sparkle-counter">
+          <span class="counter-label">✨ Sparkles</span>
+          <span class="counter-value" id="sparkleCount">0</span>
+        </div>
+      </div>
+      
+      <div class="wand-status">
+        <span id="wandStatus">🪄 Move mouse to wave the wand</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-wave" id="waveBtn">🪄 Wave Wand</button>
+      <button class="btn btn-mode" id="modeBtn">🎨 Toggle Sparkle Style</button>
+      <button class="btn btn-clear" id="clearBtn">🧹 Clear Trail</button>
+    </div>
+    <div class="footer-note">
+      <span>🪄 wave wand · sparkle trail · 5 sparkle styles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const wand = document.getElementById('wand');
+      const wandDisplay = document.getElementById('wandDisplay');
+      const sparkleTrail = document.getElementById('sparkleTrail');
+      const wandSparkle = document.getElementById('wandSparkle');
+      const sparkleCount = document.getElementById('sparkleCount');
+      const wandStatus = document.getElementById('wandStatus');
+      const waveBtn = document.getElementById('waveBtn');
+      const modeBtn = document.getElementById('modeBtn');
+      const clearBtn = document.getElementById('clearBtn');
+
+      // State
+      let sparkleCounter = 0;
+      let styleIndex = 0;
+      let isWaving = false;
+      let animationId = null;
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let lastSparkleTime = 0;
+
+      // Sparkle styles
+      const styles = [
+        {
+          name: 'Magic',
+          colors: ['#818cf8', '#a78bfa', '#c4b5fd', '#fbbf24', '#f472b6'],
+          icon: '✨',
+          size: '8-14px'
+        },
+        {
+          name: 'Fire',
+          colors: ['#ef4444', '#f97316', '#fb923c', '#fca5a5', '#fcd34d'],
+          icon: '🔥',
+          size: '6-12px'
+        },
+        {
+          name: 'Ice',
+          colors: ['#60a5fa', '#93c5fd', '#bae6fd', '#dbeafe', '#e0f2fe'],
+          icon: '❄️',
+          size: '7-13px'
+        },
+        {
+          name: 'Nature',
+          colors: ['#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7'],
+          icon: '🌿',
+          size: '6-12px'
+        },
+        {
+          name: 'Cosmic',
+          colors: ['#6366f1', '#8b5cf6', '#a78bfa', '#ec4899', '#f472b6'],
+          icon: '🌌',
+          size: '8-15px'
+        }
+      ];
+
+      // Create sparkle
+      function createSparkle(x, y) {
+        const style = styles[styleIndex];
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle-particle';
+        
+        // Random size
+        const size = Math.random() * 8 + 6;
+        sparkle.style.width = size + 'px';
+        sparkle.style.height = size + 'px';
+        
+        // Random color from style
+        const color = style.colors[Math.floor(Math.random() * style.colors.length)];
+        sparkle.style.backgroundColor = color;
+        sparkle.style.boxShadow = `0 0 ${size * 2}px ${color}66, 0 0 ${size * 4}px ${color}33`;
+        
+        // Position
+        sparkle.style.left = x + 'px';
+        sparkle.style.top = y + 'px';
+        
+        // Random shape
+        if (Math.random() > 0.5) {
+          sparkle.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+          sparkle.style.borderRadius = '0';
+        } else {
+          sparkle.style.borderRadius = '50%';
+        }
+        
+        // Random animation duration
+        sparkle.style.animationDuration = (Math.random() * 0.6 + 0.6) + 's';
+        
+        // Random rotation
+        sparkle.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+        
+        // Random trajectory
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 40 + Math.random() * 80;
+        sparkle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        sparkle.style.setProperty('--ty', Math.sin(angle) * distance - 30 + 'px');
+        
+        sparkleTrail.appendChild(sparkle);
+        
+        // Increment counter
+        sparkleCounter++;
+        sparkleCount.textContent = sparkleCounter;
+        
+        // Remove after animation
+        setTimeout(() => {
+          sparkle.remove();
+        }, 1500);
+      }
+
+      // Create sparkle burst
+      function createSparkleBurst(x, y, count = 15) {
+        for (let i = 0; i < count; i++) {
+          setTimeout(() => {
+            createSparkle(x, y);
+          }, Math.random() * 200);
+        }
+      }
+
+      // Update wand position
+      function updateWand() {
+        // Smooth interpolation
+        currentX += (targetX - currentX) * 0.12;
+        currentY += (targetY - currentY) * 0.12;
+        
+        // Update wand position
+        wand.style.left = currentX + 'px';
+        wand.style.top = currentY + 'px';
+        
+        // Calculate angle from center
+        const rect = wandDisplay.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const angle = Math.atan2(currentY - centerY, currentX - centerX);
+        const rotation = angle * (180 / Math.PI) + 45;
+        wand.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+        
+        // Update sparkle position on wand tip
+        const tipX = currentX + Math.cos(angle) * 35;
+        const tipY = currentY + Math.sin(angle) * 35;
+        wandSparkle.style.left = tipX + 'px';
+        wandSparkle.style.top = tipY + 'px';
+        
+        // Create sparkles on movement
+        const now = Date.now();
+        if (isWaving && now - lastSparkleTime > 80) {
+          const speed = Math.sqrt(
+            Math.pow(targetX - currentX, 2) + 
+            Math.pow(targetY - currentY, 2)
+          );
+          if (speed > 2) {
+            const count = Math.min(Math.floor(speed / 3) + 1, 5);
+            for (let i = 0; i < count; i++) {
+              setTimeout(() => {
+                createSparkle(
+                  tipX + (Math.random() - 0.5) * 20,
+                  tipY + (Math.random() - 0.5) * 20
+                );
+              }, i * 30);
+            }
+            lastSparkleTime = now;
+          }
+        }
+        
+        if (isWaving) {
+          animationId = requestAnimationFrame(updateWand);
+        }
+      }
+
+      // Start waving
+      function startWaving() {
+        if (isWaving) return;
+        isWaving = true;
+        wand.classList.add('waving');
+        wandStatus.textContent = '🪄 Waving wand... ✨';
+        wandStatus.style.color = '#fbbf24';
+        lastSparkleTime = Date.now();
+        updateWand();
+      }
+
+      // Stop waving
+      function stopWaving() {
+        if (!isWaving) return;
+        isWaving = false;
+        wand.classList.remove('waving');
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        wandStatus.textContent = '🪄 Move mouse to wave the wand';
+        wandStatus.style.color = '#94a3b8';
+      }
+
+      // Handle mouse move
+      function handleMouseMove(e) {
+        const rect = wandDisplay.getBoundingClientRect();
+        targetX = e.clientX - rect.left;
+        targetY = e.clientY - rect.top;
+        
+        // Clamp to display bounds
+        targetX = Math.max(20, Math.min(rect.width - 20, targetX));
+        targetY = Math.max(20, Math.min(rect.height - 20, targetY));
+        
+        if (!isWaving) {
+          // Single sparkle on hover
+          const tipX = targetX + Math.cos(Math.atan2(targetY - rect.height/2, targetX - rect.width/2)) * 35;
+          const tipY = targetY + Math.sin(Math.atan2(targetY - rect.height/2, targetX - rect.width/2)) * 35;
+          createSparkle(tipX, tipY);
+          // Update wand position without continuous animation
+          currentX += (targetX - currentX) * 0.12;
+          currentY += (targetY - currentY) * 0.12;
+          wand.style.left = currentX + 'px';
+          wand.style.top = currentY + 'px';
+          const angle = Math.atan2(currentY - rect.height/2, currentX - rect.width/2);
+          wand.style.transform = `translate(-50%, -50%) rotate(${angle * (180 / Math.PI) + 45}deg)`;
+        }
+      }
+
+      // Handle mouse enter
+      function handleMouseEnter() {
+        startWaving();
+      }
+
+      // Handle mouse leave
+      function handleMouseLeave() {
+        stopWaving();
+        // Create burst on exit
+        const rect = wandDisplay.getBoundingClientRect();
+        createSparkleBurst(
+          currentX + Math.cos(Math.atan2(currentY - rect.height/2, currentX - rect.width/2)) * 35,
+          currentY + Math.sin(Math.atan2(currentY - rect.height/2, currentX - rect.width/2)) * 35,
+          10
+        );
+      }
+
+      // Toggle sparkle style
+      function toggleStyle() {
+        styleIndex = (styleIndex + 1) % styles.length;
+        const style = styles[styleIndex];
+        modeBtn.textContent = `🎨 ${style.icon} ${style.name}`;
+        wandSparkle.textContent = style.icon;
+        wandStatus.textContent = `✨ Style: ${style.name}`;
+        wandStatus.style.color = style.colors[0];
+        setTimeout(() => {
+          if (!isWaving) {
+            wandStatus.textContent = '🪄 Move mouse to wave the wand';
+            wandStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Clear trail
+      function clearTrail() {
+        sparkleTrail.innerHTML = '';
+        sparkleCounter = 0;
+        sparkleCount.textContent = '0';
+        wandStatus.textContent = '🧹 Trail cleared!';
+        wandStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          if (!isWaving) {
+            wandStatus.textContent = '🪄 Move mouse to wave the wand';
+          }
+        }, 1000);
+      }
+
+      // Wave button action
+      function waveAction() {
+        const rect = wandDisplay.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        // Create a figure-8 pattern
+        let step = 0;
+        const totalSteps = 40;
+        const interval = setInterval(() => {
+          if (step >= totalSteps) {
+            clearInterval(interval);
+            return;
+          }
+          const t = step / totalSteps;
+          const angle = t * Math.PI * 4;
+          const radius = 80;
+          targetX = centerX + Math.sin(angle) * radius;
+          targetY = centerY + Math.cos(angle * 0.7) * radius * 0.7;
+          step++;
+        }, 50);
+        
+        startWaving();
+        setTimeout(() => {
+          stopWaving();
+        }, 2500);
+      }
+
+      // Event listeners
+      wandDisplay.addEventListener('mousemove', handleMouseMove);
+      wandDisplay.addEventListener('mouseenter', handleMouseEnter);
+      wandDisplay.addEventListener('mouseleave', handleMouseLeave);
+
+      if (waveBtn) {
+        waveBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          waveAction();
+        });
+      }
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleStyle();
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearTrail();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          waveAction();
+        } else if (key === 's' || key === 'S') {
+          e.preventDefault();
+          toggleStyle();
+        } else if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearTrail();
+        }
+      });
+
+      // Initialize
+      const rect = wandDisplay.getBoundingClientRect();
+      currentX = rect.width / 2;
+      currentY = rect.height / 2;
+      targetX = currentX;
+      targetY = currentY;
+      wand.style.left = currentX + 'px';
+      wand.style.top = currentY + 'px';
+      
+      // Create initial sparkles
+      createSparkleBurst(currentX, currentY, 5);
+      
+      console.log('🪄 Wand Effect ready · shortcuts: [Space] Wave, [S] Style, [C] Clear');
+    })();
+  </script>
+</body>
+</html>

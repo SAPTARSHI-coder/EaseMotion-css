@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bug Fix #45911 — pruneClasses nested CSS demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Bug Fix #45911 — <code>pruneClasses</code> nested CSS</h1>
+    <p>Demonstrates that <code>.ease-fade-in</code> (with a nested <code>&amp;:hover</code> block) and <code>.ease-fade-in-slow</code> both survive tree-shaking when both classes are used.</p>
+  </header>
+
+  <main>
+    <section class="cards">
+
+      <!-- Both elements use ease-* classes that were previously dropped by pruneClasses -->
+      <div class="card ease-fade-in">
+        <h2>ease-fade-in</h2>
+        <p>This card uses <code>.ease-fade-in</code>, which contains a nested <code>&amp;:hover</code> rule. Before the fix, the nested brace caused the regex to break and silently drop the next class.</p>
+        <span class="badge preserved">✓ Preserved by pruneClasses</span>
+      </div>
+
+      <div class="card ease-fade-in-slow">
+        <h2>ease-fade-in-slow</h2>
+        <p>This card uses <code>.ease-fade-in-slow</code>. Before the fix, this class was silently dropped from the pruned CSS output — even though it was listed in <code>usedClasses</code>.</p>
+        <span class="badge fixed">✓ No longer dropped (issue fixed)</span>
+      </div>
+
+    </section>
+
+    <section class="explanation">
+      <h2>What was the bug?</h2>
+      <pre><code>/* This CSS caused pruneClasses to fail */
+.ease-fade-in {
+  animation: ease-kf-fade-in 0.3s ease-out;
+  &amp;:hover { animation-play-state: paused; }  /* ← nested braces */
+}
+
+/* This rule was silently dropped from output */
+.ease-fade-in-slow {
+  animation: ease-kf-fade-in 0.6s ease-out;
+}</code></pre>
+
+      <h2>Root cause</h2>
+      <p>The <code>pruneClasses</code> function in <code>engine/optimizer.js</code> used the regex pattern <code>[^{}]*</code> to match a rule body. This pattern cannot handle nested braces — it stops at the first inner closing <code>}</code>, leaving the cursor at the wrong position in the CSS string and causing the next rule to be skipped entirely.</p>
+
+      <h2>The fix</h2>
+      <p>Replaced the naive regex with a brace-counting parser that walks forward character by character, incrementing <code>depth</code> on <code>{</code> and decrementing on <code>}</code>. The rule body ends only when <code>depth</code> returns to zero — correctly handling any level of nesting.</p>
+    </section>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tornado Spin · Tornado Forms and Spins</title>
+    <meta name="description" content="Interactive tornado formation with spinning debris, funnel cloud, and atmospheric storm effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌪️ TORNADO SPIN</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="tornadoCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="spin-btn" id="spinBtn">🌪️ SPIN</button>
+                <button class="stop-btn" id="stopBtn">⏹️ STOP</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Debris</label>
+                <input type="range" id="debrisSlider" min="20" max="80" value="40">
+                <span id="debrisLabel">40</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌪️ TORNADO SPIN</span>
+            <small>form · spin · debris</small>
+        </div>
+        <div class="hint">
+            <span>🌪️ click to form and spin the tornado</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('tornadoCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const spinBtn = document.getElementById('spinBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const debrisSlider = document.getElementById('debrisSlider');
+            const debrisLabel = document.getElementById('debrisLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let debrisCount = 40;
+            let time = 0;
+            let tornadoAngle = 0;
+            let tornadoHeight = 0;
+            let targetHeight = 0;
+            let isSpinning = false;
+            let debris = [];
+            let spinCount = 0;
+
+            // ---- Debris Class ----
+            class Debris {
+                constructor() {
+                    this.x = 300 + (Math.random() - 0.5) * 200;
+                    this.y = 300 + Math.random() * 100;
+                    this.size = 3 + Math.random() * 6;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.radius = 30 + Math.random() * 80;
+                    this.speed = 0.5 + Math.random() * 1.5;
+                    this.height = 0;
+                    this.maxHeight = 50 + Math.random() * 150;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.color = `hsl(${30 + Math.random() * 20}, 20%, ${30 + Math.random() * 30}%)`;
+                    this.type = Math.random() > 0.7 ? 'rect' : 'circle';
+                    this.sizeW = this.size * (0.5 + Math.random() * 0.5);
+                    this.sizeH = this.size * (0.5 + Math.random() * 0.5);
+                }
+
+                update(dt) {
+                    this.angle += this.speed * dt * 0.02;
+                    this.radius += Math.sin(this.phase + time * 0.01) * 0.1;
+                    
+                    // Height oscillation
+                    this.height += (this.maxHeight - this.height) * 0.01;
+                    
+                    // Position
+                    const r = this.radius * (1 - this.height / 400);
+                    const x = 300 + Math.cos(this.angle + this.phase) * r;
+                    const y = 350 - this.height - Math.sin(this.angle * 0.5 + this.phase) * 20;
+                    this.x = x;
+                    this.y = y;
+                    
+                    // Spin with tornado
+                    this.phase += 0.01 * dt;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.6 + this.height / 400 * 0.3;
+                    
+                    if (this.type === 'circle') {
+                        ctx.fillStyle = this.color;
+                        ctx.shadowColor = 'rgba(100, 80, 60, 0.05)';
+                        ctx.shadowBlur = 5;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size * (0.5 + this.height / 400 * 0.5), 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        ctx.fillStyle = this.color;
+                        ctx.shadowColor = 'rgba(100, 80, 60, 0.05)';
+                        ctx.shadowBlur = 5;
+                        ctx.fillRect(
+                            this.x - this.sizeW/2,
+                            this.y - this.sizeH/2,
+                            this.sizeW,
+                            this.sizeH
+                        );
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Debris ----
+            function createDebris() {
+                debris = [];
+                for (let i = 0; i < debrisCount; i++) {
+                    debris.push(new Debris());
+                }
+            }
+
+            // ---- Draw Tornado ----
+            function drawTornado(ctx) {
+                const height = tornadoHeight;
+                const angle = tornadoAngle;
+                
+                if (height < 5) return;
+                
+                ctx.save();
+                
+                // Tornado funnel
+                const segments = 30;
+                const maxRadius = 120;
+                const minRadius = 10;
+                
+                for (let i = 0; i < segments; i++) {
+                    const t = i / segments;
+                    const y = 350 - t * height;
+                    const radius = maxRadius * (1 - t) + minRadius * t;
+                    const wave = Math.sin(t * 20 + angle * 0.5) * 5;
+                    const wave2 = Math.cos(t * 15 + angle * 0.3) * 3;
+                    
+                    const r = radius + wave + wave2;
+                    const alpha = 0.05 + t * 0.15;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Funnel gradient
+                    const grad = ctx.createRadialGradient(300, y, 0, 300, y, r);
+                    grad.addColorStop(0, `rgba(200, 200, 200, ${0.05 * (1 - t)})`);
+                    grad.addColorStop(0.3, `rgba(150, 150, 150, ${0.1 * (1 - t)})`);
+                    grad.addColorStop(0.7, `rgba(100, 100, 100, ${0.15 * (1 - t)})`);
+                    grad.addColorStop(1, `rgba(80, 80, 80, ${0.05 * (1 - t)})`);
+                    
+                    ctx.fillStyle = grad;
+                    ctx.shadowColor = 'rgba(100, 100, 100, 0.02)';
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(300, y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // Funnel lines (swirl effect)
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.1)';
+                ctx.lineWidth = 1;
+                for (let s = 0; s < 8; s++) {
+                    const startAngle = (s / 8) * Math.PI * 2 + angle * 0.2;
+                    ctx.beginPath();
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const y = 350 - t * height;
+                        const radius = maxRadius * (1 - t) + minRadius * t;
+                        const wave = Math.sin(t * 20 + angle * 0.5 + s) * 5;
+                        const r = radius + wave;
+                        const a = startAngle + t * 8 + angle * 0.1;
+                        const x = 300 + Math.cos(a) * r;
+                        const yPos = y + Math.sin(a * 0.5) * 3;
+                        if (i === 0) ctx.moveTo(x, yPos);
+                        else ctx.lineTo(x, yPos);
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+                
+                // Dark core
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                ctx.fillStyle = 'rgba(50, 50, 50, 0.3)';
+                for (let i = 0; i < segments; i += 2) {
+                    const t = i / segments;
+                    const y = 350 - t * height;
+                    const radius = (maxRadius * (1 - t) + minRadius * t) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(300, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Environment ----
+            function drawEnvironment() {
+                // Sky
+                const skyGrad = ctx.createRadialGradient(300, 200, 0, 300, 200, 500);
+                skyGrad.addColorStop(0, '#1a2a3a');
+                skyGrad.addColorStop(0.3, '#0d1a2a');
+                skyGrad.addColorStop(0.6, '#0a1520');
+                skyGrad.addColorStop(0.8, '#080e18');
+                skyGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Clouds
+                for (let i = 0; i < 5; i++) {
+                    const x = i * 150 + 50 + Math.sin(time * 0.005 + i) * 30;
+                    const y = 50 + Math.sin(i * 1.5) * 20;
+                    const grad = ctx.createRadialGradient(x, y, 0, x, y, 60);
+                    grad.addColorStop(0, 'rgba(100, 120, 140, 0.04)');
+                    grad.addColorStop(0.5, 'rgba(100, 120, 140, 0.02)');
+                    grad.addColorStop(1, 'rgba(100, 120, 140, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 60, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Ground
+                const groundGrad = ctx.createLinearGradient(0, H - 40, 0, H);
+                groundGrad.addColorStop(0, 'rgba(20, 30, 20, 0)');
+                groundGrad.addColorStop(0.3, 'rgba(20, 30, 20, 0.2)');
+                groundGrad.addColorStop(0.7, 'rgba(20, 30, 20, 0.4)');
+                groundGrad.addColorStop(1, 'rgba(20, 30, 20, 0.6)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 40, W, 40);
+            }
+
+            // ---- Spin Tornado ----
+            function spinTornado() {
+                if (isSpinning) return;
+                isSpinning = true;
+                targetHeight = 300 + speed * 10;
+                spinCount++;
+                createDebris();
+            }
+
+            // ---- Stop ----
+            function stopTornado() {
+                isSpinning = false;
+                targetHeight = 0;
+            }
+
+            // ---- Reset ----
+            function resetTornado() {
+                isSpinning = false;
+                targetHeight = 0;
+                tornadoHeight = 0;
+                tornadoAngle = 0;
+                debris = [];
+                spinCount = 0;
+                time = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                drawEnvironment();
+                
+                // Draw debris (behind tornado)
+                for (let d of debris) {
+                    d.draw(ctx);
+                }
+                
+                drawTornado(ctx);
+                
+                // Status
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Debris: ${debris.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isSpinning ? '🌪️ SPINNING' : '⏸️ STOPPED';
+                ctx.fillText(status, 20, H - 10);
+                
+                if (isSpinning) {
+                    ctx.fillText(`Spins: ${spinCount}`, 20, H - 30);
+                }
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                const dt = 0.02 * (speed / 5);
+                
+                // Tornado height
+                const diff = targetHeight - tornadoHeight;
+                if (Math.abs(diff) > 0.5) {
+                    tornadoHeight += diff * 0.03 * dt * 5;
+                } else {
+                    tornadoHeight = targetHeight;
+                }
+                
+                // Tornado angle
+                if (isSpinning && tornadoHeight > 10) {
+                    tornadoAngle += 0.02 * dt * 20 * (speed / 5);
+                }
+                
+                // Update debris
+                for (let d of debris) {
+                    d.update(dt);
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+                if (isSpinning) {
+                    targetHeight = 300 + speed * 10;
+                }
+            });
+            debrisSlider.addEventListener('input', function() {
+                debrisCount = parseInt(this.value);
+                debrisLabel.textContent = debrisCount;
+                if (isSpinning) {
+                    createDebris();
+                }
+            });
+
+            // ---- Event Listeners ----
+            spinBtn.addEventListener('click', spinTornado);
+            stopBtn.addEventListener('click', stopTornado);
+            resetBtn.addEventListener('click', resetTornado);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isSpinning) {
+                        spinTornado();
+                    } else {
+                        stopTornado();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetTornado();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Click on canvas to spin ----
+            canvas.addEventListener('click', function(e) {
+                if (!isSpinning) {
+                    spinTornado();
+                } else {
+                    stopTornado();
+                }
+            });
+
+            // ---- Initialize ----
+            createDebris();
+            render();
+            animate();
+
+            console.log('🌪️ Tornado Spin · Click Spin or press Space to form the tornado!');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Animated Tooltip (Cyberpunk)
+A gritty, terminal-style overlay. The tooltip utilizes jagged `steps()` animation curves for its entrance, revealing a hard-bordered container with a high-contrast magenta layout. The text inside rapidly glitches horizontally on hover to simulate data corruption.

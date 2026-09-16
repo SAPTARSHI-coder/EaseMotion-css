@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concurrent Animation Race Tests</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="container">
+    <h1>Concurrent Animation Race Tests</h1>
+
+    <p class="description">
+      Test animation behavior when multiple animation operations happen
+      at nearly the same time.
+    </p>
+
+    <div class="stage">
+      <div id="boxA" class="box box-a"></div>
+      <div id="boxB" class="box box-b"></div>
+    </div>
+
+    <div class="controls">
+      <button id="simultaneous">Start Simultaneously</button>
+      <button id="completeStart">Complete + Start</button>
+      <button id="cancelComplete">Cancel + Complete</button>
+      <button id="callbacks">Multiple Callbacks</button>
+      <button id="domUpdates">Rapid DOM Updates</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <p id="status" class="status">Status: Ready</p>
+
+    <div class="results">
+      <p>Box A events: <strong id="eventsA">0</strong></p>
+      <p>Box B events: <strong id="eventsB">0</strong></p>
+      <p>Total events: <strong id="totalEvents">0</strong></p>
+    </div>
+  </main>
+
+  <script>
+    const boxA = document.getElementById("boxA");
+    const boxB = document.getElementById("boxB");
+
+    const status = document.getElementById("status");
+    const eventsA = document.getElementById("eventsA");
+    const eventsB = document.getElementById("eventsB");
+    const totalEvents = document.getElementById("totalEvents");
+
+    let countA = 0;
+    let countB = 0;
+
+    function updateStatus(message) {
+      status.textContent = "Status: " + message;
+    }
+
+    function updateCounters() {
+      eventsA.textContent = countA;
+      eventsB.textContent = countB;
+      totalEvents.textContent = countA + countB;
+    }
+
+    function resetAnimation(element) {
+      element.classList.remove("animate");
+
+      void element.offsetWidth;
+
+      element.classList.add("animate");
+    }
+
+    function startAnimation(element) {
+      element.classList.remove("animate");
+      void element.offsetWidth;
+      element.classList.add("animate");
+    }
+
+    boxA.addEventListener("animationend", () => {
+      countA++;
+      updateCounters();
+    });
+
+    boxB.addEventListener("animationend", () => {
+      countB++;
+      updateCounters();
+    });
+
+    /*
+     * Test 1:
+     * Start two animations during the same event cycle.
+     */
+    document.getElementById("simultaneous").addEventListener(
+      "click",
+      () => {
+        startAnimation(boxA);
+        startAnimation(boxB);
+
+        updateStatus("Two animations started simultaneously");
+      }
+    );
+
+    /*
+     * Test 2:
+     * Start one animation and schedule another very close
+     * to its expected completion.
+     */
+    document.getElementById("completeStart").addEventListener(
+      "click",
+      () => {
+        startAnimation(boxA);
+
+        setTimeout(() => {
+          startAnimation(boxB);
+        }, 450);
+
+        updateStatus("Animation completion + new animation scheduled");
+      }
+    );
+
+    /*
+     * Test 3:
+     * Cancel one animation while another operation is completing.
+     */
+    document.getElementById("cancelComplete").addEventListener(
+      "click",
+      () => {
+        startAnimation(boxA);
+        startAnimation(boxB);
+
+        setTimeout(() => {
+          boxA.classList.remove("animate");
+          startAnimation(boxB);
+
+          updateStatus("Cancel + completion sequence executed");
+        }, 400);
+      }
+    );
+
+    /*
+     * Test 4:
+     * Trigger multiple animation operations in the same
+     * event loop cycle.
+     */
+    document.getElementById("callbacks").addEventListener(
+      "click",
+      () => {
+        startAnimation(boxA);
+        startAnimation(boxB);
+
+        queueMicrotask(() => {
+          startAnimation(boxA);
+        });
+
+        queueMicrotask(() => {
+          startAnimation(boxB);
+        });
+
+        updateStatus("Multiple animation callbacks triggered");
+      }
+    );
+
+    /*
+     * Test 5:
+     * Rapidly update the DOM while animations are active.
+     */
+    document.getElementById("domUpdates").addEventListener(
+      "click",
+      () => {
+        startAnimation(boxA);
+        startAnimation(boxB);
+
+        let updates = 0;
+
+        const interval = setInterval(() => {
+          const element = document.createElement("span");
+
+          element.textContent = ".";
+          element.className = "update-marker";
+
+          document.querySelector(".stage").appendChild(element);
+
+          updates++;
+
+          if (updates >= 20) {
+            clearInterval(interval);
+            updateStatus("20 rapid DOM updates completed");
+          }
+        }, 20);
+      }
+    );
+
+    /*
+     * Reset all animations and counters.
+     */
+    document.getElementById("reset").addEventListener(
+      "click",
+      () => {
+        boxA.classList.remove("animate");
+        boxB.classList.remove("animate");
+
+        document
+          .querySelectorAll(".update-marker")
+          .forEach((element) => element.remove());
+
+        countA = 0;
+        countB = 0;
+
+        updateCounters();
+        updateStatus("Reset");
+      }
+    );
+  </script>
+</body>
+</html>

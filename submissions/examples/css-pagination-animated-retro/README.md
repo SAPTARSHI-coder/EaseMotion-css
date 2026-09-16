@@ -1,0 +1,2 @@
+# Animated Pagination (Retro)
+A tactile, chunky pagination block. Modeled after old mechanical keyboards, the buttons utilize hard borders and solid drop shadows. Selecting a page physically depresses the button (`transform: translate(3px, 3px)` and removing the shadow) to indicate active state.

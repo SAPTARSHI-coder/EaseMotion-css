@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crystal Lattice – Crystalline Structure Grows Outward</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>💎 Crystal Lattice</h1>
+    <p class="subtitle">Crystalline structure grows outward</p>
+
+    <div class="lattice-container">
+      <div class="lattice-stage" id="latticeStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="lattice-status" id="latticeStatus">💎 Growing</span>
+          <span class="crystal-count" id="crystalCount">✦ 0 crystals</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn grow" id="growBtn">🌱 Grow</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Growth Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Crystal Size</span>
+      <input type="range" id="sizeSlider" min="10" max="50" value="25" />
+      <span class="slider-value" id="sizeValue">25px</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Density</span>
+      <input type="range" id="densitySlider" min="10" max="100" value="60" />
+      <span class="slider-value" id="densityValue">60%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">💎 Crystal lattice growing outward</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>G</kbd> Grow · <kbd>C</kbd> Clear · <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const latticeStatus = document.getElementById('latticeStatus');
+      const crystalCount = document.getElementById('crystalCount');
+      const growBtn = document.getElementById('growBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const densitySlider = document.getElementById('densitySlider');
+      const densityValue = document.getElementById('densityValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let crystals = [];
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let growing = true;
+      let growthPhase = 0;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Crystal class -----
+      class Crystal {
+        constructor(x, y, size, hue) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.hue = hue;
+          this.opacity = 0;
+          this.growth = 0;
+          this.growthSpeed = 0.02 + Math.random() * 0.04;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+          this.points = this.generatePoints();
+          this.shimmer = Math.random() * Math.PI * 2;
+          this.shimmerSpeed = 0.02 + Math.random() * 0.03;
+          this.children = [];
+          this.hasChildren = false;
+          this.childChance = 0.3;
+          this.maxChildren = 4 + Math.floor(Math.random() * 4);
+          this.generation = 0;
+          this.delay = Math.random() * 2;
+        }
+
+        generatePoints() {
+          const numPoints = 4 + Math.floor(Math.random() * 4);
+          const pts = [];
+          const s = this.size;
+          for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+            const r = s * (0.5 + Math.random() * 0.5);
+            pts.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
+          }
+          return pts;
+        }
+
+        update(cx, cy, speedMult) {
+          // Grow
+          this.delay -= 0.01 * speedMult;
+          if (this.delay <= 0) {
+            this.growth += this.growthSpeed * speedMult;
+          }
+          this.opacity = Math.min(1, this.growth * 2);
+
+          // Shimmer
+          this.shimmer += this.shimmerSpeed * speedMult;
+          this.rotation += this.rotationSpeed * speedMult;
+
+          // Check for children
+          if (!this.hasChildren && this.growth > 0.5 && this.generation < 3) {
+            this.hasChildren = true;
+            const numChildren = 1 + Math.floor(Math.random() * this.maxChildren * 0.5);
+            for (let i = 0; i < numChildren; i++) {
+              if (Math.random() < this.childChance) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = this.size * (0.5 + Math.random() * 0.5);
+                const childX = this.x + Math.cos(angle) * dist;
+                const childY = this.y + Math.sin(angle) * dist;
+                const childSize = this.size * (0.4 + Math.random() * 0.3);
+                const childHue = this.hue + (Math.random() - 0.5) * 30;
+                const child = new Crystal(childX, childY, childSize, childHue);
+                child.generation = this.generation + 1;
+                child.delay = 0.5 + Math.random() * 1;
+                child.childChance = 0.2 - this.generation * 0.05;
+                child.growthSpeed = 0.01 + Math.random() * 0.03;
+                return child;
+              }
+            }
+          }
+
+          return null;
+        }
+
+        draw(ctx, isGrowing) {
+          if (this.opacity < 0.01) return;
+
+          const s = this.size * this.growth;
+          const alpha = this.opacity * (0.6 + 0.4 * (0.5 + 0.5 * Math.sin(this.shimmer)));
+
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          ctx.globalAlpha = alpha;
+
+          // Glow
+          const glowSize = s * 3;
+          const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+          const glowAlpha = 0.05 + 0.1 * (0.5 + 0.5 * Math.sin(this.shimmer));
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 80%, ${glowAlpha})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Crystal body
+          ctx.shadowColor = `hsla(${this.hue}, 100%, 60%, ${0.1 * alpha})`;
+          ctx.shadowBlur = 15;
+
+          ctx.beginPath();
+          const pts = this.points;
+          for (let i = 0; i < pts.length; i++) {
+            const p = pts[i];
+            const px = p.x * this.growth;
+            const py = p.y * this.growth;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(-s, -s, s, s);
+          const lightness = 50 + 30 * (0.5 + 0.5 * Math.sin(this.shimmer));
+          grad.addColorStop(0, `hsla(${this.hue + 20}, 80%, ${lightness + 20}%, 0.9)`);
+          grad.addColorStop(0.5, `hsla(${this.hue}, 70%, ${lightness}%, 0.8)`);
+          grad.addColorStop(1, `hsla(${this.hue - 20}, 60%, ${lightness - 20}%, 0.6)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.shadowBlur = 0;
+
+          // Edges
+          ctx.strokeStyle = `hsla(${this.hue + 30}, 80%, 80%, ${0.1 * alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+
+          // Inner highlight
+          if (s > 5) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.05 + 0.1 * (0.5 + 0.5 * Math.sin(this.shimmer))})`;
+            ctx.beginPath();
+            ctx.arc(-s * 0.15, -s * 0.2, s * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sparkle
+            if (this.growth > 0.8) {
+              const sparkle = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(this.shimmer * 2));
+              ctx.fillStyle = `rgba(255, 255, 255, ${0.1 * sparkle})`;
+              ctx.beginPath();
+              for (let i = 0; i < 4; i++) {
+                const angle = i * Math.PI / 2 + this.rotation;
+                const r = s * 0.2 * sparkle;
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+              }
+              ctx.stroke();
+            }
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // ----- Generate initial crystals -----
+      function generateInitialCrystals() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const density = parseInt(densitySlider.value) / 100;
+        const size = parseInt(sizeSlider.value);
+        const hue = parseInt(colorSlider.value);
+        const count = Math.floor(3 + density * 8);
+
+        crystals = [];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 20 + Math.random() * 40;
+          const x = cx + Math.cos(angle) * radius;
+          const y = cy + Math.sin(angle) * radius;
+          const crystalSize = size * (0.6 + Math.random() * 0.4);
+          const crystalHue = hue + (Math.random() - 0.5) * 30;
+          const crystal = new Crystal(x, y, crystalSize, crystalHue);
+          crystal.generation = 0;
+          crystal.delay = Math.random() * 0.5;
+          crystals.push(crystal);
+        }
+
+        // Add center crystal
+        const centerCrystal = new Crystal(cx, cy, size * 0.8, hue);
+        centerCrystal.generation = 0;
+        centerCrystal.delay = 0;
+        centerCrystal.childChance = 0.4;
+        crystals.push(centerCrystal);
+
+        crystalCount.textContent = `✦ ${crystals.length} crystals`;
+      }
+
+      // ----- Grow crystals -----
+      function growCrystals() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const speedMult = parseInt(speedSlider.value) / 5;
+
+        if (!isPaused && growing) {
+          const newCrystals = [];
+          crystals.forEach(c => {
+            const child = c.update(w / 2, h / 2, speedMult);
+            if (child) newCrystals.push(child);
+          });
+          crystals = crystals.concat(newCrystals);
+          crystalCount.textContent = `✦ ${crystals.length} crystals`;
+        }
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw crystals (sort by size for depth)
+        const sortedCrystals = [...crystals].sort((a, b) => a.size - b.size);
+        sortedCrystals.forEach(c => c.draw(ctx, growing));
+
+        // Update status
+        if (!isPaused && growing) {
+          latticeStatus.textContent = '💎 Growing';
+          status.textContent = '💎 Crystal lattice growing outward';
+        } else if (isPaused) {
+          latticeStatus.textContent = '⏸ Paused';
+          status.textContent = '⏸ Paused';
+        } else {
+          latticeStatus.textContent = '💎 Stopped';
+          status.textContent = '💎 Crystal growth stopped';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        growCrystals();
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Grow -----
+      function grow() {
+        growing = true;
+        latticeStatus.textContent = '💎 Growing';
+        status.textContent = '💎 Crystal lattice growing outward';
+      }
+
+      // ----- Clear -----
+      function clearCrystals() {
+        crystals = [];
+        crystalCount.textContent = '✦ 0 crystals';
+        status.textContent = '🗑️ Cleared';
+        setTimeout(() => {
+          status.textContent = '💎 Crystal lattice growing outward';
+        }, 1000);
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        latticeStatus.textContent = isPaused ? '⏸ Paused' : '💎 Growing';
+      }
+
+      // ----- Reset -----
+      function resetLattice() {
+        isPaused = false;
+        growing = true;
+        toggleBtn.textContent = '⏸ Pause';
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        sizeSlider.value = 25;
+        sizeValue.textContent = '25px';
+        densitySlider.value = 60;
+        densityValue.textContent = '60%';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        generateInitialCrystals();
+        status.textContent = '↺ Reset';
+        latticeStatus.textContent = '💎 Growing';
+        setTimeout(() => {
+          status.textContent = '💎 Crystal lattice growing outward';
+        }, 500);
+      }
+
+      // ----- Event Listeners -----
+      growBtn.addEventListener('click', grow);
+      clearBtn.addEventListener('click', clearCrystals);
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetLattice);
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + 'px';
+        // Regenerate with new size
+        generateInitialCrystals();
+      });
+
+      densitySlider.addEventListener('input', (e) => {
+        densityValue.textContent = e.target.value + '%';
+        generateInitialCrystals();
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+        generateInitialCrystals();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'g' || e.key === 'G') {
+          e.preventDefault();
+          grow();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearCrystals();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetLattice();
+        }
+      });
+
+      // Click canvas to grow
+      canvas.addEventListener('click', grow);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          generateInitialCrystals();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateInitialCrystals();
+        startAnimation();
+        status.textContent = '💎 Crystal lattice growing outward!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

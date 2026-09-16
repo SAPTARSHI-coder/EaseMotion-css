@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charcoal Smudge · smudges like charcoal drawing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="charcoal-container">
+      <div class="charcoal-display" id="charcoalDisplay">
+        <!-- Canvas for charcoal smudge -->
+        <canvas id="charcoalCanvas"></canvas>
+        
+        <!-- Tool Info -->
+        <div class="tool-info">
+          <span class="info-label">✏️ Strokes</span>
+          <span class="info-value" id="strokeCount">0</span>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="tool-btn active" data-mode="smudge" title="Smudge">✏️</button>
+          <button class="tool-btn" data-mode="draw" title="Draw">🖊️</button>
+          <button class="tool-btn" data-mode="erase" title="Erase">🧹</button>
+          <button class="tool-btn" data-mode="blend" title="Blend">🌀</button>
+          <div class="tool-divider"></div>
+          <button class="tool-btn" data-size="small" title="Small">●</button>
+          <button class="tool-btn active" data-size="medium" title="Medium">●</button>
+          <button class="tool-btn" data-size="large" title="Large">●</button>
+          <button class="tool-btn" data-size="xlarge" title="Extra Large">●</button>
+        </div>
+
+        <!-- Charcoal Text -->
+        <div class="charcoal-text">
+          <span class="text-label">✏️ Charcoal</span>
+          <span class="text-message" id="charcoalMessage">Click and drag to smudge</span>
+        </div>
+      </div>
+      
+      <div class="charcoal-status">
+        <span id="charcoalStatus">✏️ Click and drag to create charcoal smudges</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>✏️ charcoal smudge · 4 tools · 4 sizes</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('charcoalCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('charcoalDisplay');
+      const strokeCount = document.getElementById('strokeCount');
+      const charcoalStatus = document.getElementById('charcoalStatus');
+      const charcoalMessage = document.getElementById('charcoalMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const toolBtns = document.querySelectorAll('.tool-btn[data-mode]');
+      const sizeBtns = document.querySelectorAll('.tool-btn[data-size]');
+
+      // State
+      let isDrawing = false;
+      let strokeCountNum = 0;
+      let currentMode = 'smudge'; // smudge, draw, erase, blend
+      let currentSize = 'medium';
+      let lastX = 0;
+      let lastY = 0;
+      let points = [];
+      let isErasing = false;
+
+      // Size mapping
+      const sizes = {
+        small: { radius: 4, intensity: 0.3 },
+        medium: { radius: 8, intensity: 0.5 },
+        large: { radius: 14, intensity: 0.7 },
+        xlarge: { radius: 20, intensity: 0.9 }
+      };
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        // Redraw existing strokes
+        if (points.length > 0) {
+          redrawAll();
+        } else {
+          drawBackground();
+        }
+      }
+
+      // Draw background
+      function drawBackground() {
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 30, 45, 0.3)');
+        grad.addColorStop(0.5, 'rgba(20, 20, 35, 0.5)');
+        grad.addColorStop(1, 'rgba(10, 10, 20, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add subtle paper texture
+        for (let i = 0; i < 1000; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.5 + 0.5;
+          const alpha = Math.random() * 0.03;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw charcoal smudge
+      function drawCharcoal(x1, y1, x2, y2, mode, sizeKey) {
+        const size = sizes[sizeKey];
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 1) return;
+
+        const steps = Math.max(Math.floor(dist / 2), 8);
+        const radius = size.radius;
+        const intensity = size.intensity;
+
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t + (Math.random() - 0.5) * radius * 0.3;
+          const y = y1 + (y2 - y1) * t + (Math.random() - 0.5) * radius * 0.3;
+          
+          if (mode === 'erase') {
+            // Erase with soft brush
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, radius * 1.2);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 1.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,1)';
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            continue;
+          }
+
+          const alpha = (0.15 + Math.random() * 0.25) * intensity;
+          const sizeVar = radius * (0.6 + Math.random() * 0.8);
+          
+          // Create charcoal particle
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          
+          // Irregular shape for charcoal
+          const points = 6 + Math.floor(Math.random() * 6);
+          ctx.beginPath();
+          for (let j = 0; j < points; j++) {
+            const angle = (j / points) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+            const r = sizeVar * (0.6 + Math.random() * 0.4);
+            const px = x + Math.cos(angle) * r;
+            const py = y + Math.sin(angle) * r;
+            if (j === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          
+          // Charcoal color (dark gray to black with slight warmth)
+          const darkness = 0.5 + Math.random() * 0.5;
+          const r = Math.floor(30 + Math.random() * 40);
+          const g = Math.floor(25 + Math.random() * 35);
+          const b = Math.floor(20 + Math.random() * 30);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.fill();
+          
+          // Add texture dots for charcoal grain
+          if (Math.random() > 0.7) {
+            for (let k = 0; k < 3; k++) {
+              const dx = (Math.random() - 0.5) * sizeVar;
+              const dy = (Math.random() - 0.5) * sizeVar;
+              const ds = sizeVar * (0.05 + Math.random() * 0.1);
+              ctx.globalAlpha = alpha * 0.5;
+              ctx.beginPath();
+              ctx.arc(x + dx, y + dy, ds, 0, Math.PI * 2);
+              ctx.fillStyle = `rgb(${r-20},${g-20},${b-20})`;
+              ctx.fill();
+            }
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Blend existing strokes
+      function blendArea(x, y, radius) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const startX = Math.max(0, Math.floor(x - radius));
+        const endX = Math.min(w, Math.ceil(x + radius));
+        const startY = Math.max(0, Math.floor(y - radius));
+        const endY = Math.min(h, Math.ceil(y + radius));
+        
+        for (let py = startY; py < endY; py++) {
+          for (let px = startX; px < endX; px++) {
+            const dist = Math.sqrt(Math.pow(px - x, 2) + Math.pow(py - y, 2));
+            if (dist > radius) continue;
+            
+            const idx = (py * w + px) * 4;
+            const blendFactor = (1 - dist / radius) * 0.3;
+            
+            // Average with neighbors
+            let sumR = 0, sumG = 0, sumB = 0, count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = px + dx;
+                const ny = py + dy;
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                  const nIdx = (ny * w + nx) * 4;
+                  sumR += data[nIdx];
+                  sumG += data[nIdx + 1];
+                  sumB += data[nIdx + 2];
+                  count++;
+                }
+              }
+            }
+            
+            data[idx] = data[idx] * (1 - blendFactor) + (sumR / count) * blendFactor;
+            data[idx + 1] = data[idx + 1] * (1 - blendFactor) + (sumG / count) * blendFactor;
+            data[idx + 2] = data[idx + 2] * (1 - blendFactor) + (sumB / count) * blendFactor;
+          }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+      }
+
+      // Redraw all strokes
+      function redrawAll() {
+        drawBackground();
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          drawCharcoal(p1.x, p1.y, p2.x, p2.y, p1.mode, p1.size);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        points.push({
+          x: lastX,
+          y: lastY,
+          mode: currentMode,
+          size: currentSize
+        });
+        
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+        
+        const modeNames = {
+          smudge: 'Smudging',
+          draw: 'Drawing',
+          erase: 'Erasing',
+          blend: 'Blending'
+        };
+        charcoalStatus.textContent = `✏️ ${modeNames[currentMode]}...`;
+        charcoalStatus.style.color = '#94a3b8';
+        charcoalMessage.textContent = `✏️ ${modeNames[currentMode]}...`;
+        charcoalMessage.style.color = '#94a3b8';
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        if (currentMode === 'blend') {
+          const size = sizes[currentSize];
+          blendArea(x, y, size.radius * 2);
+        } else {
+          points.push({
+            x: x,
+            y: y,
+            mode: currentMode,
+            size: currentSize
+          });
+          drawCharcoal(lastX, lastY, x, y, currentMode, currentSize);
+        }
+        
+        lastX = x;
+        lastY = y;
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          charcoalStatus.textContent = '✏️ Stroke complete!';
+          charcoalStatus.style.color = '#4ade80';
+          charcoalMessage.textContent = 'Click and drag to smudge';
+          charcoalMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            charcoalStatus.textContent = '✏️ Click and drag to create charcoal smudges';
+            charcoalStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set tool
+      function setTool(mode) {
+        currentMode = mode;
+        toolBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+        const modeNames = {
+          smudge: 'Smudge',
+          draw: 'Draw',
+          erase: 'Erase',
+          blend: 'Blend'
+        };
+        charcoalStatus.textContent = `✏️ Tool: ${modeNames[mode]}`;
+        charcoalStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          charcoalStatus.textContent = '✏️ Click and drag to create charcoal smudges';
+          charcoalStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Set size
+      function setSize(size) {
+        currentSize = size;
+        sizeBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.size === size);
+        });
+        const sizeNames = {
+          small: 'Small',
+          medium: 'Medium',
+          large: 'Large',
+          xlarge: 'Extra Large'
+        };
+        charcoalStatus.textContent = `✏️ Size: ${sizeNames[size]}`;
+        charcoalStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          charcoalStatus.textContent = '✏️ Click and drag to create charcoal smudges';
+          charcoalStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        points = [];
+        strokeCountNum = 0;
+        strokeCount.textContent = '0';
+        drawBackground();
+        charcoalStatus.textContent = '🧹 Canvas cleared';
+        charcoalStatus.style.color = '#94a3b8';
+        charcoalMessage.textContent = 'Click and drag to smudge';
+        charcoalMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          charcoalStatus.textContent = '✏️ Click and drag to create charcoal smudges';
+          charcoalStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Tool buttons
+      toolBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setTool(this.dataset.mode);
+        });
+      });
+
+      // Size buttons
+      sizeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setSize(this.dataset.size);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === '1') { e.preventDefault(); setTool('smudge'); }
+        else if (key === '2') { e.preventDefault(); setTool('draw'); }
+        else if (key === '3') { e.preventDefault(); setTool('erase'); }
+        else if (key === '4') { e.preventDefault(); setTool('blend'); }
+        else if (key === 's') { e.preventDefault(); setSize('small'); }
+        else if (key === 'm') { e.preventDefault(); setSize('medium'); }
+        else if (key === 'l') { e.preventDefault(); setSize('large'); }
+        else if (key === 'x') { e.preventDefault(); setSize('xlarge'); }
+        else if (key === 'c' || key === 'C') { e.preventDefault(); clearCanvas(); }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('✏️ Charcoal Smudge ready · shortcuts: [1]Smudge [2]Draw [3]Erase [4]Blend · [s/m/l/x] Size · [C] Clear');
+    })();
+  </script>
+</body>
+</html>

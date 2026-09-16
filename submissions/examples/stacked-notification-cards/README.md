@@ -1,16 +1,17 @@
-# Stacked Notification Cards Hover Effect
+# Stacked Notification Cards
 
-A modern CSS-only notification stack that expands into individual cards on hover.
+A modern CSS-only stacked notification card animation built using HTML and CSS.
 
-## Features
+## ✨ Features
 
-- 🎨 Pure HTML & CSS
-- 🚀 Smooth hover animation
-- 📱 Responsive design
-- ✨ Layered card effect
-- 🖱️ No JavaScript required
+- Pure HTML & CSS
+- No JavaScript required
+- Smooth hover animations
+- Layered notification cards
+- Responsive design
+- Easy to customize
 
-## Folder Structure
+## 📁 Folder Structure
 
 ```
 stacked-notification-cards/
@@ -19,29 +20,33 @@ stacked-notification-cards/
 └── README.md
 ```
 
-## How to Run
+## 🚀 How It Works
 
-1. Open `demo.html` in any modern web browser.
-2. Hover over the notification stack to see the animation.
+Three notification cards are stacked with slight vertical offsets and scaling.
 
-## Customization
+When the user hovers over the stack:
 
-- Change the notification text.
-- Replace the emoji icons.
-- Modify animation duration in `transition`.
-- Change colors, shadows, and spacing.
-- Add more notification cards if desired.
+- The cards smoothly spread apart.
+- Each card becomes clearly visible.
+- Individual cards slightly enlarge on hover for better interaction.
 
-## Technologies Used
+## 💡 Use Cases
+
+- Dashboard notifications
+- Activity feeds
+- Alert panels
+- SaaS applications
+- Admin dashboards
+- Portfolio UI components
+
+## 🛠 Technologies Used
 
 - HTML5
 - CSS3
-  - Flexbox
-  - Transforms
-  - Transitions
-  - Box Shadows
-  - Media Queries
+- Flexbox
+- CSS Transforms
+- CSS Transitions
 
-## Preview
+## 📄 License
 
-The cards appear as a stacked notification group and smoothly spread apart when hovered, creating an elegant and interactive UI effect.
+This example follows the EaseMotion CSS contribution guidelines and is intended as a standalone submission inside `submissions/examples/`.

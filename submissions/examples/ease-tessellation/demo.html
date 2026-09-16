@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tessellation · Tiled Pattern Shifts and Morphs</title>
+    <meta name="description" content="Interactive tessellation with shifting and morphing geometric patterns, vibrant colors, and mesmerizing motion.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🔷 TESSELLATION</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="tessellationCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="morph-btn" id="morphBtn">🌀 MORPH</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Complexity</label>
+                <input type="range" id="complexitySlider" min="3" max="8" value="5">
+                <span id="complexityLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🔷 TESSELLATION</span>
+            <small>shift · morph · pattern</small>
+        </div>
+        <div class="hint">
+            <span>🌀 click to watch the tiled pattern shift and morph</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('tessellationCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const morphBtn = document.getElementById('morphBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const complexitySlider = document.getElementById('complexitySlider');
+            const complexityLabel = document.getElementById('complexityLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let complexity = 5;
+            let time = 0;
+            let morphProgress = 0;
+            let isMorphing = false;
+            let isMorphed = false;
+
+            // ---- Tessellation Parameters ----
+            const colors = [
+                '#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1',
+                '#b026ff', '#ff6bcd', '#00d4ff', '#ff9f43',
+                '#2ecc71', '#e74c3c', '#3498db', '#f1c40f'
+            ];
+
+            // ---- Generate Tessellation ----
+            function generateTessellation(phase) {
+                const shapes = [];
+                const rows = 8;
+                const cols = 10;
+                const cellW = W / cols;
+                const cellH = H / rows;
+                const baseSize = Math.min(cellW, cellH) * 0.4;
+                
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const x = c * cellW + cellW / 2;
+                        const y = r * cellH + cellH / 2;
+                        
+                        // Offset for hexagonal tessellation
+                        const offsetX = (r % 2) * cellW * 0.5;
+                        const px = x + offsetX;
+                        
+                        // Morph parameters
+                        const morph = phase || 0;
+                        const scale = 0.7 + Math.sin(morph * 0.5 + r * 0.3 + c * 0.4) * 0.3;
+                        const rotation = Math.sin(morph * 0.3 + r * 0.2 + c * 0.3) * 0.3;
+                        const skew = Math.sin(morph * 0.4 + r * 0.25 + c * 0.35) * 0.2;
+                        
+                        // Color based on position and morph
+                        const hue = (r * 30 + c * 20 + morph * 50) % 360;
+                        const sat = 70 + Math.sin(morph * 0.2 + r + c) * 20;
+                        const light = 50 + Math.sin(morph * 0.3 + r * 0.5 + c * 0.7) * 20;
+                        const color = `hsl(${hue}, ${sat}%, ${light}%)`;
+                        
+                        // Shape type based on position
+                        const shapeType = (r + c) % 3;
+                        
+                        shapes.push({
+                            x: px,
+                            y: y,
+                            size: baseSize * scale,
+                            rotation: rotation,
+                            skew: skew,
+                            color: color,
+                            shapeType: shapeType,
+                            row: r,
+                            col: c,
+                            phase: (r * 0.3 + c * 0.4 + morph * 0.1) % (Math.PI * 2)
+                        });
+                    }
+                }
+                return shapes;
+            }
+
+            let shapes = [];
+            let targetShapes = [];
+
+            // ---- Initialize ----
+            function initTessellation() {
+                shapes = generateTessellation(0);
+                targetShapes = generateTessellation(Math.random() * Math.PI * 2);
+                morphProgress = 0;
+                isMorphing = false;
+                isMorphed = false;
+            }
+
+            // ---- Morph ----
+            function morphTessellation() {
+                if (isMorphing) return;
+                targetShapes = generateTessellation(Math.random() * Math.PI * 2);
+                isMorphing = true;
+                isMorphed = false;
+                morphProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetTessellation() {
+                isMorphing = false;
+                isMorphed = false;
+                morphProgress = 0;
+                shapes = generateTessellation(0);
+                targetShapes = generateTessellation(Math.random() * Math.PI * 2);
+                render();
+            }
+
+            // ---- Update Morph ----
+            function updateMorph() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isMorphing && morphProgress < 1) {
+                    morphProgress += 0.004 * (speed / 5);
+                    if (morphProgress > 1) {
+                        morphProgress = 1;
+                        isMorphing = false;
+                        isMorphed = true;
+                        // Regenerate target for next morph
+                        targetShapes = generateTessellation(Math.random() * Math.PI * 2);
+                    }
+                    
+                    // Interpolate shapes
+                    const ease = 1 - Math.pow(1 - morphProgress, 3);
+                    shapes = shapes.map((s, i) => {
+                        const t = targetShapes[i];
+                        if (!t) return s;
+                        return {
+                            x: s.x + (t.x - s.x) * ease,
+                            y: s.y + (t.y - s.y) * ease,
+                            size: s.size + (t.size - s.size) * ease,
+                            rotation: s.rotation + (t.rotation - s.rotation) * ease,
+                            skew: s.skew + (t.skew - s.skew) * ease,
+                            color: t.color,
+                            shapeType: t.shapeType,
+                            row: s.row,
+                            col: s.col,
+                            phase: s.phase + (t.phase - s.phase) * ease
+                        };
+                    });
+                }
+            }
+
+            // ---- Draw Shape ----
+            function drawShape(ctx, shape) {
+                const x = shape.x;
+                const y = shape.y;
+                const size = shape.size;
+                const rot = shape.rotation + time * 0.02;
+                const skew = shape.skew;
+                const type = shape.shapeType;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(1 + skew, 1 - skew);
+                
+                // Glow
+                ctx.shadowColor = shape.color;
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = shape.color;
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 0.5;
+                
+                // Draw different shapes
+                switch(type) {
+                    case 0: // Hexagon
+                        ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                            const px = Math.cos(angle) * size;
+                            const py = Math.sin(angle) * size;
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                        
+                    case 1: // Diamond
+                        ctx.beginPath();
+                        ctx.moveTo(0, -size);
+                        ctx.lineTo(size * 0.7, 0);
+                        ctx.lineTo(0, size);
+                        ctx.lineTo(-size * 0.7, 0);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                        
+                    case 2: // Triangle
+                        ctx.beginPath();
+                        for (let i = 0; i < 3; i++) {
+                            const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+                            const px = Math.cos(angle) * size * 1.1;
+                            const py = Math.sin(angle) * size * 1.1;
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                }
+                
+                // Inner detail
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.15;
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                const innerSize = size * 0.3;
+                ctx.beginPath();
+                ctx.arc(0, 0, innerSize, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw shapes
+                for (let s of shapes) {
+                    drawShape(ctx, s);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Shapes: ${shapes.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isMorphed ? '🌀 MORPHED' : 
+                              isMorphing ? '🔄 MORPHING...' : 
+                              '🔷 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateMorph();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            complexitySlider.addEventListener('input', function() {
+                complexity = parseInt(this.value);
+                complexityLabel.textContent = complexity;
+                initTessellation();
+                render();
+            });
+
+            // ---- Event Listeners ----
+            morphBtn.addEventListener('click', morphTessellation);
+            resetBtn.addEventListener('click', resetTessellation);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    morphTessellation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetTessellation();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initTessellation();
+            render();
+            animate();
+
+            console.log('🔷 Tessellation · Click Morph or press Space to shift and morph the pattern!');
+        })();
+    </script>
+</body>
+</html>

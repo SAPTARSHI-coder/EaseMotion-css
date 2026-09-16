@@ -1,0 +1,2 @@
+# Dynamic Loader (Gradient)
+A vibrant, continuous loading ring. It utilizes a `conic-gradient` spun via an `@keyframes` rotation, relying on advanced CSS `mask-composite` techniques to hollow out the center. A blurred `::before` pseudo-element sits beneath it to project an ambient, rotating glow.

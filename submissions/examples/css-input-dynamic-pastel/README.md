@@ -1,0 +1,2 @@
+# Dynamic Input Field (Pastel)
+A soft, playful floating-label text input. It utilizes the `:placeholder-shown` hack to detect when the field is populated, animating the label upwards and shrinking it. When focused, an absolute-positioned multi-color pastel gradient border scales outward (`scaleX(1)`) from the center.

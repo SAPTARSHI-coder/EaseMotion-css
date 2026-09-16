@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brush Stroke · Dynamic Brush Stroke on Canvas</title>
+    <meta name="description" content="Interactive dynamic brush stroke painting tool with realistic brush effects, color blending, and texture.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 BRUSH STROKE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="brushCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#ff6b6b">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="2" max="40" value="12">
+                <span id="sizeLabel">12</span>
+            </div>
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 BRUSH STROKE</span>
+            <small>dynamic · fluid · expressive</small>
+        </div>
+        <div class="hint">
+            <span>🖌️ drag to paint with dynamic brush strokes</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('brushCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const clearBtn = document.getElementById('clearBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentColor = '#ff6b6b';
+            let brushSize = 12;
+            
+            // ---- Stroke Particles ----
+            let strokes = [];
+            let activeStroke = null;
+
+            // ---- Brush Stroke Class ----
+            class BrushStroke {
+                constructor(x, y, color, size) {
+                    this.points = [{ x, y }];
+                    this.color = color;
+                    this.size = size;
+                    this.time = 0;
+                    this.opacity = 1;
+                    this.pressure = 0.5 + Math.random() * 0.5;
+                }
+
+                addPoint(x, y) {
+                    this.points.push({ x, y });
+                }
+
+                draw(ctx) {
+                    if (this.points.length < 2) return;
+                    
+                    const points = this.points;
+                    const color = this.color;
+                    const baseSize = this.size;
+                    
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i + 1];
+                        const t = i / (points.length - 1);
+                        
+                        // Dynamic size variation
+                        const sizeVar = 0.6 + Math.sin(t * Math.PI * 3 + this.time) * 0.4;
+                        const size = baseSize * (0.7 + t * 0.3) * sizeVar * this.pressure;
+                        
+                        // Color variation
+                        const hueShift = Math.sin(t * Math.PI * 2 + this.time * 0.5) * 10;
+                        const lightShift = Math.sin(t * Math.PI * 1.5 + this.time * 0.3) * 15;
+                        
+                        // Create brush texture
+                        const steps = 8;
+                        for (let s = 0; s < steps; s++) {
+                            const spread = (s / steps - 0.5) * size * 0.4;
+                            const spread2 = (s / steps - 0.5) * size * 0.2;
+                            const x = p1.x + (p2.x - p1.x) * (s / steps) + spread * 0.3;
+                            const y = p1.y + (p2.y - p1.y) * (s / steps) + spread2 * 0.3;
+                            const dotSize = size * (0.3 + Math.sin(s * 1.5 + t * 2 + this.time) * 0.2);
+                            
+                            // Color with slight variation
+                            const c = this.adjustColor(color, hueShift * (s / steps), lightShift * (s / steps));
+                            ctx.fillStyle = c;
+                            ctx.shadowColor = 'rgba(0,0,0,0)';
+                            ctx.shadowBlur = 0;
+                            ctx.globalAlpha = this.opacity * (0.5 + t * 0.5) * (0.6 + Math.sin(s + t * 3) * 0.2);
+                            
+                            ctx.beginPath();
+                            ctx.arc(x, y, dotSize * 0.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+
+                adjustColor(color, hueShift, lightShift) {
+                    // Parse color and adjust HSL
+                    const temp = document.createElement('div');
+                    temp.style.color = color;
+                    document.body.appendChild(temp);
+                    const computed = getComputedStyle(temp).color;
+                    document.body.removeChild(temp);
+                    
+                    const rgb = computed.match(/\d+/g);
+                    if (!rgb) return color;
+                    
+                    const r = parseInt(rgb[0]);
+                    const g = parseInt(rgb[1]);
+                    const b = parseInt(rgb[2]);
+                    
+                    // Convert to HSL
+                    const max = Math.max(r, g, b) / 255;
+                    const min = Math.min(r, g, b) / 255;
+                    let h, s, l = (max + min) / 2;
+                    
+                    if (max === min) {
+                        h = s = 0;
+                    } else {
+                        const d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) {
+                            case r / 255: h = ((g - b) / 255 / d + (g < b ? 6 : 0)) / 6; break;
+                            case g / 255: h = ((b - r) / 255 / d + 2) / 6; break;
+                            case b / 255: h = ((r - g) / 255 / d + 4) / 6; break;
+                        }
+                    }
+                    
+                    h = (h * 360 + hueShift) % 360;
+                    s = Math.max(0, Math.min(1, s + 0.1));
+                    l = Math.max(0, Math.min(1, l + lightShift / 100));
+                    
+                    return `hsl(${h}, ${s * 100}%, ${l * 100}%)`;
+                }
+
+                update() {
+                    this.time += 0.02;
+                }
+            }
+
+            // ---- Drawing functions ----
+            function startDrawing(x, y) {
+                isDrawing = true;
+                lastX = x;
+                lastY = y;
+                activeStroke = new BrushStroke(x, y, currentColor, brushSize);
+                strokes.push(activeStroke);
+            }
+
+            function draw(x, y) {
+                if (!isDrawing || !activeStroke) return;
+                
+                // Add point with some randomness for organic feel
+                const dist = Math.sqrt((x - lastX) ** 2 + (y - lastY) ** 2);
+                if (dist > 1) {
+                    activeStroke.addPoint(x, y);
+                    lastX = x;
+                    lastY = y;
+                }
+            }
+
+            function endDrawing() {
+                isDrawing = false;
+                activeStroke = null;
+            }
+
+            // ---- Render all strokes ----
+            function renderStrokes() {
+                // Clear canvas with slight transparency for trail effect
+                ctx.clearRect(0, 0, W, H);
+                
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#1a1a2e');
+                grad.addColorStop(0.5, '#0d0d1a');
+                grad.addColorStop(1, '#050508');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Subtle grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw all strokes
+                for (let stroke of strokes) {
+                    stroke.draw(ctx);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Update active stroke
+                if (activeStroke) {
+                    activeStroke.update();
+                }
+                
+                renderStrokes();
+                
+                // Ambient particles
+                for (let i = 0; i < 6; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 20) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 2) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const alpha = 0.02 + Math.sin(time * 0.015 + i * 1.5) * 0.015;
+                    ctx.fillStyle = `rgba(200, 200, 255, ${alpha})`;
+                    ctx.shadowColor = `rgba(200, 200, 255, ${alpha * 0.3})`;
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                startDrawing(pos.x, pos.y);
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                draw(pos.x, pos.y);
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                endDrawing();
+            }
+
+            // ---- Clear ----
+            function clearCanvas() {
+                strokes = [];
+                activeStroke = null;
+                renderStrokes();
+            }
+
+            // ---- Reset ----
+            function resetCanvas() {
+                clearCanvas();
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Color Control ----
+            colorPicker.addEventListener('input', function() {
+                currentColor = this.value;
+            });
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                brushSize = parseInt(this.value);
+                sizeLabel.textContent = brushSize;
+            });
+
+            // ---- Event Listeners ----
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetCanvas);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'c' || e.key === 'C') {
+                    clearCanvas();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCanvas();
+                }
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            renderStrokes();
+            animate();
+
+            console.log('🎨 Brush Stroke · Drag to paint · C to clear · Space to pause');
+        })();
+    </script>
+</body>
+</html>

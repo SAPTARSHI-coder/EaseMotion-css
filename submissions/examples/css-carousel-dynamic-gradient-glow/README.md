@@ -1,0 +1,2 @@
+# Dynamic Carousel (Gradient Glow)
+A highly visual carousel. The carousel track is surrounded by a brightly glowing, animated gradient border that rotates its hues infinitely while the content physically slides left and right.

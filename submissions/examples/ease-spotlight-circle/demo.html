@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotlight Circle · Spotlight Follows Cursor</title>
+    <meta name="description" content="Interactive spotlight circle that follows your cursor, revealing hidden content with dramatic lighting effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🔦 SPOTLIGHT CIRCLE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="spotlightCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="30" max="150" value="80">
+                <span id="sizeLabel">80</span>
+                <label>Intensity</label>
+                <input type="range" id="intensitySlider" min="1" max="10" value="5">
+                <span id="intensityLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🔦 SPOTLIGHT CIRCLE</span>
+            <small>follows · reveal · spotlight</small>
+        </div>
+        <div class="hint">
+            <span>💡 move your mouse to shine the spotlight</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('spotlightCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            let mouseX = W / 2;
+            let mouseY = H / 2;
+            let spotlightSize = 80;
+            let spotlightIntensity = 5;
+
+            // ---- Hidden Scene ----
+            function drawHiddenScene() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Subtle grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Hidden elements (mysterious shapes)
+                const elements = [
+                    { x: 100, y: 150, type: 'circle', size: 40, color: '#ff6b6b' },
+                    { x: 300, y: 100, type: 'square', size: 50, color: '#feca57' },
+                    { x: 500, y: 200, type: 'star', size: 35, color: '#48dbfb' },
+                    { x: 150, y: 350, type: 'diamond', size: 45, color: '#1dd1a1' },
+                    { x: 450, y: 400, type: 'circle', size: 30, color: '#b026ff' },
+                    { x: 250, y: 280, type: 'square', size: 40, color: '#ff6bcd' },
+                    { x: 380, y: 280, type: 'star', size: 30, color: '#00d4ff' },
+                    { x: 520, y: 100, type: 'diamond', size: 35, color: '#ff9f43' },
+                    { x: 80, y: 250, type: 'circle', size: 25, color: '#2ecc71' },
+                    { x: 550, y: 320, type: 'square', size: 30, color: '#e74c3c' }
+                ];
+                
+                // Draw hidden elements (very faint)
+                for (let el of elements) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.05;
+                    ctx.fillStyle = el.color;
+                    ctx.shadowBlur = 0;
+                    switch(el.type) {
+                        case 'circle':
+                            ctx.beginPath();
+                            ctx.arc(el.x, el.y, el.size, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                        case 'square':
+                            ctx.fillRect(el.x - el.size/2, el.y - el.size/2, el.size, el.size);
+                            break;
+                        case 'star':
+                            drawStar(ctx, el.x, el.y, el.size);
+                            break;
+                        case 'diamond':
+                            ctx.beginPath();
+                            ctx.moveTo(el.x, el.y - el.size/2);
+                            ctx.lineTo(el.x + el.size/2, el.y);
+                            ctx.lineTo(el.x, el.y + el.size/2);
+                            ctx.lineTo(el.x - el.size/2, el.y);
+                            ctx.closePath();
+                            ctx.fill();
+                            break;
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // ---- Draw Star Helper ----
+            function drawStar(ctx, cx, cy, size) {
+                const spikes = 5;
+                ctx.beginPath();
+                for (let i = 0; i < spikes * 2; i++) {
+                    const r = i % 2 === 0 ? size : size * 0.4;
+                    const angle = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+                    const x = cx + Math.cos(angle) * r;
+                    const y = cy + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // ---- Draw Spotlight ----
+            function drawSpotlight() {
+                const x = mouseX;
+                const y = mouseY;
+                const size = spotlightSize;
+                const intensity = spotlightIntensity / 10;
+                
+                // Save canvas state
+                ctx.save();
+                
+                // Clip to spotlight circle
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.clip();
+                
+                // Draw the revealed content inside the spotlight
+                // Background with gradient
+                const revealGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
+                revealGrad.addColorStop(0, `rgba(30, 50, 80, ${0.3 + intensity * 0.3})`);
+                revealGrad.addColorStop(0.5, `rgba(20, 40, 60, ${0.2 + intensity * 0.2})`);
+                revealGrad.addColorStop(1, `rgba(10, 20, 30, ${0.1 + intensity * 0.1})`);
+                ctx.fillStyle = revealGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw revealed elements (bright)
+                const elements = [
+                    { x: 100, y: 150, type: 'circle', size: 40, color: '#ff6b6b' },
+                    { x: 300, y: 100, type: 'square', size: 50, color: '#feca57' },
+                    { x: 500, y: 200, type: 'star', size: 35, color: '#48dbfb' },
+                    { x: 150, y: 350, type: 'diamond', size: 45, color: '#1dd1a1' },
+                    { x: 450, y: 400, type: 'circle', size: 30, color: '#b026ff' },
+                    { x: 250, y: 280, type: 'square', size: 40, color: '#ff6bcd' },
+                    { x: 380, y: 280, type: 'star', size: 30, color: '#00d4ff' },
+                    { x: 520, y: 100, type: 'diamond', size: 35, color: '#ff9f43' },
+                    { x: 80, y: 250, type: 'circle', size: 25, color: '#2ecc71' },
+                    { x: 550, y: 320, type: 'square', size: 30, color: '#e74c3c' }
+                ];
+                
+                for (let el of elements) {
+                    // Check if element is inside spotlight
+                    const dx = el.x - x;
+                    const dy = el.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < size) {
+                        const alpha = 0.4 + (1 - dist / size) * 0.4;
+                        ctx.save();
+                        ctx.globalAlpha = alpha * (0.5 + intensity * 0.5);
+                        ctx.shadowColor = el.color;
+                        ctx.shadowBlur = 20 * (0.5 + intensity * 0.5);
+                        ctx.fillStyle = el.color;
+                        switch(el.type) {
+                            case 'circle':
+                                ctx.beginPath();
+                                ctx.arc(el.x, el.y, el.size, 0, Math.PI * 2);
+                                ctx.fill();
+                                break;
+                            case 'square':
+                                ctx.fillRect(el.x - el.size/2, el.y - el.size/2, el.size, el.size);
+                                break;
+                            case 'star':
+                                drawStar(ctx, el.x, el.y, el.size);
+                                break;
+                            case 'diamond':
+                                ctx.beginPath();
+                                ctx.moveTo(el.x, el.y - el.size/2);
+                                ctx.lineTo(el.x + el.size/2, el.y);
+                                ctx.lineTo(el.x, el.y + el.size/2);
+                                ctx.lineTo(el.x - el.size/2, el.y);
+                                ctx.closePath();
+                                ctx.fill();
+                                break;
+                        }
+                        ctx.restore();
+                    }
+                }
+                
+                // Spotlight glow edge
+                ctx.restore();
+                
+                // Draw spotlight glow (outer)
+                const glowGrad = ctx.createRadialGradient(x, y, size * 0.5, x, y, size * 1.5);
+                const alpha = 0.05 + intensity * 0.1;
+                glowGrad.addColorStop(0, `rgba(255, 220, 150, ${alpha * 0.5})`);
+                glowGrad.addColorStop(0.3, `rgba(255, 200, 100, ${alpha * 0.3})`);
+                glowGrad.addColorStop(0.7, `rgba(255, 200, 100, ${alpha * 0.1})`);
+                glowGrad.addColorStop(1, `rgba(255, 200, 100, 0)`);
+                ctx.fillStyle = glowGrad;
+                ctx.shadowColor = 'rgba(255, 200, 100, 0.05)';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(x, y, size * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Spotlight beam effect
+                ctx.shadowBlur = 0;
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + time * 0.005;
+                    const dist = size * 0.8;
+                    const sx = x + Math.cos(angle) * dist;
+                    const sy = y + Math.sin(angle) * dist;
+                    const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 0.15);
+                    grad.addColorStop(0, `rgba(255, 220, 150, ${0.02 * intensity})`);
+                    grad.addColorStop(1, `rgba(255, 220, 150, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                drawHiddenScene();
+                drawSpotlight();
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Size: ${spotlightSize}px`, W - 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                mouseX = (clientX - rect.left) * scaleX;
+                mouseY = (clientY - rect.top) * scaleY;
+                
+                // Clamp
+                mouseX = Math.min(W - 5, Math.max(5, mouseX));
+                mouseY = Math.min(H - 5, Math.max(5, mouseY));
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Reset ----
+            function resetSpotlight() {
+                mouseX = W / 2;
+                mouseY = H / 2;
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            sizeSlider.addEventListener('input', function() {
+                spotlightSize = parseInt(this.value);
+                sizeLabel.textContent = spotlightSize;
+            });
+            intensitySlider.addEventListener('input', function() {
+                spotlightIntensity = parseInt(this.value);
+                intensityLabel.textContent = spotlightIntensity;
+            });
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetSpotlight);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSpotlight();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🔦 Spotlight Circle · Move your mouse to shine the spotlight!');
+        })();
+    </script>
+</body>
+</html>

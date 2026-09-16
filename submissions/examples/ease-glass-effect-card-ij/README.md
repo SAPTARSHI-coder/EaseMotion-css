@@ -1,16 +1,16 @@
 # ease-glass-effect-card
 
-A smooth glassmorphism card component.
+A CSS animation component.
 
 ## Usage
-Open demo.html in a browser. Wrap your content in the card class.
+Open demo.html in a browser. Click the button to toggle the animation.
 
 ## Custom Properties
 | Property | Default | Description |
-|---|---|---|
-| --glass-bg | rgba(255, 255, 255, 0.1) | Background tint |
-| --glass-border | rgba(255, 255, 255, 0.2) | Border color |
-| --glass-blur | 10px | Blur amount |
+|----------|---------|-------------|
+| --primary | #4f46e5 | Primary color |
+| --bg | #f8fafc | Background |
+| --duration | 0.5s | Animation speed |
 
 ## Notes
-CSS handles the `backdrop-filter` for the glass look and `transition` for the smooth hover lift.
+CSS handles visual transitions. JavaScript toggles state.

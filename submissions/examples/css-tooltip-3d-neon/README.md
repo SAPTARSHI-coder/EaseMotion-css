@@ -1,0 +1,2 @@
+# 3D Tooltip (Neon)
+A bright, glowing high-tech tooltip. It utilizes CSS 3D transforms (`preserve-3d`, `rotateX`) to construct a physical cube. When hovered, the cube swings down into view along the X-axis, revealing its glowing neon front face.

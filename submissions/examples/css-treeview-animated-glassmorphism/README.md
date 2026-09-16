@@ -1,0 +1,2 @@
+# Animated Treeview (Glassmorphism)
+A stunning frosted-glass file browser. The UI relies entirely on CSS `backdrop-filter: blur(16px)` layered over a vibrant animated ambient mesh background. Expanding a folder triggers a smooth staggered `translateY` entrance for child nodes.

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundle Validation Skip Bug - EaseMotion CSS #40056</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐛 Bundle Validation Skip on Push Events</h1>
+            <p class="subtitle">Issue #40056: Stale Minified CSS Slips Through to Main</p>
+        </div>
+
+        <div class="bug-section">
+            <h2>The Problem</h2>
+            <div class="problem-box">
+                <div class="problem-scenario">
+                    <h3>❌ Current Behavior (Skips Validation)</h3>
+                    <div class="scenario-flow">
+                        <div class="flow-step">
+                            <strong>1. Push Event to main</strong>
+                            <code>git push origin main</code>
+                            <span class="label">Push event triggered</span>
+                        </div>
+                        <div class="arrow">⬇</div>
+                        <div class="flow-step">
+                            <strong>2. GitHub Actions Checks</strong>
+                            <code>GITHUB_BASE_REF = undefined</code>
+                            <span class="label">Not set on push events</span>
+                        </div>
+                        <div class="arrow">⬇</div>
+                        <div class="flow-step">
+                            <strong>3. Script Falls Back to main</strong>
+                            <code>git diff --name-only origin/main</code>
+                            <span class="label">After checkout, origin/main = current commit</span>
+                        </div>
+                        <div class="arrow">⬇</div>
+                        <div class="flow-step error">
+                            <strong>4. Diff is Empty</strong>
+                            <code class="error-code">No files changed</code>
+                            <span class="label error-label">⚠️ origin/main already = HEAD</span>
+                        </div>
+                        <div class="arrow">⬇</div>
+                        <div class="flow-step blocked">
+                            <strong>5. Validation Skipped</strong>
+                            <span class="error-message">"No core, component, or entrypoint files modified. Skipping bundle validation."</span>
+                            <span class="label critical">🔴 CRITICAL: Stale CSS Slips Through!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="impact-box">
+                    <h3>⚠️ Risk Assessment</h3>
+                    <div class="risks">
+                        <div class="risk-item critical">
+                            <strong>Stale Minified CSS</strong>
+                            <p>Outdated <code>easemotion.min.css</code> can be deployed to production without validation</p>
+                        </div>
+                        <div class="risk-item high">
+                            <strong>Silent Failure</strong>
+                            <p>No error reported — users won't know CSS is out of sync</p>
+                        </div>
+                        <div class="risk-item high">
+                            <strong>Production Impact</strong>
+                            <p>Styles may break or behave differently than intended</p>
+                        </div>
+                        <div class="risk-item medium">
+                            <strong>Automation Bypass</strong>
+                            <p>Direct pushes or automation can bypass validation entirely</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="root-cause-section">
+            <h2>Root Cause Analysis</h2>
+            <div class="root-cause-box">
+                <h3>Why Does This Happen?</h3>
+                <div class="cause-explanation">
+                    <div class="cause-item">
+                        <h4>1. Environment Variable Mismatch</h4>
+                        <p><strong>Pull Request Events:</strong> <code>GITHUB_BASE_REF</code> is set (target branch)</p>
+                        <p><strong>Push Events:</strong> <code>GITHUB_BASE_REF</code> is undefined (no "base" for direct push)</p>
+                    </div>
+
+                    <div class="cause-item">
+                        <h4>2. Fallback Strategy Problem</h4>
+                        <p>When <code>GITHUB_BASE_REF</code> is undefined, script defaults to comparing against <code>origin/main</code></p>
+                        <p>But on a push to main, <code>origin/main</code> already points to the newly pushed commit!</p>
+                    </div>
+
+                    <div class="cause-item">
+                        <h4>3. Git Diff Empty Result</h4>
+                        <code class="code-block">
+# After push to main and checkout:
+git diff --name-only origin/main  # origin/main = HEAD
+# Result: (empty)
+# Reason: Comparing HEAD against itself = no changes
+                        </code>
+                    </div>
+
+                    <div class="cause-item">
+                        <h4>4. Validation Skipped</h4>
+                        <p>Empty diff triggers "no modifications" logic, skipping all bundle validation</p>
+                        <p>Stale <code>easemotion.min.css</code> is never verified</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="solution-section">
+            <h2>The Solution</h2>
+            <div class="solution-box">
+                <h3>✅ Differentiate Between Push and Pull Request Events</h3>
+                
+                <div class="code-comparison">
+                    <div class="before">
+                        <h4>❌ Before (Fails on Push)</h4>
+                        <code class="code-block">
+// scripts/validate-bundle.mjs
+const baseRef = process.env.GITHUB_BASE_REF || 'main';
+const compareRef = 'origin/' + baseRef;
+
+// Problem: On push to main, origin/main = HEAD
+const diff = execSync(
+  `git diff --name-only ${compareRef}`
+).toString().split('\n').filter(Boolean);
+
+if (diff.length === 0) {
+  console.log('Skipping bundle validation...');
+  process.exit(0);
+}
+                        </code>
+                    </div>
+
+                    <div class="after">
+                        <h4>✅ After (Works for Push & PR)</h4>
+                        <code class="code-block">
+// scripts/validate-bundle.mjs
+const isPullRequest = !!process.env.GITHUB_BASE_REF;
+const eventName = process.env.GITHUB_EVENT_NAME;
+
+let compareRef;
+
+if (isPullRequest) {
+  // PR: Compare against target branch
+  compareRef = 'origin/' + process.env.GITHUB_BASE_REF;
+} else if (eventName === 'push') {
+  // Push: Use before/after SHAs
+  const { before, after } = JSON.parse(
+    fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
+  ).push;
+  compareRef = before;
+} else {
+  // Fallback: Compare against main
+  compareRef = 'origin/main';
+}
+
+const diff = execSync(
+  `git diff --name-only ${compareRef}`
+).toString().split('\n').filter(Boolean);
+
+if (diff.length === 0) {
+  console.log('No relevant files changed.');
+  process.exit(0);
+}
+                        </code>
+                    </div>
+                </div>
+
+                <div class="implementation-steps">
+                    <h4>Implementation Approach:</h4>
+                    <ol>
+                        <li>Detect workflow event type (<code>GITHUB_EVENT_NAME</code>)</li>
+                        <li>For <strong>pull_request</strong> events: Use <code>GITHUB_BASE_REF</code></li>
+                        <li>For <strong>push</strong> events: Extract before/after SHAs from GitHub event JSON</li>
+                        <li>For other events: Fall back to origin/main</li>
+                        <li>Compare against the appropriate reference to detect changes</li>
+                        <li>Test both workflows to ensure validation runs correctly</li>
+                    </ol>
+                </div>
+
+                <div class="solution-diagram">
+                    <h4>Workflow Comparison After Fix</h4>
+                    <div class="flow-diagram">
+                        <div class="diagram-column">
+                            <h5>Pull Request Event</h5>
+                            <div class="diagram-flow">
+                                <div class="d-step">PR opened</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step">GITHUB_BASE_REF set</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step">Compare origin/base</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step success">✅ Validates correctly</div>
+                            </div>
+                        </div>
+                        <div class="diagram-column">
+                            <h5>Push Event (After Fix)</h5>
+                            <div class="diagram-flow">
+                                <div class="d-step">Push to main</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step">GITHUB_BASE_REF undefined</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step">Use push before/after SHAs</div>
+                                <div class="d-arrow">↓</div>
+                                <div class="d-step success">✅ Validates correctly</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="steps-section">
+            <h2>Steps to Reproduce</h2>
+            <div class="steps-box">
+                <h4>Simulate Push Environment Locally</h4>
+                <code class="code-block">
+# Set GitHub Actions environment variable
+set GITHUB_ACTIONS=true
+
+# Run bundle validation script
+npm run validate:bundle
+
+# Expected (with bug): Skips validation
+# Expected (after fix): Runs validation properly
+                </code>
+
+                <h4 style="margin-top: 20px;">In GitHub Actions Workflow</h4>
+                <code class="code-block">
+# Push to main with modified easemotion.css
+git add src/easemotion.css
+git commit -m "Update core CSS"
+git push origin main
+
+# Current behavior (with bug):
+# ❌ "No core, component, or entrypoint files modified. Skipping..."
+# 🚨 No validation runs despite CSS changes!
+
+# After fix:
+# ✅ Bundle validation runs
+# ✅ easemotion.min.css is verified and up-to-date
+                </code>
+            </div>
+        </div>
+
+        <div class="technical-section">
+            <h2>Technical Details</h2>
+            <div class="details-grid">
+                <div class="detail-card">
+                    <h3>Environment Variables</h3>
+                    <p><code>GITHUB_BASE_REF</code>: Set only on pull_request events (target branch)</p>
+                    <p><code>GITHUB_EVENT_NAME</code>: Type of event (push, pull_request, etc.)</p>
+                    <p><code>GITHUB_EVENT_PATH</code>: Path to webhook payload JSON</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Push Event Payload</h3>
+                    <p><code>before</code>: Previous commit SHA (parent of push)</p>
+                    <p><code>after</code>: New commit SHA (pushed commit)</p>
+                    <p>Allows precise diff calculation for push events</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Git Diff Behavior</h3>
+                    <p>Comparing HEAD against itself = empty diff</p>
+                    <p>After push, origin/main = HEAD automatically</p>
+                    <p>Must use before SHA for accurate change detection</p>
+                </div>
+
+                <div class="detail-card">
+                    <h3>Best Practice</h3>
+                    <p>Always differentiate event types in CI/CD</p>
+                    <p>Push and PR workflows behave differently</p>
+                    <p>Adjust comparison refs based on event context</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="scenarios-section">
+            <h2>Validation Scenarios</h2>
+            <div class="scenarios-grid">
+                <div class="scenario-card valid">
+                    <h4>✅ Scenario 1: PR with CSS Changes</h4>
+                    <p><strong>Event:</strong> pull_request</p>
+                    <p><strong>Changes:</strong> Modified src/easemotion.css</p>
+                    <p><strong>Current:</strong> Validates ✓</p>
+                    <p><strong>After Fix:</strong> Validates ✓</p>
+                </div>
+
+                <div class="scenario-card broken">
+                    <h4>❌ Scenario 2: Push to Main with CSS Changes</h4>
+                    <p><strong>Event:</strong> push to main</p>
+                    <p><strong>Changes:</strong> Modified src/easemotion.css</p>
+                    <p><strong>Current:</strong> Skips (BUG!) ✗</p>
+                    <p><strong>After Fix:</strong> Validates ✓</p>
+                </div>
+
+                <div class="scenario-card broken">
+                    <h4>❌ Scenario 3: Automation Push with Stale CSS</h4>
+                    <p><strong>Event:</strong> push to main (bot automation)</p>
+                    <p><strong>Changes:</strong> easemotion.css modified but easemotion.min.css not updated</p>
+                    <p><strong>Current:</strong> Skips (BUG!) ✗</p>
+                    <p><strong>After Fix:</strong> Catches stale CSS ✓</p>
+                </div>
+
+                <div class="scenario-card valid">
+                    <h4>✅ Scenario 4: Push with No CSS Changes</h4>
+                    <p><strong>Event:</strong> push to main</p>
+                    <p><strong>Changes:</strong> Only README updated</p>
+                    <p><strong>Current:</strong> Skips ✓ (OK)</p>
+                    <p><strong>After Fix:</strong> Skips ✓ (OK)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📋 <strong>Issue:</strong> #40056</p>
+            <p>📚 <strong>Type:</strong> Documentation - CI/CD Bug Analysis & Fix Guide</p>
+            <p>🔗 <strong>Related:</strong> validate:bundle, GitHub Actions workflow, bundle validation</p>
+        </div>
+    </div>
+</body>
+</html>

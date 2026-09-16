@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌧️ Rain Stick – Rain-like Sound On Tilt</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌧️ Rain Stick</h1>
+            <div class="controls">
+                <button class="control-btn" id="shakeBtn" title="Shake the rain stick">🌊 Shake</button>
+                <button class="control-btn" id="autoBtn" title="Auto-rain">▶️ Auto</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="rainCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="rainStatus">🌧️ Ready</span>
+                <span id="dropCount">💧 0 drops</span>
+                <span id="tiltInfo">📐 Tilt: 0°</span>
+            </div>
+            <div class="hint" id="hint">🌧️ Click and drag to tilt the rain stick</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>💧 Rain Density</label>
+                <input type="range" id="densitySlider" min="10" max="100" value="60" step="1" />
+                <span id="densityLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Tilt Sensitivity</label>
+                <input type="range" id="sensitivitySlider" min="10" max="100" value="50" step="1" />
+                <span id="sensitivityLabel">50%</span>
+            </div>
+            <div class="slider-group">
+                <label>✨ Particle Size</label>
+                <input type="range" id="sizeSlider" min="1" max="10" value="4" step="0.5" />
+                <span id="sizeLabel">4</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Rain Stick – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('rainCanvas');
+            const ctx = canvas.getContext('2d');
+            const rainStatus = document.getElementById('rainStatus');
+            const dropCount = document.getElementById('dropCount');
+            const tiltInfo = document.getElementById('tiltInfo');
+            const hint = document.getElementById('hint');
+            const shakeBtn = document.getElementById('shakeBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+            const sensitivitySlider = document.getElementById('sensitivitySlider');
+            const sensitivityLabel = document.getElementById('sensitivityLabel');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isAuto = false;
+            let isDragging = false;
+            let autoTimer = 0;
+            let time = 0;
+            let animationId = null;
+            let tiltAngle = 0;
+            let targetTilt = 0;
+            let shakeIntensity = 0;
+            let shakeDecay = 0;
+
+            // --- Parameters ---
+            let density = 60; // 10-100
+            let sensitivity = 50; // 10-100
+            let particleSize = 4; // 1-10
+
+            // --- Rain drops ---
+            let drops = [];
+            let particles = [];
+            let maxDrops = 300;
+
+            // --- Rain drop class ---
+            class RainDrop {
+                constructor(x, y, angle, speed) {
+                    this.x = x || Math.random() * W;
+                    this.y = y || -20 - Math.random() * 50;
+                    this.angle = angle || (Math.random() - 0.5) * 0.2;
+                    this.speed = speed || 2 + Math.random() * 4;
+                    this.size = 1 + Math.random() * (particleSize / 2);
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.life = 1;
+                    this.trail = [];
+                    this.maxTrail = 5;
+                    this.wobble = (Math.random() - 0.5) * 0.3;
+                    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                }
+
+                update(tilt) {
+                    const tiltFactor = tilt / 90;
+                    this.angle += this.wobble * 0.01;
+                    this.wobble += this.wobbleSpeed;
+
+                    // Apply tilt to movement
+                    const tiltOffset = tiltFactor * 0.3;
+                    this.x += Math.sin(this.angle + tiltOffset) * this.speed * 0.1;
+                    this.y += this.speed * 0.8 + Math.abs(tiltFactor) * 0.5;
+
+                    // Trail
+                    if (Math.random() < 0.3) {
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    }
+
+                    // Wrap around
+                    if (this.y > H + 20) {
+                        this.reset();
+                    }
+                    if (this.x > W + 20) this.x = -20;
+                    if (this.x < -20) this.x = W + 20;
+
+                    this.life = 1 - (this.y / H);
+                    return this.y < H + 20;
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = -10 - Math.random() * 30;
+                    this.speed = 2 + Math.random() * 4;
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.size = 1 + Math.random() * (particleSize / 2);
+                    this.trail = [];
+                }
+
+                draw(ctx) {
+                    const alpha = this.opacity * (0.3 + 0.7 * (1 - this.y / H));
+
+                    ctx.save();
+
+                    // Trail
+                    for (let i = 0; i < this.trail.length; i++) {
+                        const t = i / this.trail.length;
+                        const trailAlpha = alpha * t * 0.2;
+                        ctx.globalAlpha = trailAlpha;
+                        ctx.fillStyle = `rgba(180, 210, 240, ${trailAlpha})`;
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(this.trail[i].x, this.trail[i].y, this.size * t * 0.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Main drop
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = this.size * 2;
+                    ctx.shadowColor = `rgba(180, 210, 240, ${alpha * 0.3})`;
+                    ctx.fillStyle = `rgba(200, 230, 255, ${alpha * 0.8})`;
+                    ctx.beginPath();
+
+                    // Teardrop shape
+                    const s = this.size;
+                    ctx.moveTo(this.x, this.y - s * 0.8);
+                    ctx.quadraticCurveTo(this.x + s * 0.6, this.y - s * 0.2, this.x + s * 0.4, this.y + s * 0.4);
+                    ctx.quadraticCurveTo(this.x, this.y + s * 0.6, this.x - s * 0.4, this.y + s * 0.4);
+                    ctx.quadraticCurveTo(this.x - s * 0.6, this.y - s * 0.2, this.x, this.y - s * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x - s * 0.15, this.y - s * 0.2, s * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Sparkle particle class ---
+            class SparkleParticle {
+                constructor(x, y, intensity) {
+                    this.x = x || Math.random() * W;
+                    this.y = y || Math.random() * H;
+                    this.size = 1 + Math.random() * 3;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2 - 1;
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.hue = 200 + Math.random() * 40;
+                    this.intensity = intensity || 1;
+                }
+
+                update() {
+                    this.x += this.vx * 0.3;
+                    this.y += this.vy * 0.3;
+                    this.vy += 0.02;
+                    this.life -= 0.01;
+                    this.size *= 0.998;
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    const alpha = (this.life / this.maxLife) * this.opacity * this.intensity;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = this.size * 4;
+                    ctx.shadowColor = `hsla(${this.hue}, 80%, 70%, ${alpha * 0.3})`;
+                    ctx.fillStyle = `hsla(${this.hue}, 80%, 85%, ${alpha * 0.8})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Cross sparkle
+                    if (this.size > 1.5) {
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = `hsla(${this.hue}, 80%, 90%, ${alpha * 0.2})`;
+                        ctx.lineWidth = 0.5;
+                        const s = this.size * 2;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x - s, this.y);
+                        ctx.lineTo(this.x + s, this.y);
+                        ctx.moveTo(this.x, this.y - s);
+                        ctx.lineTo(this.x, this.y + s);
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Draw rain stick ---
+            function drawRainStick(ctx) {
+                const cx = W / 2;
+                const cy = H / 2 + 20;
+                const length = 300;
+                const width = 40;
+                const tiltRad = (tiltAngle * Math.PI) / 180;
+
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(tiltRad);
+
+                // --- Shadow ---
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowOffsetY = 10;
+
+                // --- Stick body ---
+                const grad = ctx.createLinearGradient(-width / 2, -length / 2, width / 2, length / 2);
+                grad.addColorStop(0, '#8B7355');
+                grad.addColorStop(0.1, '#A08868');
+                grad.addColorStop(0.3, '#C4A882');
+                grad.addColorStop(0.5, '#D4B892');
+                grad.addColorStop(0.7, '#C4A882');
+                grad.addColorStop(0.9, '#A08868');
+                grad.addColorStop(1, '#8B7355');
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowOffsetY = 5;
+
+                // Main stick
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(-width / 2, -length / 2, width, length, 8);
+                ctx.fill();
+
+                // --- Wood grain ---
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.1;
+                for (let i = 0; i < 15; i++) {
+                    const yPos = -length / 2 + 10 + i * (length / 15);
+                    const wavy = Math.sin(i * 0.7 + 0.3) * 3;
+                    ctx.strokeStyle = '#6B5B45';
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-width / 2 + 5 + wavy, yPos);
+                    ctx.quadraticCurveTo(0, yPos + 5 + Math.sin(i * 0.5) * 2, width / 2 - 5 + wavy, yPos);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // --- Decorative bands ---
+                ctx.shadowBlur = 0;
+                for (let i = -3; i <= 3; i++) {
+                    if (i === 0) continue;
+                    const yPos = i * 35;
+                    ctx.strokeStyle = 'rgba(139, 115, 85, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-width / 2 + 4, yPos);
+                    ctx.lineTo(width / 2 - 4, yPos);
+                    ctx.stroke();
+
+                    // Small dots pattern
+                    ctx.fillStyle = 'rgba(139, 115, 85, 0.15)';
+                    for (let j = -3; j <= 3; j++) {
+                        const xPos = j * 8;
+                        ctx.beginPath();
+                        ctx.arc(xPos, yPos, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // --- End caps ---
+                ctx.fillStyle = '#6B5B45';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.beginPath();
+                ctx.ellipse(0, -length / 2, width / 2 + 2, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(0, length / 2, width / 2 + 2, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- Holes (where rain comes out) ---
+                ctx.shadowBlur = 0;
+                for (let i = -8; i <= 8; i++) {
+                    if (i % 2 === 0) continue;
+                    const yPos = i * 12;
+                    const holeSize = 4 + Math.abs(i) * 0.5;
+                    const grad2 = ctx.createRadialGradient(0, yPos, 0, 0, yPos, holeSize);
+                    grad2.addColorStop(0, 'rgba(40, 30, 20, 0.4)');
+                    grad2.addColorStop(0.5, 'rgba(40, 30, 20, 0.2)');
+                    grad2.addColorStop(1, 'rgba(40, 30, 20, 0)');
+                    ctx.fillStyle = grad2;
+                    ctx.beginPath();
+                    ctx.arc(0, yPos, holeSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Hole rim
+                    ctx.strokeStyle = 'rgba(80, 70, 60, 0.15)';
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(0, yPos, holeSize * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // --- Inner glow (when raining) ---
+                if (drops.length > 20) {
+                    const glowAlpha = Math.min(0.3, drops.length / 300 * 0.3);
+                    const glowGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, length / 2);
+                    glowGrad.addColorStop(0, `rgba(180, 210, 255, ${glowAlpha * 0.1})`);
+                    glowGrad.addColorStop(0.5, `rgba(180, 210, 255, ${glowAlpha * 0.05})`);
+                    glowGrad.addColorStop(1, 'rgba(180, 210, 255, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, length / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+
+                // --- Tilt indicator ---
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.font = '12px system-ui';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`📐 ${Math.round(tiltAngle)}°`, cx, cy + length / 2 + 30);
+                ctx.restore();
+
+                // Update tilt info
+                tiltInfo.textContent = `📐 Tilt: ${Math.round(tiltAngle)}°`;
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f18');
+                grad.addColorStop(0.3, '#080c14');
+                grad.addColorStop(0.6, '#060a10');
+                grad.addColorStop(0.8, '#04060c');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle ground
+                ctx.save();
+                const groundGrad = ctx.createLinearGradient(0, H - 20, 0, H);
+                groundGrad.addColorStop(0, 'rgba(20, 30, 50, 0)');
+                groundGrad.addColorStop(1, 'rgba(20, 30, 50, 0.2)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 20, W, 20);
+                ctx.restore();
+            }
+
+            // --- Generate rain from stick ---
+            function generateRain() {
+                const tiltFactor = Math.abs(tiltAngle) / 90;
+                const densityFactor = density / 100;
+                const sensitivityFactor = sensitivity / 100;
+
+                // Rain intensity based on tilt and density
+                const rainIntensity = tiltFactor * densityFactor * sensitivityFactor * 0.8;
+                const dropsPerFrame = Math.floor(rainIntensity * 3 + shakeIntensity * 5);
+
+                // Add shake effect
+                const shakeBonus = shakeIntensity > 0.1 ? Math.floor(shakeIntensity * 10) : 0;
+
+                const totalDrops = Math.min(dropsPerFrame + shakeBonus, 15);
+
+                for (let i = 0; i < totalDrops; i++) {
+                    if (drops.length >= maxDrops) break;
+
+                    const stickRad = (tiltAngle * Math.PI) / 180;
+                    const cx = W / 2 + Math.sin(stickRad) * 10;
+                    const cy = H / 2 + 20 + Math.cos(stickRad) * 10;
+
+                    // Spawn from stick position with spread
+                    const spread = 30 + Math.random() * 20;
+                    const angle = stickRad + (Math.random() - 0.5) * 0.5;
+                    const dist = (Math.random() - 0.5) * 300;
+
+                    const x = cx + Math.sin(angle) * dist + (Math.random() - 0.5) * spread;
+                    const y = cy + Math.cos(angle) * dist * 0.5 - 100 + (Math.random() - 0.5) * 20;
+
+                    const drop = new RainDrop(
+                        x,
+                        y,
+                        stickRad + (Math.random() - 0.5) * 0.3,
+                        2 + Math.random() * 4 + tiltFactor * 2
+                    );
+                    drop.size = 1 + Math.random() * (particleSize / 2);
+                    drops.push(drop);
+                }
+
+                // Create sparkle particles when raining heavily
+                if (rainIntensity > 0.3 && Math.random() < rainIntensity * 0.1) {
+                    const stickRad = (tiltAngle * Math.PI) / 180;
+                    const cx = W / 2;
+                    const cy = H / 2 + 20;
+                    const sx = cx + Math.sin(stickRad) * (Math.random() - 0.5) * 100;
+                    const sy = cy + Math.cos(stickRad) * (Math.random() - 0.5) * 100;
+                    const sparkle = new SparkleParticle(sx, sy, 0.5 + rainIntensity);
+                    particles.push(sparkle);
+                }
+
+                // Status update
+                if (drops.length > 50) {
+                    rainStatus.textContent = '🌧️ Raining';
+                } else if (drops.length > 10) {
+                    rainStatus.textContent = '🌧️ Drizzling';
+                } else {
+                    rainStatus.textContent = '🌧️ Ready';
+                }
+
+                dropCount.textContent = `💧 ${drops.length} drops`;
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Auto-rain
+                if (isAuto) {
+                    autoTimer++;
+                    const interval = Math.max(10, 60 - density / 2);
+                    if (autoTimer >= interval) {
+                        autoTimer = 0;
+                        targetTilt = (Math.random() - 0.5) * 60;
+                        // Add shake effect
+                        shakeIntensity = 0.3 + Math.random() * 0.7;
+                        setTimeout(() => {
+                            shakeIntensity *= 0.5;
+                        }, 300);
+                    }
+                }
+
+                // Smooth tilt
+                tiltAngle += (targetTilt - tiltAngle) * 0.05;
+
+                // Shake decay
+                if (shakeIntensity > 0.01) {
+                    shakeIntensity *= 0.97;
+                } else {
+                    shakeIntensity = 0;
+                }
+
+                // Generate rain
+                generateRain();
+
+                // Update drops
+                drops = drops.filter(d => d.update(tiltAngle));
+                if (drops.length > maxDrops) {
+                    drops = drops.slice(0, maxDrops);
+                }
+
+                // Update particles
+                particles = particles.filter(p => p.update());
+                if (particles.length > 100) {
+                    particles = particles.slice(0, 100);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw drops (behind stick)
+                for (const drop of drops) {
+                    drop.draw(ctx);
+                }
+
+                // Draw particles
+                for (const p of particles) {
+                    p.draw(ctx);
+                }
+
+                // Draw stick (on top)
+                drawRainStick(ctx);
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function shakeStick() {
+                shakeIntensity = 0.8 + Math.random() * 0.4;
+                targetTilt += (Math.random() - 0.5) * 20;
+                hint.textContent = '🌊 Shaking!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1000);
+
+                // Generate burst of rain
+                for (let i = 0; i < 30; i++) {
+                    const drop = new RainDrop(
+                        W / 2 + (Math.random() - 0.5) * 200,
+                        -20 - Math.random() * 50,
+                        (Math.random() - 0.5) * 0.3,
+                        3 + Math.random() * 5
+                    );
+                    drops.push(drop);
+                }
+            }
+
+            function toggleAuto() {
+                isAuto = !isAuto;
+                autoBtn.textContent = isAuto ? '⏹️ Stop' : '▶️ Auto';
+                if (isAuto) {
+                    autoTimer = 0;
+                    hint.textContent = '▶️ Auto-rain started';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                } else {
+                    hint.textContent = '⏹️ Auto-rain stopped';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function resetAll() {
+                drops = [];
+                particles = [];
+                tiltAngle = 0;
+                targetTilt = 0;
+                shakeIntensity = 0;
+                rainStatus.textContent = '🌧️ Ready';
+                dropCount.textContent = '💧 0 drops';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+                hint.classList.add('hidden');
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+
+                if (isDragging) {
+                    // Map position to tilt angle
+                    const centerX = W / 2;
+                    const dx = pos.x - centerX;
+                    const angle = (dx / (W / 2)) * 60;
+                    targetTilt = Math.max(-60, Math.min(60, angle));
+
+                    // Add shake based on movement speed
+                    if (Math.abs(dx) > 20) {
+                        shakeIntensity = Math.min(1, Math.abs(dx) / 200);
+                    }
+                }
+
+                // Cursor
+                if (!isDragging) {
+                    canvas.style.cursor = 'grab';
+                }
+            }
+
+            function onEnd(e) {
+                e.preventDefault();
+                isDragging = false;
+                canvas.style.cursor = 'default';
+
+                // Add extra shake on release
+                if (Math.abs(targetTilt) > 30) {
+                    shakeIntensity = 0.3;
+                }
+            }
+
+            // --- Slider handlers ---
+            densitySlider.addEventListener('input', function() {
+                density = parseFloat(this.value);
+                densityLabel.textContent = `${Math.round(density)}%`;
+            });
+
+            sensitivitySlider.addEventListener('input', function() {
+                sensitivity = parseFloat(this.value);
+                sensitivityLabel.textContent = `${Math.round(sensitivity)}%`;
+            });
+
+            sizeSlider.addEventListener('input', function() {
+                particleSize = parseFloat(this.value);
+                sizeLabel.textContent = particleSize.toFixed(1);
+                // Update existing drops
+                for (const drop of drops) {
+                    drop.size = 1 + Math.random() * (particleSize / 2);
+                }
+            });
+
+            // --- Button events ---
+            shakeBtn.addEventListener('click', shakeStick);
+            autoBtn.addEventListener('click', toggleAuto);
+            resetBtn.addEventListener('click', resetAll);
+
+            // --- Mouse events ---
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd, { passive: false });
+            canvas.addEventListener('touchcancel', onEnd, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    shakeStick();
+                }
+                if (e.key === 'a' || e.key === 'A') toggleAuto();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Tilt adjustments
+                if (e.key === 'ArrowRight') {
+                    targetTilt = Math.min(60, targetTilt + 5);
+                }
+                if (e.key === 'ArrowLeft') {
+                    targetTilt = Math.max(-60, targetTilt - 5);
+                }
+                if (e.key === 'ArrowUp') {
+                    density = Math.min(100, density + 5);
+                    densitySlider.value = density;
+                    densityLabel.textContent = `${Math.round(density)}%`;
+                }
+                if (e.key === 'ArrowDown') {
+                    density = Math.max(10, density - 5);
+                    densitySlider.value = density;
+                    densityLabel.textContent = `${Math.round(density)}%`;
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌧️ Rain Stick ready!');
+            console.log('Controls: Click and drag to tilt, Space (shake), A (auto), R (reset)');
+            console.log('          ←/→ (tilt), ↑/↓ (density)');
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Animated Progress Bar (Pastel)
+A soft, playful progress bar featuring dual animations. The primary fill continuously pans a 300% width multi-color pastel gradient using `background-position`, while a secondary `::after` layer overlays continuously sliding diagonal stripes.

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quartz Vibration · quartz crystal hums and vibrates</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="quartz-container">
+      <div class="quartz-display" id="quartzDisplay">
+        <!-- Canvas for quartz vibration -->
+        <canvas id="quartzCanvas"></canvas>
+        
+        <!-- Quartz Info -->
+        <div class="quartz-info">
+          <span class="info-label">📳 Frequency</span>
+          <span class="info-value" id="frequencyLevel">0 Hz</span>
+        </div>
+
+        <!-- Quartz Controls -->
+        <div class="quartz-controls">
+          <div class="control-group">
+            <label class="control-label">📳 Vibrate</label>
+            <input type="range" class="control-slider" id="vibrateSlider" min="0" max="100" value="50">
+            <span class="control-value" id="vibrateValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎵 Tone</label>
+            <div class="tone-options">
+              <button class="tone-btn active" data-tone="crystal" title="Crystal">🔮</button>
+              <button class="tone-btn" data-tone="warm" title="Warm">🌤️</button>
+              <button class="tone-btn" data-tone="deep" title="Deep">🌙</button>
+              <button class="tone-btn" data-tone="bright" title="Bright">✨</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quartz Text -->
+        <div class="quartz-text">
+          <span class="text-label">📳 Quartz</span>
+          <span class="text-message" id="quartzMessage">Crystal humming with vibration</span>
+        </div>
+      </div>
+      
+      <div class="quartz-status">
+        <span id="quartzStatus">📳 Quartz crystal humming and vibrating</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>📳 quartz vibration · 4 tones · frequency control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('quartzCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('quartzDisplay');
+      const frequencyLevel = document.getElementById('frequencyLevel');
+      const quartzStatus = document.getElementById('quartzStatus');
+      const quartzMessage = document.getElementById('quartzMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const vibrateSlider = document.getElementById('vibrateSlider');
+      const vibrateValue = document.getElementById('vibrateValue');
+      const toneBtns = document.querySelectorAll('.tone-btn');
+
+      // State
+      let time = 0;
+      let animationId = null;
+      let currentTone = 'crystal';
+      let vibration = 50;
+      let particles = [];
+      let waveLines = [];
+
+      // Tone configurations
+      const tones = {
+        crystal: { name: 'Crystal', color: '#a78bfa', light: '#c4b5fd', dark: '#7c3aed', speed: 1.0, waveColor: 'rgba(167,139,250,0.3)' },
+        warm: { name: 'Warm', color: '#fbbf24', light: '#fcd34d', dark: '#f59e0b', speed: 0.8, waveColor: 'rgba(251,191,36,0.3)' },
+        deep: { name: 'Deep', color: '#6366f1', light: '#818cf8', dark: '#4f46e5', speed: 0.6, waveColor: 'rgba(99,102,241,0.3)' },
+        bright: { name: 'Bright', color: '#60a5fa', light: '#93c5fd', dark: '#3b82f6', speed: 1.2, waveColor: 'rgba(96,165,250,0.3)' }
+      };
+
+      // Particle class
+      class VibrationParticle {
+        constructor(x, y, color) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.color = color || currentTone;
+          this.size = 1 + Math.random() * 3;
+          this.angle = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.vibrationOffset = (Math.random() - 0.5) * 2;
+        }
+
+        update(vibration, time) {
+          const intensity = vibration / 100;
+          const speed = this.speed * (0.5 + intensity * 0.5);
+          this.phase += 0.02 * intensity;
+          
+          // Vibrate randomly
+          const vibX = Math.sin(this.phase * 3 + this.vibrationOffset) * intensity * 2;
+          const vibY = Math.cos(this.phase * 2 + this.vibrationOffset) * intensity * 2;
+          
+          this.x += Math.cos(this.angle) * speed * 0.1 + vibX * 0.1;
+          this.y += Math.sin(this.angle) * speed * 0.1 + vibY * 0.1;
+          this.life -= 0.002 * (1 + intensity);
+          
+          // Keep within bounds
+          if (this.x < -20) this.x = canvas.width + 20;
+          if (this.x > canvas.width + 20) this.x = -20;
+          if (this.y < -20) this.y = canvas.height + 20;
+          if (this.y > canvas.height + 20) this.y = -20;
+          
+          return this.life > 0;
+        }
+
+        draw(ctx, colorData) {
+          const alpha = (this.life / this.maxLife) * this.opacity;
+          const size = this.size * (0.5 + (this.life / this.maxLife) * 0.5);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = colorData.color;
+          ctx.shadowColor = colorData.color;
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Draw quartz crystal
+      function drawQuartz(vibration, tone) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const intensity = vibration / 100;
+        const colorData = tones[tone];
+        const size = Math.min(w, h) * 0.25;
+        const vibrateOffset = intensity * 3;
+
+        // Background
+        drawBackground();
+
+        // Vibration waves
+        drawVibrationWaves(vibration, tone);
+
+        // Crystal glow
+        const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 1.5);
+        glowGrad.addColorStop(0, colorData.waveColor);
+        glowGrad.addColorStop(0.5, colorData.waveColor);
+        glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glowGrad;
+        ctx.globalAlpha = 0.2 + intensity * 0.3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Crystal body with vibration
+        ctx.save();
+        ctx.translate(cx, cy);
+        
+        // Vibration displacement
+        const vibX = Math.sin(time * 0.5 + 1) * vibrateOffset * 0.3;
+        const vibY = Math.cos(time * 0.7 + 2) * vibrateOffset * 0.3;
+        ctx.translate(vibX, vibY);
+        
+        // Rotate slowly
+        ctx.rotate(time * 0.02);
+
+        // Crystal facets
+        const facets = 6;
+        const crystalSize = size * (0.8 + intensity * 0.2);
+        
+        for (let i = 0; i < facets; i++) {
+          const angle1 = (i / facets) * Math.PI * 2;
+          const angle2 = ((i + 1) / facets) * Math.PI * 2;
+          const midAngle = (angle1 + angle2) / 2;
+          
+          const outerR = crystalSize * (0.7 + Math.sin(time * 0.5 + i) * 0.05);
+          const innerR = crystalSize * 0.2;
+          
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle1) * outerR, Math.sin(angle1) * outerR);
+          ctx.lineTo(Math.cos(midAngle) * innerR, Math.sin(midAngle) * innerR);
+          ctx.lineTo(Math.cos(angle2) * outerR, Math.sin(angle2) * outerR);
+          ctx.closePath();
+          
+          // Facet color with vibration effect
+          const lightAngle = Math.sin(time * 0.5 + i * 1.2) * 0.3 + 0.5;
+          const brightness = 0.4 + lightAngle * 0.4 + intensity * 0.2;
+          
+          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, outerR);
+          grad.addColorStop(0, colorData.light);
+          grad.addColorStop(0.5, colorData.color);
+          grad.addColorStop(1, colorData.dark);
+          ctx.fillStyle = grad;
+          ctx.globalAlpha = 0.5 + brightness * 0.3;
+          ctx.shadowColor = colorData.color;
+          ctx.shadowBlur = 10 * intensity;
+          ctx.fill();
+          
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = colorData.dark;
+          ctx.lineWidth = 0.5;
+          ctx.globalAlpha = 0.1 + intensity * 0.2;
+          ctx.stroke();
+        }
+
+        // Center glow
+        ctx.shadowColor = colorData.light;
+        ctx.shadowBlur = 20 * intensity;
+        ctx.fillStyle = colorData.light;
+        ctx.globalAlpha = 0.1 + intensity * 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, crystalSize * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        // Update frequency display
+        const freq = Math.round(vibration * (0.5 + intensity * 0.5));
+        frequencyLevel.textContent = freq + ' Hz';
+        frequencyLevel.style.color = freq > 50 ? colorData.color : '#94a3b8';
+
+        // Update status
+        if (vibration > 70) {
+          quartzStatus.textContent = '📳 Crystal vibrating intensely! ✨';
+          quartzStatus.style.color = '#fbbf24';
+        } else if (vibration > 30) {
+          quartzStatus.textContent = '📳 Quartz crystal humming with energy';
+          quartzStatus.style.color = colorData.color;
+        } else {
+          quartzStatus.textContent = '📳 Quartz crystal humming and vibrating';
+          quartzStatus.style.color = '#94a3b8';
+        }
+
+        // Update message
+        quartzMessage.textContent = `${colorData.name} crystal humming with vibration`;
+        quartzMessage.style.color = colorData.color;
+      }
+
+      // Draw vibration waves
+      function drawVibrationWaves(vibration, tone) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const intensity = vibration / 100;
+        const colorData = tones[tone];
+        const speed = colorData.speed;
+
+        ctx.save();
+        
+        const numWaves = 3 + Math.floor(intensity * 5);
+        for (let i = 0; i < numWaves; i++) {
+          const radius = 30 + (i / numWaves) * Math.min(w, h) * 0.35;
+          const phase = time * (0.5 + i * 0.1) * speed;
+          const waveIntensity = intensity * (0.5 + i / numWaves * 0.5);
+          
+          ctx.beginPath();
+          const segments = 60;
+          for (let j = 0; j <= segments; j++) {
+            const angle = (j / segments) * Math.PI * 2;
+            const wobble = Math.sin(angle * 3 + phase) * waveIntensity * 4;
+            const r = radius + wobble;
+            const x = cx + Math.cos(angle) * r;
+            const y = cy + Math.sin(angle) * r;
+            if (j === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          
+          ctx.strokeStyle = colorData.color;
+          ctx.globalAlpha = (0.05 + i / numWaves * 0.05) * intensity;
+          ctx.lineWidth = 1 + i * 0.5;
+          ctx.shadowColor = colorData.color;
+          ctx.shadowBlur = 5;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Generate particles
+      function generateParticles() {
+        particles = [];
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          particles.push(new VibrationParticle(x, y, currentTone));
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateParticles();
+      }
+
+      // Animation loop
+      function animate() {
+        const vibration = parseInt(vibrateSlider.value);
+        const tone = currentTone;
+        const colorData = tones[tone];
+        time += 0.02;
+
+        // Update particles
+        particles = particles.filter(p => {
+          const alive = p.update(vibration, time);
+          if (alive) p.draw(ctx, colorData);
+          return alive;
+        });
+
+        // Maintain particle count
+        while (particles.length < 20 + vibration * 0.2) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          particles.push(new VibrationParticle(x, y, tone));
+        }
+
+        // Draw quartz
+        drawQuartz(vibration, tone);
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set tone
+      function setTone(tone) {
+        currentTone = tone;
+        toneBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tone === tone);
+        });
+        const colorData = tones[tone];
+        quartzStatus.textContent = `🎵 Tone: ${colorData.name}`;
+        quartzStatus.style.color = colorData.color;
+        // Update particles
+        particles.forEach(p => {
+          p.color = tone;
+        });
+        setTimeout(() => {
+          quartzStatus.textContent = '📳 Quartz crystal humming and vibrating';
+          quartzStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetQuartz() {
+        vibrateSlider.value = 50;
+        vibrateValue.textContent = '50%';
+        particles = [];
+        generateParticles();
+        quartzStatus.textContent = '🔄 Reset complete';
+        quartzStatus.style.color = '#94a3b8';
+        quartzMessage.textContent = 'Crystal humming with vibration';
+        quartzMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          quartzStatus.textContent = '📳 Quartz crystal humming and vibrating';
+          quartzStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      vibrateSlider.addEventListener('input', function() {
+        vibrateValue.textContent = this.value + '%';
+      });
+
+      toneBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setTone(this.dataset.tone);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetQuartz();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetQuartz();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('📳 Quartz Vibration ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

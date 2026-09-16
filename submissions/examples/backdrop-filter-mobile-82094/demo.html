@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>Backdrop Filter Mobile Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">MOBILE RENDER BENCHMARK</span>
+      <h1>Backdrop-Filter Render Cost</h1>
+      <p>
+        A controlled workload for measuring the rendering cost of
+        backdrop-filter effects on mobile-oriented viewports.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 45 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run Mobile Benchmark</button>
+      <span id="message">Ready to measure rendering cost.</span>
+    </div>
+
+    <section class="scene" id="scene">
+      <div class="orb orb-one"></div>
+      <div class="orb orb-two"></div>
+      <div class="orb orb-three"></div>
+
+      <div class="glass-card">
+        <span class="card-label">GPU WORKLOAD</span>
+        <h2>Backdrop Blur</h2>
+        <p>
+          This surface uses a backdrop-filter effect over moving
+          background content.
+        </p>
+        <div class="status-line">
+          <span></span>
+          Rendering active
+        </div>
+      </div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Backdrop Filter</h2>
+        <p>
+          The card samples the content behind it using blur and
+          saturation effects.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Mobile Viewport</h2>
+        <p>
+          The layout is optimized for narrow screens and touch
+          interaction.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Performance Budget</h2>
+        <p>
+          FPS, stylesheet size, and execution time are checked against
+          fixed limits.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const scene = document.getElementById("scene");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 45,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering backdrop-filter workload";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const x = Math.sin(elapsed / 150) * 18;
+          const y = Math.cos(elapsed / 190) * 12;
+
+          scene.style.transform =
+            `translate3d(${x}px, ${y}px, 0)`;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budget passed"
+          : "Performance budget failed";
+
+      message.textContent =
+        passed
+          ? "Mobile rendering benchmark completed."
+          : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      scene.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Eye · Hidden 3D Image Emerges</title>
+    <meta name="description" content="Interactive magic eye stereogram where a hidden 3D image emerges from repeating patterns.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">👁️ MAGIC EYE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="magicCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reveal-btn" id="revealBtn">🌀 REVEAL</button>
+                <button class="hide-btn" id="hideBtn">👁️ HIDE</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>👁️ MAGIC EYE</span>
+            <small>stereogram · hidden 3D · emerges</small>
+        </div>
+        <div class="hint">
+            <span>🌀 hidden 3D image emerges from the pattern</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('magicCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const revealBtn = document.getElementById('revealBtn');
+            const hideBtn = document.getElementById('hideBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isRevealed = false;
+            let revealProgress = 0;
+            let isRevealing = false;
+            let depthMap = [];
+
+            // ---- Generate Depth Map (Hidden 3D Image) ----
+            function generateDepthMap() {
+                depthMap = [];
+                for (let y = 0; y < H; y++) {
+                    depthMap[y] = [];
+                    for (let x = 0; x < W; x++) {
+                        // Create a 3D shape: a sphere/object in the center
+                        const cx = W / 2;
+                        const cy = H / 2;
+                        const dx = (x - cx) / (W * 0.4);
+                        const dy = (y - cy) / (H * 0.4);
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Multiple shapes
+                        let depth = 0;
+                        
+                        // Main sphere
+                        if (dist < 1.2) {
+                            depth = Math.max(0, 1 - dist * 0.8);
+                        }
+                        
+                        // Ring/donut shape
+                        const ringDist = Math.sqrt((dx * 0.8) * (dx * 0.8) + (dy * 0.8) * (dy * 0.8));
+                        if (ringDist > 0.6 && ringDist < 1.4) {
+                            const ringDepth = 1 - Math.abs(ringDist - 1) * 1.5;
+                            depth = Math.max(depth, ringDepth * 0.7);
+                        }
+                        
+                        // Star shape
+                        const angle = Math.atan2(dy, dx);
+                        const starRadius = 0.4 + 0.3 * Math.cos(angle * 5);
+                        if (dist < starRadius) {
+                            const starDepth = 1 - dist / starRadius;
+                            depth = Math.max(depth, starDepth * 0.5);
+                        }
+                        
+                        depthMap[y][x] = depth;
+                    }
+                }
+            }
+
+            // ---- Generate Stereogram Pattern ----
+            function generateStereogram() {
+                const patternWidth = 60;
+                const patternHeight = 60;
+                const pattern = [];
+                
+                // Create a colorful repeating pattern
+                for (let y = 0; y < patternHeight; y++) {
+                    pattern[y] = [];
+                    for (let x = 0; x < patternWidth; x++) {
+                        const hue = (x * 3 + y * 2 + 180) % 360;
+                        const sat = 60 + 30 * Math.sin(x * 0.1 + y * 0.15);
+                        const light = 50 + 30 * Math.sin(x * 0.08 + y * 0.12 + 1);
+                        pattern[y][x] = `hsl(${hue}, ${sat}%, ${light}%)`;
+                    }
+                }
+                
+                return pattern;
+            }
+
+            // ---- Draw Stereogram ----
+            function drawStereogram(revealAmount) {
+                const pattern = generateStereogram();
+                const patternW = pattern[0].length;
+                const patternH = pattern.length;
+                const maxDisparity = 30;
+                const disparity = 10 + revealAmount * maxDisparity * 0.5;
+                
+                // Clear
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw repeating pattern with disparity
+                for (let y = 0; y < H; y++) {
+                    for (let x = 0; x < W; x++) {
+                        // Get depth at this position
+                        const depth = depthMap[y] && depthMap[y][x] || 0;
+                        
+                        // Calculate disparity based on depth
+                        const d = disparity * depth * 0.8;
+                        
+                        // Two views for stereogram effect
+                        const offset1 = -d;
+                        const offset2 = d;
+                        
+                        // Sample pattern at two positions
+                        const px1 = (x + offset1 + patternW * 10) % patternW;
+                        const py1 = (y + patternH * 10) % patternH;
+                        const px2 = (x + offset2 + patternW * 10) % patternW;
+                        const py2 = (y + patternH * 10) % patternH;
+                        
+                        // Blend the two views with reveal amount
+                        const color1 = pattern[py1][px1];
+                        const color2 = pattern[py2][px2];
+                        
+                        // During reveal, transition from random pattern to stereogram
+                        if (revealAmount < 1) {
+                            const blend = Math.min(1, revealAmount * 2);
+                            const randColor = `hsl(${Math.random() * 360}, 50%, ${30 + Math.random() * 40}%)`;
+                            const finalColor = blend < 0.5 ? 
+                                randColor : 
+                                (blend < 0.8 ? color1 : color2);
+                            ctx.fillStyle = finalColor;
+                        } else {
+                            // Fully revealed - stereogram effect
+                            const blend = 0.5 + 0.5 * Math.sin(x * 0.01 + y * 0.008);
+                            ctx.fillStyle = blend < 0.5 ? color1 : color2;
+                        }
+                        
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+                
+                // Overlay depth visualization during reveal
+                if (revealAmount < 0.5) {
+                    ctx.globalAlpha = 0.3 * (1 - revealAmount * 2);
+                    for (let y = 0; y < H; y += 4) {
+                        for (let x = 0; x < W; x += 4) {
+                            const depth = depthMap[y] && depthMap[y][x] || 0;
+                            if (depth > 0.1) {
+                                const brightness = Math.floor(100 + depth * 155);
+                                ctx.fillStyle = `rgba(${brightness}, ${brightness}, ${brightness}, 0.3)`;
+                                ctx.fillRect(x, y, 4, 4);
+                            }
+                        }
+                    }
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            // ---- Reveal ----
+            function reveal() {
+                if (isRevealing) return;
+                isRevealing = true;
+                isRevealed = false;
+                revealProgress = 0;
+            }
+
+            // ---- Hide ----
+            function hide() {
+                isRevealing = false;
+                isRevealed = false;
+                revealProgress = 0;
+                drawStereogram(0);
+            }
+
+            // ---- Reset ----
+            function resetMagic() {
+                isRevealing = false;
+                isRevealed = false;
+                revealProgress = 0;
+                generateDepthMap();
+                drawStereogram(0);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Reveal animation
+                if (isRevealing && revealProgress < 1) {
+                    revealProgress += 0.005 * (speed / 5);
+                    if (revealProgress >= 1) {
+                        revealProgress = 1;
+                        isRevealing = false;
+                        isRevealed = true;
+                    }
+                    drawStereogram(revealProgress);
+                } else if (isRevealed) {
+                    // Gentle shimmer when revealed
+                    const shimmer = Math.sin(time * 0.5) * 0.02 + 0.98;
+                    // Re-draw with slight shimmer (subtle)
+                    if (Math.random() < 0.1) {
+                        drawStereogram(1);
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            revealBtn.addEventListener('click', reveal);
+            hideBtn.addEventListener('click', hide);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetMagic);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    reveal();
+                }
+                if (e.key === 'h' || e.key === 'H') {
+                    hide();
+                }
+                if (e.key === 'x' || e.key === 'X') {
+                    resetMagic();
+                }
+            });
+
+            // ---- Initialize ----
+            generateDepthMap();
+            drawStereogram(0);
+            animate();
+
+            console.log('👁️ Magic Eye · Click Reveal to see the hidden 3D image emerge!');
+        })();
+    </script>
+</body>
+</html>

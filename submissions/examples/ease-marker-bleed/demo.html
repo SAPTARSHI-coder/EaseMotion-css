@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marker Bleed · marker bleeds through layers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="marker-container">
+      <div class="marker-display" id="markerDisplay">
+        <!-- Canvas for marker bleed -->
+        <canvas id="markerCanvas"></canvas>
+        
+        <!-- Marker Info -->
+        <div class="marker-info">
+          <span class="info-label">🖊️ Strokes</span>
+          <span class="info-value" id="strokeCount">0</span>
+        </div>
+
+        <!-- Marker Controls -->
+        <div class="marker-controls">
+          <div class="control-group">
+            <label class="control-label">💧 Bleed</label>
+            <input type="range" class="control-slider" id="bleedSlider" min="1" max="10" value="5">
+            <span class="control-value" id="bleedValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="#ef4444" style="background:#ef4444;"></button>
+              <button class="color-btn" data-color="#f97316" style="background:#f97316;"></button>
+              <button class="color-btn" data-color="#fbbf24" style="background:#fbbf24;"></button>
+              <button class="color-btn" data-color="#22c55e" style="background:#22c55e;"></button>
+              <button class="color-btn" data-color="#3b82f6" style="background:#3b82f6;"></button>
+              <button class="color-btn" data-color="#8b5cf6" style="background:#8b5cf6;"></button>
+              <button class="color-btn" data-color="#ec4899" style="background:#ec4899;"></button>
+              <button class="color-btn" data-color="#14b8a6" style="background:#14b8a6;"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marker Text -->
+        <div class="marker-text">
+          <span class="text-label">🖊️ Marker</span>
+          <span class="text-message" id="markerMessage">Click and drag to draw with marker</span>
+        </div>
+      </div>
+      
+      <div class="marker-status">
+        <span id="markerStatus">🖊️ Click and drag to create marker bleed effect</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>🖊️ marker bleed · bleeds through layers · 8 colors</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('markerCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('markerDisplay');
+      const strokeCount = document.getElementById('strokeCount');
+      const markerStatus = document.getElementById('markerStatus');
+      const markerMessage = document.getElementById('markerMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const bleedSlider = document.getElementById('bleedSlider');
+      const bleedValue = document.getElementById('bleedValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let isDrawing = false;
+      let strokeCountNum = 0;
+      let currentColor = '#ef4444';
+      let currentBleed = 5;
+      let lastX = 0;
+      let lastY = 0;
+      let markerStrokes = [];
+      let bleedParticles = [];
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+        if (markerStrokes.length > 0 || bleedParticles.length > 0) {
+          redrawAll();
+        }
+      }
+
+      // Draw background
+      function drawBackground() {
+        // Create paper-like background with layers
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 30, 45, 0.15)');
+        grad.addColorStop(0.5, 'rgba(20, 20, 35, 0.25)');
+        grad.addColorStop(1, 'rgba(10, 10, 20, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Paper texture
+        for (let i = 0; i < 400; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.5 + 0.5;
+          const alpha = Math.random() * 0.015;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw marker stroke with bleed
+      function drawMarkerStroke(x1, y1, x2, y2, color, bleed) {
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 1) return;
+
+        const steps = Math.max(Math.floor(dist / 1.5), 6);
+        const baseSize = 4 + bleed * 0.6;
+        const bleedFactor = 0.2 + bleed * 0.08;
+
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t;
+          const y = y1 + (y2 - y1) * t;
+          
+          // Main marker stroke
+          const mainSize = baseSize * (0.8 + Math.random() * 0.4);
+          drawMarkerDot(x, y, mainSize, color, 0.6 + Math.random() * 0.3);
+          
+          // Bleed effect - multiple layers spreading outward
+          const bleedCount = Math.floor(3 + bleed * 0.7);
+          for (let j = 0; j < bleedCount; j++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = mainSize * (0.3 + Math.random() * bleedFactor * 1.5);
+            const bleedX = x + Math.cos(angle) * distance;
+            const bleedY = y + Math.sin(angle) * distance;
+            const bleedSize = mainSize * (0.2 + Math.random() * 0.5);
+            const bleedAlpha = 0.1 + Math.random() * 0.2;
+            
+            drawMarkerDot(bleedX, bleedY, bleedSize, color, bleedAlpha);
+            
+            // Secondary bleed (deeper layer)
+            if (bleed > 6 && Math.random() > 0.5) {
+              const angle2 = Math.random() * Math.PI * 2;
+              const dist2 = distance * (0.5 + Math.random() * 0.5);
+              const bleedX2 = x + Math.cos(angle2) * dist2;
+              const bleedY2 = y + Math.sin(angle2) * dist2;
+              const bleedSize2 = bleedSize * (0.3 + Math.random() * 0.4);
+              const bleedAlpha2 = 0.05 + Math.random() * 0.1;
+              drawMarkerDot(bleedX2, bleedY2, bleedSize2, color, bleedAlpha2);
+            }
+          }
+          
+          // Edge feathering
+          if (Math.random() > 0.6) {
+            const featherCount = 2 + Math.floor(Math.random() * 3);
+            for (let j = 0; j < featherCount; j++) {
+              const angle = Math.random() * Math.PI * 2;
+              const distance = baseSize * (0.5 + Math.random() * 0.5);
+              const fx = x + Math.cos(angle) * distance;
+              const fy = y + Math.sin(angle) * distance;
+              const fSize = baseSize * (0.1 + Math.random() * 0.2);
+              drawMarkerDot(fx, fy, fSize, color, 0.05 + Math.random() * 0.1);
+            }
+          }
+        }
+      }
+
+      // Draw marker dot
+      function drawMarkerDot(x, y, size, color, alpha) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(alpha, 1);
+        
+        // Color with slight variation for marker feel
+        const colorObj = hexToRgb(color);
+        const variation = 15;
+        const r = Math.min(255, Math.max(0, colorObj.r + (Math.random() - 0.5) * variation));
+        const g = Math.min(255, Math.max(0, colorObj.g + (Math.random() - 0.5) * variation));
+        const b = Math.min(255, Math.max(0, colorObj.b + (Math.random() - 0.5) * variation));
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        
+        // Slightly irregular shape for marker
+        const points = 8 + Math.floor(Math.random() * 4);
+        ctx.beginPath();
+        for (let i = 0; i < points; i++) {
+          const angle = (i / points) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
+          const radius = size * (0.7 + Math.random() * 0.3);
+          const px = x + Math.cos(angle) * radius;
+          const py = y + Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+        
+        // Slight highlight for marker shine
+        if (Math.random() > 0.7 && size > 3) {
+          ctx.globalAlpha = alpha * 0.15;
+          ctx.beginPath();
+          ctx.arc(x - size * 0.2, y - size * 0.2, size * 0.15, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+
+      // Hex to RGB helper
+      function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+      }
+
+      // Redraw all strokes
+      function redrawAll() {
+        drawBackground();
+        for (let i = 0; i < markerStrokes.length - 1; i++) {
+          const s1 = markerStrokes[i];
+          const s2 = markerStrokes[i + 1];
+          drawMarkerStroke(s1.x, s1.y, s2.x, s2.y, s1.color, s1.bleed);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        markerStrokes.push({
+          x: lastX,
+          y: lastY,
+          color: currentColor,
+          bleed: currentBleed
+        });
+        
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+        
+        markerStatus.textContent = '🖊️ Marker bleeding...';
+        markerStatus.style.color = currentColor;
+        markerMessage.textContent = '🖊️ Drawing with bleed...';
+        markerMessage.style.color = currentColor;
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        drawMarkerStroke(lastX, lastY, x, y, currentColor, currentBleed);
+        
+        markerStrokes.push({
+          x: x,
+          y: y,
+          color: currentColor,
+          bleed: currentBleed
+        });
+        
+        lastX = x;
+        lastY = y;
+        strokeCountNum++;
+        strokeCount.textContent = strokeCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          markerStatus.textContent = '🖊️ Stroke complete!';
+          markerStatus.style.color = '#4ade80';
+          markerMessage.textContent = 'Click and drag to draw with marker';
+          markerMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            markerStatus.textContent = '🖊️ Click and drag to create marker bleed effect';
+            markerStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        markerStatus.textContent = `🎨 Color selected`;
+        markerStatus.style.color = color;
+        setTimeout(() => {
+          markerStatus.textContent = '🖊️ Click and drag to create marker bleed effect';
+          markerStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Set bleed
+      function setBleed(value) {
+        currentBleed = parseInt(value);
+        bleedValue.textContent = currentBleed;
+        markerStatus.textContent = `💧 Bleed: ${currentBleed}/10`;
+        markerStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          markerStatus.textContent = '🖊️ Click and drag to create marker bleed effect';
+          markerStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        markerStrokes = [];
+        strokeCountNum = 0;
+        strokeCount.textContent = '0';
+        drawBackground();
+        markerStatus.textContent = '🧹 Canvas cleared';
+        markerStatus.style.color = '#94a3b8';
+        markerMessage.textContent = 'Click and drag to draw with marker';
+        markerMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          markerStatus.textContent = '🖊️ Click and drag to create marker bleed effect';
+          markerStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Color buttons
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      // Bleed slider
+      bleedSlider.addEventListener('input', function() {
+        setBleed(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('🖊️ Marker Bleed ready · shortcuts: [C] Clear');
+    })();
+  </script>
+</body>
+</html>

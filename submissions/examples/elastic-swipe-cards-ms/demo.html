@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elastic Swipe Cards Demo</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="swipe-shell">
+    <section class="swipe-intro" aria-labelledby="swipe-title">
+      <p class="eyebrow">EaseMotion CSS submission</p>
+      <h1 id="swipe-title">Elastic Drag-to-Dismiss Cards</h1>
+      <p>
+        Drag a card left or right, use the control buttons, or press the arrow keys
+        to explore springy swipe interactions with accessible fallbacks.
+      </p>
+    </section>
+
+    <section class="swipe-demo" aria-label="Interactive swipe card stack">
+      <div class="card-stack" id="cardStack" tabindex="0" aria-live="polite">
+        <article class="swipe-card" data-index="0">
+          <span class="swipe-badge like">Keep</span>
+          <span class="swipe-badge dismiss">Dismiss</span>
+          <div class="card-visual visual-sky"></div>
+          <div class="card-copy">
+            <p class="card-kicker">Gesture UI</p>
+            <h2>Elastic pull resistance</h2>
+            <p>Cards stretch against the drag threshold, then snap back with a soft spring curve.</p>
+          </div>
+        </article>
+
+        <article class="swipe-card" data-index="1">
+          <span class="swipe-badge like">Keep</span>
+          <span class="swipe-badge dismiss">Dismiss</span>
+          <div class="card-visual visual-ember"></div>
+          <div class="card-copy">
+            <p class="card-kicker">Motion Tokens</p>
+            <h2>Directional swipe exits</h2>
+            <p>Swipe-out states use reusable keyframes for left, right, and upward dismissal.</p>
+          </div>
+        </article>
+
+        <article class="swipe-card" data-index="2">
+          <span class="swipe-badge like">Keep</span>
+          <span class="swipe-badge dismiss">Dismiss</span>
+          <div class="card-visual visual-mint"></div>
+          <div class="card-copy">
+            <p class="card-kicker">Keyboard Ready</p>
+            <h2>Arrow key actions</h2>
+            <p>Keyboard users can trigger the same swipe decisions without pointer gestures.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="controls" aria-label="Swipe card controls">
+        <button type="button" class="control-button dismiss-button" id="dismissCard">
+          Dismiss
+        </button>
+        <button type="button" class="control-button reset-button" id="resetCards">
+          Reset
+        </button>
+        <button type="button" class="control-button keep-button" id="keepCard">
+          Keep
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const stack = document.querySelector("#cardStack");
+    const cards = Array.from(document.querySelectorAll(".swipe-card"));
+    const resetButton = document.querySelector("#resetCards");
+    const keepButton = document.querySelector("#keepCard");
+    const dismissButton = document.querySelector("#dismissCard");
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let activeCardIndex = 0;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    function getActiveCard() {
+      return cards[activeCardIndex];
+    }
+
+    function announce(message) {
+      stack.setAttribute("aria-label", message);
+    }
+
+    function updateCardPosition(card, x, y) {
+      const rotation = Math.max(-14, Math.min(14, x / 16));
+      const pull = Math.min(1, Math.abs(x) / 180);
+      card.style.setProperty("--drag-x", `${x}px`);
+      card.style.setProperty("--drag-y", `${y}px`);
+      card.style.setProperty("--drag-rotate", `${rotation}deg`);
+      card.style.setProperty("--like-opacity", x > 0 ? pull : 0);
+      card.style.setProperty("--dismiss-opacity", x < 0 ? pull : 0);
+    }
+
+    function releaseCard(card) {
+      card.classList.add("is-snapping");
+      updateCardPosition(card, 0, 0);
+      setTimeout(() => card.classList.remove("is-snapping"), prefersReducedMotion ? 0 : 360);
+    }
+
+    function swipeCard(direction) {
+      const card = getActiveCard();
+      if (!card) {
+        announce("No cards left. Use reset to replay the stack.");
+        return;
+      }
+
+      const className = direction === "left" ? "swipe-out-left" : "swipe-out-right";
+      card.classList.add(className);
+      announce(direction === "left" ? "Card dismissed." : "Card kept.");
+
+      setTimeout(() => {
+        card.hidden = true;
+        activeCardIndex += 1;
+        if (!getActiveCard()) {
+          announce("All cards cleared. Use reset to replay the stack.");
+        }
+      }, prefersReducedMotion ? 0 : 360);
+    }
+
+    function resetCards() {
+      activeCardIndex = 0;
+      cards.forEach((card) => {
+        card.hidden = false;
+        card.classList.remove("swipe-out-left", "swipe-out-right", "is-snapping", "is-dragging");
+        updateCardPosition(card, 0, 0);
+      });
+      announce("Card stack reset.");
+      stack.focus();
+    }
+
+    stack.addEventListener("pointerdown", (event) => {
+      const card = getActiveCard();
+      if (!card) return;
+      isDragging = true;
+      startX = event.clientX;
+      startY = event.clientY;
+      card.classList.add("is-dragging");
+      card.setPointerCapture(event.pointerId);
+    });
+
+    stack.addEventListener("pointermove", (event) => {
+      const card = getActiveCard();
+      if (!isDragging || !card) return;
+      currentX = event.clientX - startX;
+      currentY = (event.clientY - startY) * 0.25;
+      updateCardPosition(card, currentX, currentY);
+    });
+
+    stack.addEventListener("pointerup", () => {
+      const card = getActiveCard();
+      if (!isDragging || !card) return;
+      isDragging = false;
+      card.classList.remove("is-dragging");
+
+      if (Math.abs(currentX) > 120) {
+        swipeCard(currentX > 0 ? "right" : "left");
+      } else {
+        releaseCard(card);
+      }
+
+      currentX = 0;
+      currentY = 0;
+    });
+
+    stack.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        swipeCard("left");
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        swipeCard("right");
+      }
+    });
+
+    dismissButton.addEventListener("click", () => swipeCard("left"));
+    keepButton.addEventListener("click", () => swipeCard("right"));
+    resetButton.addEventListener("click", resetCards);
+  </script>
+</body>
+</html>

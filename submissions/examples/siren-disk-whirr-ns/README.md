@@ -1,0 +1,16 @@
+# Siren Disk Whirr
+
+## What does this do?
+Renders a self-contained CSS-only `ease-siren-disk-whirr` demo: Siren disk whirring with alternating tone ports.
+
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-siren-disk-whirr`. No build step or JavaScript is required for the effect.
+
+```html
+<section class="ease-siren-disk-whirr">
+  <div class="ease-siren-disk-whirr__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.

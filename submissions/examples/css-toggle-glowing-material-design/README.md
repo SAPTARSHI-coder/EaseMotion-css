@@ -1,0 +1,2 @@
+# Glowing Toggle (Material Design)
+A satisfying, tactile switch component. Uses standard Material shadow elevations for the thumb component (`::before`), which glides across the track with a `cubic-bezier` bounce when toggled. In the 'on' state, the thumb emits a soft, color-matched ambient glow via an expanded `box-shadow` layer.

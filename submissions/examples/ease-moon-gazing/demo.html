@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moon Gazing · moon phase changes with interaction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="moon-container">
+      <div class="moon-display" id="moonDisplay">
+        <!-- Canvas for moon -->
+        <canvas id="moonCanvas"></canvas>
+        
+        <!-- Moon Info -->
+        <div class="moon-info">
+          <span class="info-label">🌙 Phase</span>
+          <span class="info-value" id="phaseName">New Moon</span>
+        </div>
+
+        <!-- Moon Controls -->
+        <div class="moon-controls">
+          <div class="control-group">
+            <label class="control-label">🌙 Phase</label>
+            <input type="range" class="control-slider" id="phaseSlider" min="0" max="100" value="0">
+            <span class="control-value" id="phaseValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">✨ Glow</label>
+            <input type="range" class="control-slider" id="glowSlider" min="0" max="100" value="50">
+            <span class="control-value" id="glowValue">50%</span>
+          </div>
+        </div>
+
+        <!-- Moon Text -->
+        <div class="moon-text">
+          <span class="text-label">🌙 Moon Gazing</span>
+          <span class="text-message" id="moonMessage">Gaze upon the changing moon</span>
+        </div>
+      </div>
+      
+      <div class="moon-status">
+        <span id="moonStatus">🌙 The moon phase changes as you interact</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-cycle" id="cycleBtn">🔄 Cycle</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌙 8 moon phases · glow control · lunar cycle</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('moonCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('moonDisplay');
+      const phaseName = document.getElementById('phaseName');
+      const phaseValue = document.getElementById('phaseValue');
+      const glowValue = document.getElementById('glowValue');
+      const moonStatus = document.getElementById('moonStatus');
+      const moonMessage = document.getElementById('moonMessage');
+      const phaseSlider = document.getElementById('phaseSlider');
+      const glowSlider = document.getElementById('glowSlider');
+      const cycleBtn = document.getElementById('cycleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // State
+      let phase = 0; // 0-100
+      let glow = 50; // 0-100
+      let isCycling = false;
+      let cycleInterval = null;
+
+      // Moon phases
+      const phases = [
+        { name: 'New Moon', icon: '🌑', start: 0, end: 5 },
+        { name: 'Waxing Crescent', icon: '🌒', start: 5, end: 20 },
+        { name: 'First Quarter', icon: '🌓', start: 20, end: 35 },
+        { name: 'Waxing Gibbous', icon: '🌔', start: 35, end: 50 },
+        { name: 'Full Moon', icon: '🌕', start: 50, end: 55 },
+        { name: 'Waning Gibbous', icon: '🌖', start: 55, end: 70 },
+        { name: 'Last Quarter', icon: '🌗', start: 70, end: 85 },
+        { name: 'Waning Crescent', icon: '🌘', start: 85, end: 100 }
+      ];
+
+      // Get current phase
+      function getCurrentPhase(phaseValue) {
+        for (let p of phases) {
+          if (phaseValue >= p.start && phaseValue < p.end) {
+            return p;
+          }
+        }
+        return phases[0];
+      }
+
+      // Draw moon
+      function drawMoon() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.3;
+        const glowIntensity = glow / 100;
+
+        // Clear and draw background
+        drawBackground();
+
+        // Moon glow
+        const glowRadius = radius * (1.5 + glowIntensity * 0.5);
+        const grad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, glowRadius);
+        const glowAlpha = 0.05 + glowIntensity * 0.15;
+        grad.addColorStop(0, `rgba(255, 230, 200, ${glowAlpha * 0.5})`);
+        grad.addColorStop(0.5, `rgba(255, 230, 200, ${glowAlpha})`);
+        grad.addColorStop(1, 'rgba(255, 230, 200, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Moon base
+        const moonGrad = ctx.createRadialGradient(
+          cx - radius * 0.2, cy - radius * 0.2, 0,
+          cx, cy, radius
+        );
+        moonGrad.addColorStop(0, '#fff5e6');
+        moonGrad.addColorStop(0.3, '#f5e6d3');
+        moonGrad.addColorStop(0.7, '#e8d5c0');
+        moonGrad.addColorStop(1, '#d4b896');
+        ctx.fillStyle = moonGrad;
+        ctx.shadowColor = 'rgba(255, 230, 200, 0.3)';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Moon craters
+        ctx.shadowBlur = 0;
+        const craters = [
+          { x: -0.3, y: -0.2, r: 0.08 },
+          { x: 0.2, y: -0.3, r: 0.06 },
+          { x: -0.1, y: 0.3, r: 0.1 },
+          { x: 0.3, y: 0.1, r: 0.05 },
+          { x: -0.4, y: 0.1, r: 0.04 },
+          { x: 0.1, y: -0.1, r: 0.12 },
+          { x: -0.2, y: -0.4, r: 0.04 },
+          { x: 0.4, y: -0.1, r: 0.03 }
+        ];
+        craters.forEach(c => {
+          const x = cx + c.x * radius;
+          const y = cy + c.y * radius;
+          const r = c.r * radius;
+          const grad2 = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, r);
+          grad2.addColorStop(0, 'rgba(200, 180, 160, 0.15)');
+          grad2.addColorStop(0.5, 'rgba(180, 160, 140, 0.1)');
+          grad2.addColorStop(1, 'rgba(160, 140, 120, 0.05)');
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Moon shadow (phase)
+        const phaseRad = (phase / 100) * Math.PI * 2;
+        const shadowX = Math.sin(phaseRad) * radius * 0.6;
+        const shadowW = Math.abs(Math.cos(phaseRad)) * radius;
+
+        if (shadowW > 0.01) {
+          ctx.save();
+          ctx.shadowBlur = 0;
+          ctx.globalCompositeOperation = 'destination-in';
+          
+          // Create clipping path for shadow
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.fill();
+          
+          ctx.globalCompositeOperation = 'source-atop';
+          
+          // Shadow ellipse
+          const shadowColor = `rgba(0, 0, 0, ${0.3 + Math.abs(Math.cos(phaseRad)) * 0.4})`;
+          ctx.fillStyle = shadowColor;
+          ctx.beginPath();
+          ctx.ellipse(cx + shadowX, cy, shadowW, radius, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+        }
+
+        // Moon highlight
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.05;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(cx - radius * 0.25, cy - radius * 0.25, radius * 0.3, radius * 0.15, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Update phase name
+        const currentPhase = getCurrentPhase(phase);
+        phaseName.textContent = `${currentPhase.icon} ${currentPhase.name}`;
+        phaseValue.textContent = `${Math.round(phase)}%`;
+
+        // Update status
+        if (phase > 48 && phase < 52) {
+          moonStatus.textContent = '🌕 Full moon shines brightly in the night sky! ✨';
+          moonStatus.style.color = '#fbbf24';
+        } else if (phase < 3 || phase > 97) {
+          moonStatus.textContent = '🌑 The new moon hides in shadow...';
+          moonStatus.style.color = '#94a3b8';
+        } else {
+          moonStatus.textContent = `🌙 ${currentPhase.name} graces the night sky`;
+          moonStatus.style.color = '#818cf8';
+        }
+        moonMessage.textContent = `Gaze upon the ${currentPhase.name.toLowerCase()}`;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Night sky
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 30, 0.3)');
+        grad.addColorStop(0.5, 'rgba(5, 10, 25, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 15, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Stars
+        for (let i = 0; i < 80; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.2 + Math.random() * 0.4;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Twinkling stars
+        for (let i = 0; i < 15; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h * 0.5;
+          const size = 0.5 + Math.random() * 1;
+          const alpha = 0.1 + Math.random() * 0.2;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawMoon();
+      }
+
+      // Update moon
+      function updateMoon() {
+        drawMoon();
+      }
+
+      // Set phase
+      function setPhase(value) {
+        phase = Math.max(0, Math.min(100, parseInt(value)));
+        phaseSlider.value = phase;
+        updateMoon();
+      }
+
+      // Set glow
+      function setGlow(value) {
+        glow = Math.max(0, Math.min(100, parseInt(value)));
+        glowSlider.value = glow;
+        glowValue.textContent = glow + '%';
+        updateMoon();
+      }
+
+      // Toggle cycle
+      function toggleCycle() {
+        if (isCycling) {
+          clearInterval(cycleInterval);
+          cycleInterval = null;
+          isCycling = false;
+          cycleBtn.textContent = '🔄 Cycle';
+          cycleBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          cycleBtn.style.borderColor = '#818cf8';
+          moonStatus.textContent = '🌙 Cycling paused';
+          moonStatus.style.color = '#94a3b8';
+          setTimeout(() => {
+            moonStatus.textContent = '🌙 The moon phase changes as you interact';
+            moonStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else {
+          isCycling = true;
+          cycleBtn.textContent = '⏹️ Stop';
+          cycleBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+          cycleBtn.style.borderColor = '#f87171';
+          moonStatus.textContent = '🌙 Cycling through moon phases...';
+          moonStatus.style.color = '#fbbf24';
+          
+          let direction = 1;
+          cycleInterval = setInterval(() => {
+            let newPhase = phase + direction * 0.5;
+            if (newPhase >= 100) {
+              newPhase = 100;
+              direction = -1;
+            } else if (newPhase <= 0) {
+              newPhase = 0;
+              direction = 1;
+            }
+            setPhase(newPhase);
+          }, 50);
+        }
+      }
+
+      // Reset
+      function resetMoon() {
+        if (isCycling) {
+          toggleCycle();
+        }
+        setPhase(0);
+        setGlow(50);
+        moonStatus.textContent = '🔄 Reset complete';
+        moonStatus.style.color = '#94a3b8';
+        moonMessage.textContent = 'Gaze upon the changing moon';
+        setTimeout(() => {
+          moonStatus.textContent = '🌙 The moon phase changes as you interact';
+          moonStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      phaseSlider.addEventListener('input', function() {
+        if (isCycling) toggleCycle();
+        setPhase(this.value);
+      });
+
+      glowSlider.addEventListener('input', function() {
+        setGlow(this.value);
+      });
+
+      if (cycleBtn) {
+        cycleBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleCycle();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetMoon();
+        });
+      }
+
+      // Click on display to cycle
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          toggleCycle();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleCycle();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetMoon();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('🌙 Moon Gazing ready · shortcuts: [Space] Cycle, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

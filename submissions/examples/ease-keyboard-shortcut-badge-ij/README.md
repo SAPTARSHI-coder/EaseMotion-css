@@ -1,17 +1,22 @@
-# ease-keyboard-shortcut-badge
+# Keyboard Shortcut Badge
 
-A tactile, 3D-styled keyboard shortcut (`<kbd>`) badge that physically depresses when clicked.
+A component that renders keyboard shortcuts as physical-key-like badges with a press animation on click.
 
-## Usage
-Open demo.html in a browser. Use the `.ease-kbd` class on `<kbd>` elements. Group them with separators inside a `.ease-kbd-group` container.
+## Features
 
-## Custom Properties
-| Property | Default | Description |
-|---|---|---|
-| --kbd-bg | #f8fafc | Badge background color |
-| --kbd-border | #cbd5e1 | Badge border color |
-| --kbd-shadow | #94a3b8 | 3D depth shadow color |
-| --kbd-text | #334155 | Text color |
+- Badges styled to resemble physical keyboard keys (bevel/shadow effect)
+- Click/tap triggers a scale-down press animation
+- Groups of related shortcuts displayed in a responsive grid
+- Visual feedback area showing which shortcut was pressed
+- Fully themable via CSS custom properties
 
-## Notes
-The component uses `box-shadow` to create the 3D depth. On `:active`, it uses `transform: translateY(4px)` while simultaneously reducing the `box-shadow` offset to 0, perfectly simulating a physical key press without any JavaScript.
+## CSS Custom Properties
+
+| Property            | Default   | Description              |
+| ------------------- | --------- | ------------------------ |
+| `--ksb-duration`   | `0.12s`   | Key press animation duration |
+| `--ksb-key-bg`     | `#f3f4f6` | Key background color     |
+| `--ksb-key-color`  | `#1f2937` | Key text color           |
+| `--ksb-key-shadow` | `0 3px 0 0 #9ca3af, …` | Key box-shadow |
+| `--ksb-radius`     | `6px`     | Key border-radius        |
+| `--ksb-font-size`  | `0.85rem` | Key font size            |

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Form CLS Audit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">CORE WEB VITALS AUDIT</span>
+      <h1>Dynamic Form CLS</h1>
+      <p>
+        A reproducible layout-shift workload for measuring Cumulative
+        Layout Shift in dynamic form components.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Audit metrics">
+      <article class="metric">
+        <span>CLS</span>
+        <strong id="cls">--</strong>
+        <small>Target: ≤ 0.10</small>
+      </article>
+
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting audit</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runAudit">Run CLS Audit</button>
+      <button id="addField">Add Dynamic Field</button>
+      <span id="message">Ready to measure layout stability.</span>
+    </div>
+
+    <section class="form-panel">
+      <div class="panel-heading">
+        <span>FORM WORKLOAD</span>
+        <h2>Account Details</h2>
+      </div>
+
+      <form id="dynamicForm">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" type="text" placeholder="Enter your name">
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" type="email" placeholder="you@example.com">
+        </div>
+
+        <div class="field">
+          <label for="plan">Plan</label>
+          <select id="plan">
+            <option>Starter</option>
+            <option>Professional</option>
+            <option>Enterprise</option>
+          </select>
+        </div>
+
+        <div id="dynamicFields"></div>
+
+        <div class="actions">
+          <button type="submit">Save Details</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>CLS</h2>
+        <p>
+          Layout shifts are collected through the browser's
+          PerformanceObserver API.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Dynamic Fields</h2>
+        <p>
+          New form content is inserted using reserved layout space to
+          reduce unexpected movement.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>CI Budget</h2>
+        <p>
+          The audit fails when CLS, FPS, bundle size, or execution time
+          exceeds its configured budget.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const runButton = document.getElementById("runAudit");
+    const addButton = document.getElementById("addField");
+    const form = document.getElementById("dynamicForm");
+    const dynamicFields = document.getElementById("dynamicFields");
+
+    const clsOutput = document.getElementById("cls");
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      maximumCls: 0.10,
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    let dynamicFieldCount = 0;
+
+    addButton.addEventListener("click", () => {
+      dynamicFieldCount++;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "field dynamic-field";
+
+      wrapper.innerHTML = `
+        <label for="dynamic-${dynamicFieldCount}">
+          Additional detail ${dynamicFieldCount}
+        </label>
+        <input
+          id="dynamic-${dynamicFieldCount}"
+          type="text"
+          placeholder="Dynamic form value"
+        >
+      `;
+
+      dynamicFields.appendChild(wrapper);
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      message.textContent = "Form submission prevented for benchmark.";
+    });
+
+    runButton.addEventListener("click", async () => {
+      runButton.disabled = true;
+      addButton.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Collecting layout metrics";
+      message.textContent = "Running dynamic form workload...";
+
+      let clsValue = 0;
+
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        }
+      });
+
+      try {
+        observer.observe({
+          type: "layout-shift",
+          buffered: true
+        });
+      } catch (error) {
+        console.warn("Layout Shift API unavailable:", error);
+      }
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const progress =
+            (elapsed % 1000) / 1000;
+
+          document.documentElement.style.setProperty(
+            "--form-shift",
+            `${Math.sin(progress * Math.PI * 2) * 2}px`
+          );
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      observer.disconnect();
+
+      const executionMs =
+        performance.now() - start;
+
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        clsValue <= BUDGET.maximumCls &&
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      clsOutput.textContent =
+        clsValue.toFixed(3);
+
+      fpsOutput.textContent =
+        fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budgets passed"
+          : "Performance budget failed";
+
+      message.textContent =
+        passed
+          ? "CLS audit completed successfully."
+          : "One or more thresholds were exceeded.";
+
+      console.table({
+        cls: Number(clsValue.toFixed(4)),
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        maximumCls: BUDGET.maximumCls,
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      document.documentElement.style.removeProperty(
+        "--form-shift"
+      );
+
+      runButton.disabled = false;
+      addButton.disabled = false;
+    });
+  </script>
+</body>
+</html>

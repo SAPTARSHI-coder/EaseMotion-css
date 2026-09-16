@@ -1,0 +1,2 @@
+# Animated Navbar (Gradient)
+A clean pill-shaped navigation bar. When hovered, the entire background crossfades into a vibrant, continuously panning linear gradient while the text dynamically inverts to white for contrast.

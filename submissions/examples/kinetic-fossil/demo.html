@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinetic Fossil</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="fossil-card">
+
+      <header class="header">
+        <div>
+          <span class="eyebrow">FIELD RESEARCH / 04</span>
+          <h1>Kinetic Fossil</h1>
+          <p>Excavate the ancient specimen hidden beneath the strata.</p>
+        </div>
+
+        <div class="status-dot">
+          <span></span>
+          LIVE
+        </div>
+      </header>
+
+      <div class="excavation-layout">
+
+        <div class="dig-site">
+
+          <canvas id="fossilCanvas"></canvas>
+
+          <div class="site-label top-left">
+            <span>STRATUM</span>
+            <strong id="stratumLabel">SURFACE SOIL</strong>
+          </div>
+
+          <div class="site-label top-right">
+            <span>SPECIMEN</span>
+            <strong>UNKNOWN</strong>
+          </div>
+
+          <div class="cursor-hint" id="cursorHint">
+            DRAG TO EXCAVATE
+          </div>
+
+        </div>
+
+        <aside class="research-panel">
+
+          <div class="panel-section">
+            <span class="panel-label">EXCAVATION</span>
+
+            <div class="progress-number">
+              <strong id="progressValue">0</strong>
+              <span>%</span>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <span class="panel-label">SPECIMEN FRAGMENTS</span>
+
+            <div class="fragment-count">
+              <strong id="fragmentCount">0</strong>
+              <span>/ 6</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <span class="panel-label">CURRENT STRATUM</span>
+            <p class="stratum-name" id="stratumName">
+              Surface Soil
+            </p>
+            <p class="stratum-description" id="stratumDescription">
+              Loose surface material.
+            </p>
+          </div>
+
+          <div class="panel-section">
+            <span class="panel-label">FIELD NOTE</span>
+            <p class="field-note" id="fieldNote">
+              No specimen detected. Begin excavation.
+            </p>
+          </div>
+
+          <div class="controls">
+            <button id="excavateBtn">
+              EXCAVATE
+            </button>
+
+            <button id="resetBtn" class="secondary">
+              RESET
+            </button>
+          </div>
+
+        </aside>
+
+      </div>
+
+      <footer class="footer">
+        <span id="statusText">SITE UNDISTURBED</span>
+        <span>SPACE: EXCAVATE · R: RESET</span>
+      </footer>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    const canvas = document.getElementById("fossilCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const progressValue = document.getElementById("progressValue");
+    const progressFill = document.getElementById("progressFill");
+    const fragmentCount = document.getElementById("fragmentCount");
+    const stratumLabel = document.getElementById("stratumLabel");
+    const stratumName = document.getElementById("stratumName");
+    const stratumDescription = document.getElementById("stratumDescription");
+    const fieldNote = document.getElementById("fieldNote");
+    const statusText = document.getElementById("statusText");
+    const cursorHint = document.getElementById("cursorHint");
+
+    let width = 0;
+    let height = 0;
+
+    let excavation = 0;
+    let targetExcavation = 0;
+
+    let particles = [];
+    let excavationPoints = [];
+
+    let pointerDown = false;
+
+    const strata = [
+      {
+        min: 0,
+        max: 20,
+        label: "SURFACE SOIL",
+        name: "Surface Soil",
+        description: "Loose surface material."
+      },
+      {
+        min: 20,
+        max: 40,
+        label: "UPPER SEDIMENT",
+        name: "Upper Sediment",
+        description: "Fine-grained sediment deposits."
+      },
+      {
+        min: 40,
+        max: 65,
+        label: "MINERAL LAYER",
+        name: "Mineral Layer",
+        description: "Dense mineral-rich geological material."
+      },
+      {
+        min: 65,
+        max: 85,
+        label: "ANCIENT STRATUM",
+        name: "Ancient Stratum",
+        description: "Older compact geological deposits."
+      },
+      {
+        min: 85,
+        max: 100,
+        label: "FOSSIL BED",
+        name: "Fossil Bed",
+        description: "The specimen is embedded here."
+      }
+    ];
+
+    const fossils = [
+      { threshold: 35, x: 0.34, y: 0.45, type: "skull" },
+      { threshold: 45, x: 0.49, y: 0.52, type: "spine" },
+      { threshold: 55, x: 0.55, y: 0.60, type: "rib" },
+      { threshold: 65, x: 0.42, y: 0.70, type: "limb" },
+      { threshold: 75, x: 0.65, y: 0.72, type: "limb" },
+      { threshold: 85, x: 0.76, y: 0.55, type: "tail" }
+    ];
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const ratio = window.devicePixelRatio || 1;
+
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function getStratum() {
+      return strata.find(
+        layer => excavation >= layer.min && excavation <= layer.max
+      ) || strata[strata.length - 1];
+    }
+
+    function updateUI() {
+
+      const value = Math.floor(excavation);
+
+      progressValue.textContent = value;
+      progressFill.style.width = `${value}%`;
+
+      const layer = getStratum();
+
+      stratumLabel.textContent = layer.label;
+      stratumName.textContent = layer.name;
+      stratumDescription.textContent = layer.description;
+
+      const discovered = fossils.filter(
+        fossil => excavation >= fossil.threshold
+      ).length;
+
+      fragmentCount.textContent = discovered;
+
+      if (value === 0) {
+        statusText.textContent = "SITE UNDISTURBED";
+        fieldNote.textContent =
+          "No specimen detected. Begin excavation.";
+      } else if (value < 35) {
+        statusText.textContent = "SURFACE EXCAVATION";
+        fieldNote.textContent =
+          "Sediment removal in progress.";
+      } else if (value < 85) {
+        statusText.textContent = "SPECIMEN DETECTED";
+        fieldNote.textContent =
+          `${discovered} fossil fragments detected.`;
+      } else if (value < 100) {
+        statusText.textContent = "DEEP EXCAVATION";
+        fieldNote.textContent =
+          "Fossil bed detected beneath ancient strata.";
+      } else {
+        statusText.textContent = "SPECIMEN RECOVERED";
+        fieldNote.textContent =
+          "Complete specimen successfully uncovered.";
+      }
+    }
+
+    function addParticle(x, y) {
+
+      for (let i = 0; i < 3; i++) {
+
+        particles.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 2,
+          vy: -Math.random() * 2,
+          size: 1 + Math.random() * 3,
+          life: 1
+        });
+
+      }
+    }
+
+    function drawParticles() {
+
+      particles.forEach(p => {
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.04;
+        p.life -= 0.025;
+
+        ctx.globalAlpha = Math.max(0, p.life);
+
+        ctx.fillStyle = "#d2c1a2";
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+      });
+
+      ctx.globalAlpha = 1;
+
+      particles = particles.filter(
+        particle => particle.life > 0
+      );
+    }
+
+    function drawBackground() {
+
+      const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        height
+      );
+
+      gradient.addColorStop(0, "#8d765f");
+      gradient.addColorStop(0.25, "#76604c");
+      gradient.addColorStop(0.55, "#5a4737");
+      gradient.addColorStop(1, "#30271f");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const layerHeight = height / 5;
+
+      for (let i = 0; i < 5; i++) {
+
+        ctx.globalAlpha = 0.12;
+
+        ctx.fillStyle =
+          i % 2 === 0 ? "#d6c09d" : "#2d241d";
+
+        ctx.fillRect(
+          0,
+          height - layerHeight * (i + 1),
+          width,
+          layerHeight
+        );
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
+    function drawExcavatedRegions() {
+
+      excavationPoints.forEach(point => {
+
+        const gradient = ctx.createRadialGradient(
+          point.x,
+          point.y,
+          0,
+          point.x,
+          point.y,
+          point.radius
+        );
+
+        gradient.addColorStop(0, "rgba(15, 12, 10, 0.95)");
+        gradient.addColorStop(
+          0.7,
+          "rgba(15, 12, 10, 0.7)"
+        );
+        gradient.addColorStop(
+          1,
+          "rgba(15, 12, 10, 0)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.beginPath();
+        ctx.arc(
+          point.x,
+          point.y,
+          point.radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      });
+    }
+
+    function drawCracks() {
+
+      if (excavation < 40) return;
+
+      ctx.strokeStyle = "rgba(25, 20, 16, 0.45)";
+      ctx.lineWidth = 1;
+
+      const amount = Math.floor(
+        excavation / 8
+      );
+
+      for (let i = 0; i < amount; i++) {
+
+        const x =
+          width * 0.15 +
+          Math.sin(i * 7.1) * width * 0.35;
+
+        const y =
+          height * 0.25 +
+          Math.cos(i * 3.7) * height * 0.35;
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, y);
+
+        for (let j = 0; j < 4; j++) {
+
+          ctx.lineTo(
+            x + j * 8 + Math.sin(i + j) * 6,
+            y + j * 10
+          );
+
+        }
+
+        ctx.stroke();
+      }
+    }
+
+    function drawFossilPart(fossil, alpha) {
+
+      const x = fossil.x * width;
+      const y = fossil.y * height;
+
+      ctx.save();
+
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = "#d8c39d";
+      ctx.fillStyle = "#bda47b";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+
+      if (fossil.type === "skull") {
+
+        ctx.beginPath();
+        ctx.arc(x, y, 25, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#2b241d";
+
+        ctx.beginPath();
+        ctx.arc(x - 8, y - 3, 4, 0, Math.PI * 2);
+        ctx.arc(x + 8, y - 3, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+      }
+
+      if (fossil.type === "spine") {
+
+        ctx.beginPath();
+
+        for (let i = 0; i < 8; i++) {
+
+          const px = x + i * 13;
+          const py = y + Math.sin(i * 0.8) * 8;
+
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + 7, py);
+
+        }
+
+        ctx.stroke();
+      }
+
+      if (fossil.type === "rib") {
+
+        for (let i = 0; i < 4; i++) {
+
+          ctx.beginPath();
+
+          ctx.arc(
+            x + i * 5,
+            y,
+            20 + i * 3,
+            Math.PI,
+            Math.PI * 2
+          );
+
+          ctx.stroke();
+        }
+      }
+
+      if (fossil.type === "limb") {
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 35, y + 25);
+        ctx.lineTo(x + 50, y + 20);
+
+        ctx.stroke();
+      }
+
+      if (fossil.type === "tail") {
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, y);
+
+        for (let i = 0; i < 7; i++) {
+
+          ctx.lineTo(
+            x + i * 13,
+            y + Math.sin(i * 0.7) * 12
+          );
+
+        }
+
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawFossil() {
+
+      fossils.forEach(fossil => {
+
+        if (excavation < fossil.threshold) return;
+
+        const reveal =
+          Math.min(
+            1,
+            (excavation - fossil.threshold) / 12
+          );
+
+        drawFossilPart(
+          fossil,
+          reveal
+        );
+      });
+    }
+
+    function excavate(x, y) {
+
+      targetExcavation = Math.min(
+        100,
+        targetExcavation + 2.5
+      );
+
+      excavationPoints.push({
+        x,
+        y,
+        radius: 35 + Math.random() * 20
+      });
+
+      if (excavationPoints.length > 70) {
+        excavationPoints.shift();
+      }
+
+      addParticle(x, y);
+
+      cursorHint.style.opacity = "0";
+    }
+
+    function animationLoop() {
+
+      excavation +=
+        (targetExcavation - excavation) * 0.08;
+
+      if (Math.abs(
+        targetExcavation - excavation
+      ) < 0.01) {
+        excavation = targetExcavation;
+      }
+
+      ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+      drawBackground();
+      drawCracks();
+      drawExcavatedRegions();
+      drawFossil();
+      drawParticles();
+
+      updateUI();
+
+      requestAnimationFrame(
+        animationLoop
+      );
+    }
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+
+        pointerDown = true;
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        excavate(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    canvas.addEventListener(
+      "pointermove",
+      event => {
+
+        if (!pointerDown) return;
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        excavate(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    window.addEventListener(
+      "pointerup",
+      () => {
+        pointerDown = false;
+      }
+    );
+
+    document.getElementById(
+      "excavateBtn"
+    ).addEventListener(
+      "click",
+      () => {
+
+        excavate(
+          width / 2,
+          height / 2
+        );
+      }
+    );
+
+    document.getElementById(
+      "resetBtn"
+    ).addEventListener(
+      "click",
+      resetExcavation
+    );
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (event.code === "Space") {
+
+          event.preventDefault();
+
+          excavate(
+            width / 2 +
+              (Math.random() - 0.5) * 120,
+            height / 2 +
+              (Math.random() - 0.5) * 80
+          );
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+          resetExcavation();
+        }
+      }
+    );
+
+    function resetExcavation() {
+
+      excavation = 0;
+      targetExcavation = 0;
+
+      particles = [];
+      excavationPoints = [];
+
+      cursorHint.style.opacity = "1";
+
+      updateUI();
+    }
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+    resize();
+    updateUI();
+    animationLoop();
+
+  </script>
+
+</body>
+</html>

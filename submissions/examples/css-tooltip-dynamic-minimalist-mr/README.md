@@ -1,0 +1,2 @@
+# Dynamic Tooltip (Minimalist)
+A stark, ultra-clean contextual overlay. Foregoing heavy background colors, this tooltip utilizes a crisp white background with a subtle gray border. The entrance animation is a simple, smooth `translateY` paired with a fade-in.

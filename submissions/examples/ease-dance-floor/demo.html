@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Floor · Floor Lights Up with Movement</title>
+    <meta name="description" content="Interactive dance floor with tiles that light up with movement, creating a dynamic light show effect.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪩 DANCE FLOOR</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="danceCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="4" max="16" value="8">
+                <span id="sizeLabel">8</span>
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🪩 DANCE FLOOR</span>
+            <small>light up · movement · disco</small>
+        </div>
+        <div class="hint">
+            <span>💃 move your mouse to light up the dance floor</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('danceCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let tileSize = 8;
+            let time = 0;
+            let mouseX = -100;
+            let mouseY = -100;
+            let prevMouseX = -100;
+            let prevMouseY = -100;
+
+            // ---- Dance Floor Grid ----
+            let grid = [];
+            const COLS = Math.floor(W / 8);
+            const ROWS = Math.floor(H / 8);
+
+            // ---- Tile Class ----
+            class Tile {
+                constructor(row, col) {
+                    this.row = row;
+                    this.col = col;
+                    this.x = col * tileSize;
+                    this.y = row * tileSize;
+                    this.size = tileSize;
+                    this.brightness = 0;
+                    this.targetBrightness = 0;
+                    this.hue = (row * 30 + col * 40 + 180) % 360;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.speed = 0.02 + Math.random() * 0.03;
+                }
+
+                update() {
+                    const dt = 0.02 * (speed / 5);
+                    this.brightness += (this.targetBrightness - this.brightness) * 0.08 * dt * 3;
+                    if (this.brightness < 0.01) this.brightness = 0;
+                    
+                    // Subtle pulsing
+                    this.phase += this.speed * dt;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const brightness = this.brightness;
+                    
+                    if (brightness < 0.01) {
+                        // Dark tile
+                        ctx.fillStyle = 'rgba(10, 15, 25, 0.9)';
+                        ctx.fillRect(x, y, size, size);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(x, y, size, size);
+                        return;
+                    }
+                    
+                    // Glowing tile
+                    const hue = this.hue;
+                    const light = 20 + brightness * 60;
+                    const sat = 80 + brightness * 20;
+                    const alpha = 0.3 + brightness * 0.6;
+                    
+                    // Glow
+                    ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${brightness * 0.3})`;
+                    ctx.shadowBlur = 10 * brightness;
+                    
+                    // Tile fill
+                    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+                    ctx.fillRect(x, y, size, size);
+                    
+                    // Border
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `hsla(${hue}, 100%, 80%, ${brightness * 0.2})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(x, y, size, size);
+                    
+                    // Inner glow
+                    if (brightness > 0.5) {
+                        const innerGrad = ctx.createRadialGradient(
+                            x + size/2, y + size/2, 0,
+                            x + size/2, y + size/2, size * 0.5
+                        );
+                        const gradAlpha = (brightness - 0.5) * 0.3;
+                        innerGrad.addColorStop(0, `hsla(${hue}, 100%, 90%, ${gradAlpha})`);
+                        innerGrad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
+                        ctx.fillStyle = innerGrad;
+                        ctx.fillRect(x, y, size, size);
+                    }
+                }
+
+                setBrightness(val) {
+                    this.targetBrightness = Math.min(1, Math.max(0, val));
+                }
+            }
+
+            // ---- Initialize Grid ----
+            function initGrid() {
+                grid = [];
+                const cols = Math.floor(W / tileSize);
+                const rows = Math.floor(H / tileSize);
+                for (let r = 0; r < rows; r++) {
+                    grid[r] = [];
+                    for (let c = 0; c < cols; c++) {
+                        grid[r][c] = new Tile(r, c);
+                    }
+                }
+            }
+
+            // ---- Update Tiles ----
+            function updateTiles() {
+                const cols = Math.floor(W / tileSize);
+                const rows = Math.floor(H / tileSize);
+                const radius = 60 + speed * 4;
+                const trailRadius = 40 + speed * 3;
+                
+                // Mouse position in grid
+                const col = Math.floor(mouseX / tileSize);
+                const row = Math.floor(mouseY / tileSize);
+                const prevCol = Math.floor(prevMouseX / tileSize);
+                const prevRow = Math.floor(prevMouseY / tileSize);
+                
+                // Update tiles near mouse
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const tile = grid[r][c];
+                        const dx = (c + 0.5) * tileSize - mouseX;
+                        const dy = (r + 0.5) * tileSize - mouseY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Distance-based brightness
+                        if (dist < radius) {
+                            const intensity = 1 - (dist / radius);
+                            const brightness = Math.pow(intensity, 0.8) * 0.8 + 0.2;
+                            tile.setBrightness(brightness);
+                            
+                            // Set hue based on position for rainbow effect
+                            tile.hue = (tile.hue + 0.5) % 360;
+                        } else if (dist < radius * 1.5) {
+                            // Fade out
+                            const intensity = 1 - ((dist - radius) / (radius * 0.5));
+                            tile.setBrightness(intensity * 0.3);
+                        } else {
+                            // Slowly fade back
+                            tile.setBrightness(0);
+                        }
+                        
+                        // Trail effect (follow mouse path)
+                        if (prevMouseX > 0 && prevMouseY > 0) {
+                            const dx2 = (c + 0.5) * tileSize - prevMouseX;
+                            const dy2 = (r + 0.5) * tileSize - prevMouseY;
+                            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                            if (dist2 < trailRadius) {
+                                const intensity = 1 - (dist2 / trailRadius);
+                                tile.setBrightness(Math.max(tile.targetBrightness, intensity * 0.4));
+                            }
+                        }
+                    }
+                }
+                
+                // Store previous position
+                prevMouseX = mouseX;
+                prevMouseY = mouseY;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw tiles
+                for (let r = 0; r < grid.length; r++) {
+                    for (let c = 0; c < grid[r].length; c++) {
+                        grid[r][c].draw(ctx);
+                    }
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Tiles: ${grid.length * (grid[0]?.length || 0)}`, W - 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                mouseX = (clientX - rect.left) * scaleX;
+                mouseY = (clientY - rect.top) * scaleY;
+                
+                // Clamp
+                mouseX = Math.min(W - 5, Math.max(5, mouseX));
+                mouseY = Math.min(H - 5, Math.max(5, mouseY));
+            }
+
+            function handleLeave() {
+                mouseX = -100;
+                mouseY = -100;
+                prevMouseX = -100;
+                prevMouseY = -100;
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Update tiles
+                for (let r = 0; r < grid.length; r++) {
+                    for (let c = 0; c < grid[r].length; c++) {
+                        grid[r][c].update();
+                    }
+                }
+                
+                // Update brightness based on mouse position
+                updateTiles();
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Reset ----
+            function resetDanceFloor() {
+                initGrid();
+                mouseX = -100;
+                mouseY = -100;
+                prevMouseX = -100;
+                prevMouseY = -100;
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Size ----
+            function updateSize() {
+                tileSize = parseInt(sizeSlider.value);
+                sizeLabel.textContent = tileSize;
+                initGrid();
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetDanceFloor);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            sizeSlider.addEventListener('input', updateSize);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseleave', handleLeave);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+            canvas.addEventListener('touchend', handleLeave);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetDanceFloor();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initGrid();
+            render();
+            animate();
+
+            console.log('🪩 Dance Floor · Move your mouse to light up the floor!');
+        })();
+    </script>
+</body>
+</html>

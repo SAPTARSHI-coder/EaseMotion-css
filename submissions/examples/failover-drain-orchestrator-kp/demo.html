@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Failover Drain Orchestrator</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="orchestrator" data-state="drain">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">EaseMotion availability lab</p>
+          <h1 id="title">Failover Drain Orchestrator</h1>
+          <p class="lede">
+            Tune failover signals and watch the control plane drain traffic,
+            isolate weak zones, and reopen replicas only after quorum
+            stabilizes.
+          </p>
+        </div>
+        <aside class="state-badge" aria-live="polite">
+          <span class="pulse"></span>
+          <small>Failover state</small>
+          <strong id="stateLabel">Controlled drain</strong>
+        </aside>
+      </section>
+
+      <section class="controls" aria-label="Failover inputs">
+        <label>
+          <span>Zone stress</span>
+          <input id="stress" type="range" min="0" max="100" value="67" />
+          <output id="stressOut">67%</output>
+        </label>
+        <label>
+          <span>Replica health</span>
+          <input id="health" type="range" min="15" max="100" value="61" />
+          <output id="healthOut">61%</output>
+        </label>
+        <label>
+          <span>Drain backlog</span>
+          <input id="backlog" type="range" min="0" max="100" value="58" />
+          <output id="backlogOut">58%</output>
+        </label>
+        <label>
+          <span>Quorum margin</span>
+          <input id="quorum" type="range" min="0" max="100" value="42" />
+          <output id="quorumOut">42%</output>
+        </label>
+      </section>
+
+      <section class="grid" aria-label="Failover dashboard">
+        <article class="topology">
+          <div class="panel-title">
+            <span>Topology pressure</span>
+            <strong id="riskScore">61</strong>
+          </div>
+          <div class="map" aria-hidden="true">
+            <span class="ring ring-a"></span>
+            <span class="ring ring-b"></span>
+            <span class="ring ring-c"></span>
+            <span class="sweep"></span>
+            <span class="zone zone-a">A</span>
+            <span class="zone zone-b">B</span>
+            <span class="zone zone-c">C</span>
+            <span class="zone zone-d">D</span>
+            <span class="core"></span>
+          </div>
+          <div class="probe-strip">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+
+        <article class="lanes">
+          <div class="panel-title">
+            <span>Drain lanes</span>
+            <strong id="laneLabel">Rerouting</strong>
+          </div>
+          <div class="lane-list">
+            <div class="lane" style="--fill: 0.82">
+              <span>Checkout primary</span><i></i><b>drain</b>
+            </div>
+            <div class="lane" style="--fill: 0.68">
+              <span>Search replicas</span><i></i><b>shift</b>
+            </div>
+            <div class="lane" style="--fill: 0.51">
+              <span>Billing workers</span><i></i><b>hold</b>
+            </div>
+            <div class="lane" style="--fill: 0.43">
+              <span>Event pipeline</span><i></i><b>buffer</b>
+            </div>
+            <div class="lane" style="--fill: 0.59">
+              <span>Cache warmers</span><i></i><b>prime</b>
+            </div>
+          </div>
+        </article>
+
+        <article class="playbook">
+          <div class="panel-title">
+            <span>Failover playbook</span>
+            <strong id="playbookLabel">Drain</strong>
+          </div>
+          <ol>
+            <li>
+              <em>01</em>
+              <div>
+                <strong>Freeze new placement</strong>
+                <p>Stop scheduling fresh work into the stressed zone.</p>
+              </div>
+            </li>
+            <li>
+              <em>02</em>
+              <div>
+                <strong>Drain active sessions</strong>
+                <p>
+                  Move traffic by weighted endpoints and bounded connection age.
+                </p>
+              </div>
+            </li>
+            <li>
+              <em>03</em>
+              <div>
+                <strong>Fence unsafe replicas</strong>
+                <p>Health probes isolate nodes before quorum gets thin.</p>
+              </div>
+            </li>
+            <li>
+              <em>04</em>
+              <div>
+                <strong>Restore by quorum trend</strong>
+                <p>
+                  Reopen capacity only after probe slope and backlog recover.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <article class="metrics">
+          <div class="metric">
+            <span>Drain ETA</span>
+            <strong id="etaLabel">22s</strong>
+          </div>
+          <div class="metric">
+            <span>Isolation risk</span>
+            <strong id="isolationLabel">19%</strong>
+          </div>
+          <div class="metric">
+            <span>Safe capacity</span>
+            <strong id="capacityLabel">58%</strong>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const root = document.querySelector(".orchestrator");
+      const input = {
+        stress: document.querySelector("#stress"),
+        health: document.querySelector("#health"),
+        backlog: document.querySelector("#backlog"),
+        quorum: document.querySelector("#quorum"),
+      };
+      const output = {
+        stress: document.querySelector("#stressOut"),
+        health: document.querySelector("#healthOut"),
+        backlog: document.querySelector("#backlogOut"),
+        quorum: document.querySelector("#quorumOut"),
+        state: document.querySelector("#stateLabel"),
+        risk: document.querySelector("#riskScore"),
+        lane: document.querySelector("#laneLabel"),
+        playbook: document.querySelector("#playbookLabel"),
+        eta: document.querySelector("#etaLabel"),
+        isolation: document.querySelector("#isolationLabel"),
+        capacity: document.querySelector("#capacityLabel"),
+      };
+
+      function update() {
+        const stress = Number(input.stress.value);
+        const health = Number(input.health.value);
+        const backlog = Number(input.backlog.value);
+        const quorum = Number(input.quorum.value);
+        const risk = Math.round(
+          stress * 0.38 +
+            backlog * 0.28 +
+            (100 - health) * 0.22 +
+            (100 - quorum) * 0.12
+        );
+        const capacity = Math.max(
+          12,
+          Math.round((health + quorum) / 2 - backlog * 0.16)
+        );
+        let state = "steady";
+        let label = "Steady routing";
+        let lane = "Balanced";
+        let playbook = "Watch";
+
+        if (risk > 78) {
+          state = "isolate";
+          label = "Zone isolation";
+          lane = "Fenced";
+          playbook = "Isolate";
+        } else if (risk > 52) {
+          state = "drain";
+          label = "Controlled drain";
+          lane = "Rerouting";
+          playbook = "Drain";
+        } else if (risk < 34) {
+          state = "restore";
+          label = "Replica restore";
+          lane = "Cooling";
+          playbook = "Restore";
+        }
+
+        root.dataset.state = state;
+        root.style.setProperty("--risk", risk);
+        root.style.setProperty("--stress", stress);
+        root.style.setProperty("--backlog", backlog);
+        root.style.setProperty("--health", health);
+        output.stress.value = `${stress}%`;
+        output.health.value = `${health}%`;
+        output.backlog.value = `${backlog}%`;
+        output.quorum.value = `${quorum}%`;
+        output.risk.textContent = risk;
+        output.state.textContent = label;
+        output.lane.textContent = lane;
+        output.playbook.textContent = playbook;
+        output.eta.textContent = `${Math.max(8, Math.round(risk / 2.8))}s`;
+        output.isolation.textContent = `${Math.max(0, risk - 48)}%`;
+        output.capacity.textContent = `${capacity}%`;
+      }
+
+      Object.values(input).forEach((item) =>
+        item.addEventListener("input", update)
+      );
+      update();
+    </script>
+  </body>
+</html>

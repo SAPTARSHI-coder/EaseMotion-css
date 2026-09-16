@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bugfix Showcase: Issue #403 Fade-In Layout Reflow Fix</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="badge">Issue #403 Fix Demonstration</span>
+        <h1>Fade-In Reflow Performance Fix</h1>
+        <p>
+          Demonstrates why animating <code>width</code> and
+          <code>height</code> for fade-in animations causes performance jank,
+          and how moving to <code>transform: scale()</code> leverages GPU
+          compositing.
+        </p>
+      </div>
+
+      <div class="comparison-grid">
+        <!-- Janky Reflow Method -->
+        <div class="card card-janky">
+          <div class="card-title">
+            <span class="status-dot"></span>
+            Janky Reflow Method
+          </div>
+          <div class="sandbox">
+            <div id="box-janky" class="box box-janky">Janky</div>
+          </div>
+          <button class="btn btn-primary" onclick="animateBox('janky')">
+            Trigger Animation
+          </button>
+        </div>
+
+        <!-- Smooth Transform Method -->
+        <div class="card card-smooth">
+          <div class="card-title">
+            <span class="status-dot"></span>
+            Smooth Transform Method
+          </div>
+          <div class="sandbox">
+            <div id="box-smooth" class="box box-smooth">Smooth</div>
+          </div>
+          <button class="btn btn-primary" onclick="animateBox('smooth')">
+            Trigger Animation
+          </button>
+        </div>
+      </div>
+
+      <!-- Explanation Section -->
+      <div class="explanation">
+        <h2>Performance Investigation & Resolution</h2>
+
+        <h3>The Problem</h3>
+        <p>
+          Originally, the <code>ease-fade-in</code> animation scaled elements by
+          animating the <code>width</code> and <code>height</code> CSS
+          properties. Animating physical geometry on every single frame forces
+          the browser to recalculate the document layout (Reflow) and repaint
+          the screen (Paint). This causes severe frame drops and jank,
+          particularly on mobile browsers and lower-end devices.
+        </p>
+
+        <h3>The Fix</h3>
+        <p>
+          The fix (implemented in PR #3135) changes the animation to target the
+          compositor thread. By using <code>transform: scale()</code> instead of
+          geometric sizing, the scaling is offloaded to the GPU. The layout tree
+          remains completely unaffected, rendering at a smooth 60fps / 120fps.
+        </p>
+
+        <h3>Code Comparison</h3>
+        <div class="code-comparison">
+          <div>
+            <span class="code-header red">Before (Janky Reflow)</span>
+            <pre class="code-block"><code>@keyframes ease-kf-fade-in {
+  from {
+    opacity: 0;
+    width: 0px;  /* Forces layout reflow */
+    height: 0px; /* Forces layout reflow */
+  }
+  to {
+    opacity: 1;
+    width: 100px;
+    height: 100px;
+  }
+}</code></pre>
+          </div>
+          <div>
+            <span class="code-header green">After (Compositor/GPU)</span>
+            <pre class="code-block"><code>@keyframes ease-kf-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95); /* GPU composited */
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function animateBox(type) {
+        const element = document.getElementById("box-" + type);
+
+        // Reset animation
+        element.classList.remove("animate");
+
+        // Trigger a reflow to restart the animation
+        void element.offsetWidth;
+
+        // Start animation
+        element.classList.add("animate");
+      }
+    </script>
+  </body>
+</html>

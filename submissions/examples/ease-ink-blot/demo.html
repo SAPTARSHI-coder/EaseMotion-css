@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ink Blot · Rorschach Ink Blot Forms</title>
+    <meta name="description" content="Interactive Rorschach ink blot that forms organically with fluid ink spreading and symmetry.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🖤 INK BLOT</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="inkCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="blot-btn" id="blotBtn">💧 NEW BLOT</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🖤 INK BLOT</span>
+            <small>Rorschach · organic · symmetrical</small>
+        </div>
+        <div class="hint">
+            <span>🧠 click to form a new ink blot pattern</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('inkCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const blotBtn = document.getElementById('blotBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let inkDroplets = [];
+            let isForming = false;
+            let formProgress = 0;
+
+            // ---- Ink Droplet Class ----
+            class InkDroplet {
+                constructor(x, y, size, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.baseSize = size || 5 + Math.random() * 25;
+                    this.size = this.baseSize;
+                    this.targetSize = this.baseSize;
+                    this.color = color || `hsl(0, 0%, ${10 + Math.random() * 20}%)`;
+                    
+                    // Movement for organic spreading
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobbleX = (Math.random() - 0.5) * 0.5;
+                    this.wobbleY = (Math.random() - 0.5) * 0.5;
+                    
+                    // Growth
+                    this.growthPhase = Math.random() * Math.PI * 2;
+                    this.growthSpeed = 0.01 + Math.random() * 0.02;
+                    this.growAmount = 0.3 + Math.random() * 0.5;
+                    
+                    // Opacity
+                    this.opacity = 0.3 + Math.random() * 0.4;
+                    this.targetOpacity = this.opacity;
+                    
+                    // Shape distortion
+                    this.distortion = 0.2 + Math.random() * 0.3;
+                    this.distortionPhase = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    this.phase += 0.01 * dt;
+                    this.growthPhase += this.growthSpeed * dt;
+                    this.distortionPhase += 0.005 * dt;
+                    
+                    // Gentle movement
+                    this.x += this.vx * dt + Math.sin(this.phase + this.wobbleX) * 0.05;
+                    this.y += this.vy * dt + Math.cos(this.phase * 0.7 + this.wobbleY) * 0.05;
+                    
+                    // Organic growth
+                    const growth = 0.5 + Math.sin(this.growthPhase) * 0.5;
+                    this.size = this.baseSize * (0.7 + growth * this.growAmount);
+                    
+                    // Keep within bounds
+                    const margin = this.size + 10;
+                    if (this.x < margin) this.x = margin;
+                    if (this.x > W - margin) this.x = W - margin;
+                    if (this.y < margin) this.y = margin;
+                    if (this.y > H - margin) this.y = H - margin;
+                }
+
+                draw(ctx, symmetry) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const opacity = this.opacity * (0.3 + Math.sin(this.phase * 0.3) * 0.2 + 0.5);
+                    
+                    // Distorted shape (organic blob)
+                    const points = 12;
+                    const distortion = this.distortion * (0.7 + Math.sin(this.distortionPhase) * 0.3);
+                    
+                    ctx.save();
+                    ctx.globalAlpha = Math.min(1, opacity);
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 5;
+                    
+                    // Draw main droplet
+                    this.drawBlob(ctx, x, y, size, distortion);
+                    
+                    // Draw symmetrical counterpart
+                    if (symmetry) {
+                        const symX = W - x;
+                        this.drawBlob(ctx, symX, y, size, distortion);
+                    }
+                    
+                    ctx.restore();
+                }
+
+                drawBlob(ctx, x, y, size, distortion) {
+                    const points = 10 + Math.floor(distortion * 8);
+                    ctx.beginPath();
+                    for (let i = 0; i <= points; i++) {
+                        const angle = (i / points) * Math.PI * 2;
+                        const r = size * (0.6 + Math.sin(angle * 3 + this.distortionPhase + this.phase) * distortion * 0.3 + 0.4);
+                        const px = x + Math.cos(angle) * r;
+                        const py = y + Math.sin(angle) * r * 0.9;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    
+                    // Ink gradient
+                    const grad = ctx.createRadialGradient(
+                        x - size * 0.2, y - size * 0.2, 0,
+                        x, y, size
+                    );
+                    grad.addColorStop(0, 'rgba(20, 20, 20, 0.9)');
+                    grad.addColorStop(0.3, 'rgba(30, 30, 30, 0.8)');
+                    grad.addColorStop(0.7, 'rgba(40, 40, 40, 0.6)');
+                    grad.addColorStop(1, 'rgba(50, 50, 50, 0.3)');
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    
+                    // Subtle edge detail
+                    ctx.strokeStyle = 'rgba(20, 20, 20, 0.1)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+
+            // ---- Generate Ink Blot ----
+            function generateBlot() {
+                inkDroplets = [];
+                const numDroplets = 40 + Math.floor(Math.random() * 40);
+                const centerX = W / 2;
+                const centerY = H / 2 + Math.random() * 20 - 10;
+                
+                for (let i = 0; i < numDroplets; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 20 + Math.random() * 150;
+                    const x = centerX + Math.cos(angle) * radius * (0.5 + Math.random() * 0.5);
+                    const y = centerY + Math.sin(angle) * radius * (0.4 + Math.random() * 0.4);
+                    const size = 8 + Math.random() * 30;
+                    const droplet = new InkDroplet(x, y, size);
+                    
+                    // Random variations
+                    droplet.distortion = 0.2 + Math.random() * 0.4;
+                    droplet.growAmount = 0.3 + Math.random() * 0.6;
+                    droplet.vx = (Math.random() - 0.5) * 0.5;
+                    droplet.vy = (Math.random() - 0.5) * 0.5;
+                    
+                    // Some droplets are darker
+                    if (Math.random() < 0.3) {
+                        droplet.color = `hsl(0, 0%, ${5 + Math.random() * 10}%)`;
+                        droplet.opacity = 0.6 + Math.random() * 0.3;
+                    }
+                    
+                    inkDroplets.push(droplet);
+                }
+                
+                // Add some smaller detail droplets
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 30 + Math.random() * 180;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    const droplet = new InkDroplet(x, y, 3 + Math.random() * 8);
+                    droplet.opacity = 0.2 + Math.random() * 0.3;
+                    droplet.distortion = 0.1 + Math.random() * 0.2;
+                    inkDroplets.push(droplet);
+                }
+                
+                isForming = true;
+                formProgress = 0;
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Paper-like background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#f5f0e8');
+                grad.addColorStop(0.3, '#ede8dd');
+                grad.addColorStop(0.6, '#e5ddd0');
+                grad.addColorStop(0.8, '#d5cdc0');
+                grad.addColorStop(1, '#c5bdb0');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Subtle paper texture
+                ctx.globalAlpha = 0.05;
+                for (let i = 0; i < 100; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % H;
+                    const size = 1 + (i % 3);
+                    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#000000';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            // ---- Render ----
+            function render() {
+                drawBackground();
+                
+                // Draw ink droplets with symmetry
+                for (let droplet of inkDroplets) {
+                    droplet.draw(ctx, true);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Update droplets
+                for (let droplet of inkDroplets) {
+                    droplet.update();
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetBlot() {
+                inkDroplets = [];
+                render();
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            blotBtn.addEventListener('click', generateBlot);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetBlot);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'n' || e.key === 'N') {
+                    generateBlot();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBlot();
+                }
+            });
+
+            // ---- Initialize ----
+            generateBlot();
+            animate();
+
+            console.log('🖤 Ink Blot · Click "New Blot" or press N for a new pattern');
+        })();
+    </script>
+</body>
+</html>

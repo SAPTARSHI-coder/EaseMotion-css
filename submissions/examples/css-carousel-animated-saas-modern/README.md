@@ -1,0 +1,2 @@
+# Animated Carousel (SaaS Modern)
+A continuous, infinitely scrolling marquee carousel common in modern B2B SaaS landing pages. Pauses smoothly on hover and features crisp gradient fade masks on the edges.

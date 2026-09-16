@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🦗 Cricket Chirp – Crickets Chirp Rhythmically</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🦗 Cricket Chirp</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle crickets">🔊 Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="chirpBtn" title="Chirp now">🎵 Chirp</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="cricketCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="cricketStatus">🦗 Chirping</span>
+                <span id="chirpCount">🎵 0 chirps</span>
+                <span id="tempoDisplay">🎶 Tempo: 60</span>
+            </div>
+            <div class="hint" id="hint">🦗 Listen to the crickets chirp</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🎵 Tempo</label>
+                <input type="range" id="tempoSlider" min="20" max="120" value="60" step="1" />
+                <span id="tempoLabel">60</span>
+            </div>
+            <div class="slider-group">
+                <label>📢 Volume</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="70" step="1" />
+                <span id="volumeLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🦗 Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5" step="1" />
+                <span id="densityLabel">5</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Cricket Chirp – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('cricketCanvas');
+            const ctx = canvas.getContext('2d');
+            const cricketStatus = document.getElementById('cricketStatus');
+            const chirpCount = document.getElementById('chirpCount');
+            const tempoDisplay = document.getElementById('tempoDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const chirpBtn = document.getElementById('chirpBtn');
+            const tempoSlider = document.getElementById('tempoSlider');
+            const tempoLabel = document.getElementById('tempoLabel');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeLabel = document.getElementById('volumeLabel');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isActive = true;
+            let time = 0;
+            let animationId = null;
+            let chirpTimer = 0;
+            let totalChirps = 0;
+            let chirpPhase = 0;
+
+            // --- Parameters ---
+            let tempo = 60; // 20-120
+            let volume = 70; // 0-100
+            let density = 5; // 1-10
+
+            // --- Crickets ---
+            let crickets = [];
+            let particles = [];
+            let glowParticles = [];
+
+            // --- Audio context ---
+            let audioCtx = null;
+            let isAudioReady = false;
+
+            // --- Cricket class ---
+            class Cricket {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    
+                    // Position in scene
+                    const angle = (index / total) * Math.PI * 2 + Math.random() * 0.3;
+                    const radius = 100 + Math.random() * 150;
+                    this.x = W / 2 + Math.cos(angle) * radius + (Math.random() - 0.5) * 50;
+                    this.y = H / 2 + 50 + Math.sin(angle) * radius * 0.5 + (Math.random() - 0.5) * 50;
+                    
+                    // Size and appearance
+                    this.size = 3 + Math.random() * 4;
+                    this.color = `hsl(${80 + Math.random() * 40}, 30%, ${30 + Math.random() * 20}%)`;
+                    this.opacity = 0.5 + Math.random() * 0.5;
+                    
+                    // Behavior
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.chirpLength = 0.05 + Math.random() * 0.08;
+                    this.chirpIntensity = 0.3 + Math.random() * 0.7;
+                    this.isChirping = false;
+                    this.chirpTimer = 0;
+                    this.chirpDuration = 0.1 + Math.random() * 0.15;
+                    
+                    // Movement
+                    this.targetX = this.x;
+                    this.targetY = this.y;
+                    this.moveTimer = Math.random() * 100;
+                    this.moveSpeed = 0.001 + Math.random() * 0.002;
+                    
+                    // Glow
+                    this.glowIntensity = 0;
+                    this.glowSize = 10 + Math.random() * 20;
+                }
+
+                update(tempo, density, time) {
+                    // Random movement
+                    this.moveTimer += this.moveSpeed;
+                    if (this.moveTimer > 1) {
+                        this.moveTimer = 0;
+                        this.targetX = W / 2 + (Math.random() - 0.5) * 300;
+                        this.targetY = H / 2 + 50 + (Math.random() - 0.5) * 200;
+                    }
+                    this.x += (this.targetX - this.x) * 0.001;
+                    this.y += (this.targetY - this.y) * 0.001;
+                    
+                    // Chirp timing based on tempo and density
+                    const chirpInterval = (60 / tempo) * (1 / (density / 3));
+                    const chirpChance = 1 / (chirpInterval * 60);
+                    
+                    // Random chirp
+                    if (isActive && Math.random() < chirpChance * 0.5) {
+                        this.startChirp();
+                    }
+                    
+                    // Chirp duration
+                    if (this.isChirping) {
+                        this.chirpTimer += 0.016;
+                        if (this.chirpTimer > this.chirpDuration) {
+                            this.isChirping = false;
+                            this.chirpTimer = 0;
+                            this.glowIntensity *= 0.9;
+                        } else {
+                            // Glow pulse
+                            const progress = this.chirpTimer / this.chirpDuration;
+                            this.glowIntensity = Math.sin(progress * Math.PI) * this.chirpIntensity;
+                        }
+                    }
+                    
+                    // Glow decay
+                    if (!this.isChirping) {
+                        this.glowIntensity *= 0.98;
+                        if (this.glowIntensity < 0.01) this.glowIntensity = 0;
+                    }
+                    
+                    return this.isChirping;
+                }
+
+                startChirp() {
+                    if (!isActive) return;
+                    this.isChirping = true;
+                    this.chirpTimer = 0;
+                    this.chirpIntensity = 0.3 + Math.random() * 0.7;
+                    this.chirpDuration = 0.08 + Math.random() * 0.15;
+                    totalChirps++;
+                    
+                    // Create visual effect
+                    this.createChirpEffect();
+                    
+                    // Play audio
+                    playChirpSound(this.chirpIntensity * (volume / 100));
+                }
+
+                createChirpEffect() {
+                    // Glow particles
+                    const count = 3 + Math.floor(Math.random() * 5);
+                    for (let i = 0; i < count; i++) {
+                        const p = new GlowParticle(
+                            this.x + (Math.random() - 0.5) * 20,
+                            this.y + (Math.random() - 0.5) * 20,
+                            this.chirpIntensity
+                        );
+                        glowParticles.push(p);
+                    }
+                    
+                    // Sound wave rings
+                    const ring = new SoundRing(this.x, this.y, this.chirpIntensity);
+                    particles.push(ring);
+                }
+
+                draw(ctx) {
+                    // Glow
+                    if (this.glowIntensity > 0.01) {
+                        ctx.save();
+                        const grad = ctx.createRadialGradient(
+                            this.x, this.y, 0,
+                            this.x, this.y, this.glowSize * (1 + this.glowIntensity)
+                        );
+                        const alpha = this.glowIntensity * 0.3;
+                        grad.addColorStop(0, `rgba(200, 255, 150, ${alpha * 0.5})`);
+                        grad.addColorStop(0.5, `rgba(150, 255, 100, ${alpha * 0.2})`);
+                        grad.addColorStop(1, `rgba(100, 255, 50, 0)`);
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.glowSize * (1 + this.glowIntensity), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    
+                    // Cricket body
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.translate(this.x, this.y);
+                    
+                    // Shadow
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    
+                    // Body (ellipse)
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.size * 1.5, this.size * 0.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Head (small circle)
+                    ctx.fillStyle = `hsl(${80 + this.index * 5}, 30%, ${25 + this.index * 3}%)`;
+                    ctx.beginPath();
+                    ctx.arc(this.size * 1.2, 0, this.size * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eyes (tiny dots)
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.beginPath();
+                    ctx.arc(this.size * 1.4, -this.size * 0.3, this.size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.size * 1.4, this.size * 0.3, this.size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Legs (lines)
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 0.5;
+                    for (let i = -1; i <= 1; i++) {
+                        const legY = i * this.size * 0.4;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.size * 0.5, legY);
+                        ctx.lineTo(-this.size * 1.5, legY + this.size * 0.5 * i);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(this.size * 0.5, legY);
+                        ctx.lineTo(this.size * 1.5, legY + this.size * 0.5 * i);
+                        ctx.stroke();
+                    }
+                    
+                    // Antennae
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 0.3;
+                    ctx.beginPath();
+                    ctx.moveTo(this.size * 1.3, -this.size * 0.3);
+                    ctx.quadraticCurveTo(this.size * 2, -this.size * 1.2, this.size * 2.5, -this.size * 0.8);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(this.size * 1.3, this.size * 0.3);
+                    ctx.quadraticCurveTo(this.size * 2, this.size * 1.2, this.size * 2.5, this.size * 0.8);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // --- Sound Ring class ---
+            class SoundRing {
+                constructor(x, y, intensity) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = 2;
+                    this.maxRadius = 30 + intensity * 40;
+                    this.speed = 1 + intensity * 2;
+                    this.opacity = 0.6 + intensity * 0.4;
+                    this.width = 1 + intensity * 2;
+                    this.life = 1;
+                    this.decay = 0.01 + intensity * 0.01;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.opacity *= 0.98;
+                    this.width *= 0.99;
+                    this.life -= this.decay;
+                    return this.life > 0 && this.opacity > 0.01 && this.radius < this.maxRadius;
+                }
+
+                draw(ctx) {
+                    const alpha = this.life * this.opacity * 0.3;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = `rgba(150, 255, 100, ${alpha})`;
+                    ctx.lineWidth = this.width;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(150, 255, 100, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // --- Glow Particle class ---
+            class GlowParticle {
+                constructor(x, y, intensity) {
+                    this.x = x + (Math.random() - 0.5) * 10;
+                    this.y = y + (Math.random() - 0.5) * 10;
+                    this.size = 1 + Math.random() * 3;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2 - 0.5;
+                    this.intensity = intensity;
+                    this.hue = 100 + Math.random() * 40;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += 0.02;
+                    this.life -= 0.02;
+                    this.size *= 0.995;
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    const alpha = (this.life / this.maxLife) * this.intensity * 0.6;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = this.size * 4;
+                    ctx.shadowColor = `hsl(${this.hue}, 80%, 70%)`;
+                    ctx.fillStyle = `hsl(${this.hue}, 80%, 85%)`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Audio functions ---
+            function initAudio() {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    isAudioReady = true;
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                }
+            }
+
+            function playChirpSound(intensity) {
+                if (!isAudioReady || !audioCtx) return;
+                
+                try {
+                    const now = audioCtx.currentTime;
+                    
+                    // Main chirp oscillator
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const filter = audioCtx.createBiquadFilter();
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(3000 + Math.random() * 2000, now);
+                    osc.frequency.exponentialRampToValueAtTime(2000 + Math.random() * 1000, now + 0.05);
+                    
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 4000 + Math.random() * 2000;
+                    filter.Q.value = 1;
+                    
+                    gain.gain.setValueAtTime(intensity * 0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                    
+                    // Second harmonic
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.type = 'square';
+                    osc2.frequency.setValueAtTime(6000 + Math.random() * 2000, now);
+                    osc2.frequency.exponentialRampToValueAtTime(4000 + Math.random() * 1000, now + 0.04);
+                    
+                    gain2.gain.setValueAtTime(intensity * 0.05, now);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    
+                    osc2.start(now);
+                    osc2.stop(now + 0.06);
+                    
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Night sky gradient
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f18');
+                grad.addColorStop(0.3, '#080c14');
+                grad.addColorStop(0.6, '#060a10');
+                grad.addColorStop(0.8, '#04060c');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Stars
+                ctx.save();
+                const starCount = 80;
+                for (let i = 0; i < starCount; i++) {
+                    const x = (i * 137.508 + 30) % W;
+                    const y = (i * 97.309 + 20) % (H * 0.7);
+                    const size = 0.3 + Math.sin(i * 3.7) * 0.4 + 0.4;
+                    const twinkle = 0.5 + 0.5 * Math.sin(time * 0.01 + i * 2.3);
+                    ctx.globalAlpha = 0.1 + 0.2 * twinkle;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Ground (grass)
+                ctx.save();
+                const groundGrad = ctx.createLinearGradient(0, H - 40, 0, H);
+                groundGrad.addColorStop(0, 'rgba(10, 20, 15, 0)');
+                groundGrad.addColorStop(0.3, 'rgba(15, 30, 20, 0.2)');
+                groundGrad.addColorStop(0.7, 'rgba(20, 40, 25, 0.4)');
+                groundGrad.addColorStop(1, 'rgba(25, 50, 30, 0.5)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 40, W, 40);
+
+                // Grass blades
+                ctx.globalAlpha = 0.05;
+                for (let i = 0; i < 100; i++) {
+                    const x = Math.random() * W;
+                    const y = H - 40 + Math.random() * 40;
+                    const h = 5 + Math.random() * 15;
+                    const sway = Math.sin(x * 0.05 + time * 0.001) * 2;
+                    ctx.strokeStyle = 'rgba(50, 100, 50, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + sway, y - h * 0.6, x + sway * 0.5, y - h);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Moon
+                ctx.save();
+                const moonX = W - 80;
+                const moonY = 60;
+                const moonGrad = ctx.createRadialGradient(
+                    moonX - 3, moonY - 3, 0,
+                    moonX, moonY, 25
+                );
+                moonGrad.addColorStop(0, 'rgba(255, 250, 240, 0.7)');
+                moonGrad.addColorStop(0.5, 'rgba(240, 235, 225, 0.5)');
+                moonGrad.addColorStop(1, 'rgba(220, 215, 205, 0)');
+                ctx.fillStyle = moonGrad;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = 'rgba(200, 220, 255, 0.05)';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(240, 235, 225, 0.3)';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Update displays
+                tempoDisplay.textContent = `🎶 Tempo: ${Math.round(tempo)}`;
+                chirpCount.textContent = `🎵 ${totalChirps} chirps`;
+                cricketStatus.textContent = isActive ? '🦗 Chirping' : '🦗 Silent';
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Update crickets
+                let anyChirping = false;
+                for (const cricket of crickets) {
+                    const chirping = cricket.update(tempo, density, time);
+                    if (chirping) anyChirping = true;
+                }
+
+                // Update particles
+                particles = particles.filter(p => p.update());
+                glowParticles = glowParticles.filter(p => p.update());
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw glow particles (behind crickets)
+                for (const p of glowParticles) {
+                    p.draw(ctx);
+                }
+
+                // Draw crickets
+                for (const cricket of crickets) {
+                    cricket.draw(ctx);
+                }
+
+                // Draw sound rings (on top)
+                for (const p of particles) {
+                    p.draw(ctx);
+                }
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleCrickets() {
+                isActive = !isActive;
+                toggleBtn.textContent = isActive ? '🔊 Toggle' : '🔇 Mute';
+                cricketStatus.textContent = isActive ? '🦗 Chirping' : '🦗 Silent';
+                hint.textContent = isActive ? '🦗 Crickets chirping' : '🦗 Crickets silent';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+                
+                if (isActive && !isAudioReady) {
+                    initAudio();
+                }
+            }
+
+            function resetAll() {
+                crickets = [];
+                particles = [];
+                glowParticles = [];
+                totalChirps = 0;
+                chirpCount.textContent = '🎵 0 chirps';
+                generateCrickets(density);
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function chirpNow() {
+                if (!isActive) return;
+                for (let i = 0; i < density; i++) {
+                    const cricket = crickets[Math.floor(Math.random() * crickets.length)];
+                    if (cricket) {
+                        setTimeout(() => cricket.startChirp(), i * 50);
+                    }
+                }
+                hint.textContent = '🎵 Chirp!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 500);
+            }
+
+            // --- Generate crickets ---
+            function generateCrickets(count) {
+                crickets = [];
+                for (let i = 0; i < count; i++) {
+                    const cricket = new Cricket(i, count);
+                    crickets.push(cricket);
+                }
+            }
+
+            // --- Slider handlers ---
+            tempoSlider.addEventListener('input', function() {
+                tempo = parseFloat(this.value);
+                tempoLabel.textContent = Math.round(tempo);
+                tempoDisplay.textContent = `🎶 Tempo: ${Math.round(tempo)}`;
+            });
+
+            volumeSlider.addEventListener('input', function() {
+                volume = parseFloat(this.value);
+                volumeLabel.textContent = `${Math.round(volume)}%`;
+            });
+
+            densitySlider.addEventListener('input', function() {
+                density = parseFloat(this.value);
+                densityLabel.textContent = Math.round(density);
+                generateCrickets(density);
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleCrickets);
+            resetBtn.addEventListener('click', resetAll);
+            chirpBtn.addEventListener('click', chirpNow);
+
+            // --- Click canvas to chirp ---
+            canvas.addEventListener('click', (e) => {
+                chirpNow();
+            });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    chirpNow();
+                }
+                if (e.key === 't' || e.key === 'T') toggleCrickets();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Tempo adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    tempo = Math.min(120, tempo + 5);
+                    tempoSlider.value = tempo;
+                    tempoLabel.textContent = Math.round(tempo);
+                    tempoDisplay.textContent = `🎶 Tempo: ${Math.round(tempo)}`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    tempo = Math.max(20, tempo - 5);
+                    tempoSlider.value = tempo;
+                    tempoLabel.textContent = Math.round(tempo);
+                    tempoDisplay.textContent = `🎶 Tempo: ${Math.round(tempo)}`;
+                }
+            });
+
+            // --- Init ---
+            initAudio();
+            generateCrickets(density);
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🦗 Cricket Chirp ready!');
+            console.log('Controls: Click canvas (chirp), Space (chirp), T (toggle)');
+            console.log('          ↑/↓ (tempo), R (reset)');
+
+        })();
+    </script>
+</body>
+</html>

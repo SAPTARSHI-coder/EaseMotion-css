@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Cleanup & Memory Leak Regression Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="test-container">
+    <h1>Animation Cleanup Test</h1>
+
+    <p>
+      Repeatedly start, cancel, remove and recreate animated elements.
+    </p>
+
+    <div id="animation-target" class="animation-target"></div>
+
+    <button id="start">Start Animation</button>
+    <button id="cancel">Cancel Animation</button>
+    <button id="remove">Remove Element</button>
+    <button id="recreate">Recreate Element</button>
+    <button id="stress">Run Cleanup Stress Test</button>
+  </main>
+
+  <script>
+    let target = document.getElementById("animation-target");
+    let activeAnimations = [];
+
+    function startAnimation() {
+      if (!target) return;
+
+      target.classList.remove("running");
+
+      void target.offsetWidth;
+
+      target.classList.add("running");
+
+      const animation = target.animate(
+        [
+          { transform: "translateX(-30px) scale(.9)", opacity: .5 },
+          { transform: "translateX(30px) scale(1.1)", opacity: 1 },
+          { transform: "translateX(0) scale(1)", opacity: .8 }
+        ],
+        {
+          duration: 800,
+          easing: "ease-in-out"
+        }
+      );
+
+      activeAnimations.push(animation);
+
+      animation.finished
+        .catch(() => {})
+        .finally(() => {
+          activeAnimations = activeAnimations.filter(
+            item => item !== animation
+          );
+        });
+    }
+
+    function cancelAnimations() {
+      activeAnimations.forEach(animation => {
+        animation.cancel();
+      });
+
+      activeAnimations = [];
+
+      if (target) {
+        target.getAnimations().forEach(animation => {
+          animation.cancel();
+        });
+
+        target.classList.remove("running");
+      }
+    }
+
+    function removeElement() {
+      cancelAnimations();
+
+      if (target) {
+        target.remove();
+        target = null;
+      }
+    }
+
+    function recreateElement() {
+      if (target) return;
+
+      target = document.createElement("div");
+      target.id = "animation-target";
+      target.className = "animation-target";
+
+      document.querySelector(".test-container")
+        .insertBefore(
+          target,
+          document.querySelector("button")
+        );
+    }
+
+    function stressTest() {
+      recreateElement();
+
+      for (let i = 0; i < 20; i++) {
+        startAnimation();
+
+        if (i % 3 === 0) {
+          cancelAnimations();
+        }
+      }
+
+      setTimeout(() => {
+        cancelAnimations();
+      }, 1000);
+    }
+
+    document.getElementById("start")
+      .addEventListener("click", startAnimation);
+
+    document.getElementById("cancel")
+      .addEventListener("click", cancelAnimations);
+
+    document.getElementById("remove")
+      .addEventListener("click", removeElement);
+
+    document.getElementById("recreate")
+      .addEventListener("click", recreateElement);
+
+    document.getElementById("stress")
+      .addEventListener("click", stressTest);
+  </script>
+</body>
+</html>

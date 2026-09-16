@@ -1,0 +1,2 @@
+# Dynamic Popover (Cyberpunk)
+A highly stylized sci-fi popover. Expanding the popover reveals a skewed, harsh neon panel topped with a yellow glitch bar. Hover transitions are forcibly eliminated (`transition: 0s`) to emulate an instant terminal response.

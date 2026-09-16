@@ -1,0 +1,417 @@
+/* ============================================================
+   EaseMotion CSS — @starting-style Toast Notifications
+   Submission: ksn
+
+   Demonstrates CSS-only entrance + exit animations using:
+   • @starting-style for initial state before rendering
+   • transition-behavior: allow-discrete for display transitions
+   • @keyframes for the exit animation phase
+
+   Features:
+   ✓ @starting-style entrance animation (slide up + fade + blur)
+   ✓ Smooth exit animation (slide down + fade)
+   ✓ Auto-dismiss with CSS animation-delay (optional)
+   ✓ prefers-reduced-motion (instantaneous)
+   ✓ prefers-color-scheme dark mode
+   ✓ forced-colors (Windows HCM)
+   ✓ Keyboard accessible (close buttons)
+   ✓ aria-live for screen readers
+   ✓ Print-friendly (toasts hidden)
+   ✓ Zero JavaScript animation — all transitions are CSS
+   ============================================================ */
+
+/* ── Custom Properties ────────────────────────────────────── */
+:root {
+  --ss-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ss-bg: #fafbfc;
+  --ss-surface: #ffffff;
+  --ss-text: #1a202c;
+  --ss-text-secondary: #4a5568;
+  --ss-text-muted: #718096;
+  --ss-border: #e2e8f0;
+
+  /* Toast colors */
+  --ss-success-bg: #f0fdf4;
+  --ss-success-border: #bbf7d0;
+  --ss-success-icon: #16a34a;
+  --ss-error-bg: #fef2f2;
+  --ss-error-border: #fecaca;
+  --ss-error-icon: #dc2626;
+  --ss-info-bg: #eff6ff;
+  --ss-info-border: #bfdbfe;
+  --ss-info-icon: #2563eb;
+  --ss-warning-bg: #fffbeb;
+  --ss-warning-border: #fde68a;
+  --ss-warning-icon: #d97706;
+
+  --ss-toast-radius: 10px;
+  --ss-speed-in: 400ms;
+  --ss-speed-out: 300ms;
+  --ss-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ss-ease-out: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Buttons */
+  --ss-btn-success: #16a34a;
+  --ss-btn-error: #dc2626;
+  --ss-btn-info: #2563eb;
+  --ss-btn-warning: #d97706;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ss-bg: #0f172a;
+    --ss-surface: #1e293b;
+    --ss-text: #f1f5f9;
+    --ss-text-secondary: #cbd5e1;
+    --ss-text-muted: #64748b;
+    --ss-border: #334155;
+    --ss-success-bg: #052e16;
+    --ss-success-border: #166534;
+    --ss-success-icon: #4ade80;
+    --ss-error-bg: #450a0a;
+    --ss-error-border: #991b1b;
+    --ss-error-icon: #f87171;
+    --ss-info-bg: #172554;
+    --ss-info-border: #1e40af;
+    --ss-info-icon: #60a5fa;
+    --ss-warning-bg: #451a03;
+    --ss-warning-border: #92400e;
+    --ss-warning-icon: #fbbf24;
+    --ss-btn-success: #4ade80;
+    --ss-btn-error: #f87171;
+    --ss-btn-info: #60a5fa;
+    --ss-btn-warning: #fbbf24;
+  }
+}
+
+/* ── Reset & Base ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--ss-font);
+  background: var(--ss-bg);
+  color: var(--ss-text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  padding: 2rem 1rem 4rem;
+}
+
+main { max-width: 780px; margin: 0 auto; }
+
+code {
+  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  background: #eff6ff;
+  color: #1e40af;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  code { background: #1e3a5f; color: #93c5fd; }
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.demo-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.demo-header h1 {
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.75rem;
+}
+
+.demo-subtitle {
+  color: var(--ss-text-secondary);
+  max-width: 620px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+/* ── Section ───────────────────────────────────────────────── */
+.demo-section {
+  margin-bottom: 3rem;
+}
+
+.demo-section h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.demo-note {
+  color: var(--ss-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOAST NOTIFICATION SYSTEM
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+  max-width: 400px;
+  width: calc(100% - 3rem);
+  pointer-events: none;
+}
+
+/* ── Individual toast ── */
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--ss-toast-radius);
+  border: 1px solid transparent;
+  background: var(--ss-surface);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.08),
+    0 0 0 1px rgba(0,0,0,0.03);
+  pointer-events: auto;
+
+  /* ── Exit transition ── */
+  transition:
+    opacity var(--ss-speed-out) var(--ss-ease-out),
+    transform var(--ss-speed-out) var(--ss-ease-out),
+    display var(--ss-speed-out) var(--ss-ease-out);
+  transition-behavior: allow-discrete;
+
+  /* ── Normal (visible) state ── */
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   @starting-style — defines the element's state BEFORE browser
+   renders it. This is what makes the entrance animation possible.
+   Without this, the element would just appear at its final state.
+   ══════════════════════════════════════════════════════════════ */
+@starting-style {
+  .toast {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+}
+
+/* ── Dismissed state triggers exit animation ── */
+.toast-dismissed {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.92);
+  display: none;
+}
+
+/* ── Variant borders ── */
+.toast-success { border-color: var(--ss-success-border); }
+.toast-error   { border-color: var(--ss-error-border); }
+.toast-info    { border-color: var(--ss-info-border); }
+.toast-warning { border-color: var(--ss-warning-border); }
+
+/* ── Icon ── */
+.toast-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.toast-success .toast-icon { color: var(--ss-success-icon); }
+.toast-error   .toast-icon { color: var(--ss-error-icon); }
+.toast-info    .toast-icon { color: var(--ss-info-icon); }
+.toast-warning .toast-icon { color: var(--ss-warning-icon); }
+
+/* ── Content ── */
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.toast-message {
+  font-size: 0.85rem;
+  color: var(--ss-text-secondary);
+  line-height: 1.4;
+  margin-top: 0.15rem;
+}
+
+/* ── Close button ── */
+.toast-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ss-text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease, color 150ms ease;
+  margin: -2px -2px 0 0;
+}
+
+.toast-close:hover {
+  background: rgba(0,0,0,0.06);
+  color: var(--ss-text);
+}
+
+.toast-close:focus-visible {
+  outline: 2px solid var(--ss-info-icon);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast-close:hover { background: rgba(255,255,255,0.08); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 440px) {
+  .toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: none;
+    width: auto;
+  }
+}
+
+/* ── Trigger buttons ── */
+.trigger-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.trigger-btn {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.trigger-btn:hover { transform: translateY(-1px); }
+.trigger-btn:active { transform: translateY(0); }
+
+.trigger-btn:focus-visible {
+  outline: 2px solid var(--ss-text);
+  outline-offset: 3px;
+}
+
+.trigger-success { background: var(--ss-btn-success); }
+.trigger-error   { background: var(--ss-btn-error); }
+.trigger-info    { background: var(--ss-btn-info); }
+.trigger-warning { background: var(--ss-btn-warning); }
+
+/* ── Pre-populated toasts (demo visuals, dismissed initially) ── */
+#pre-toasts .toast-dismissed {
+  display: none;
+}
+
+/* ── Explanation cards ── */
+.explain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.explain-card {
+  background: var(--ss-surface);
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-toast-radius);
+  padding: 1.25rem;
+}
+
+.explain-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.explain-card p {
+  font-size: 0.85rem;
+  color: var(--ss-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+.demo-footer-note {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--ss-text-muted);
+}
+
+/* ── Reduced Motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition-duration: 0.01ms !important;
+  }
+
+  @starting-style {
+    .toast {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .trigger-btn {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ── Forced Colors (Windows High Contrast Mode) ────────────── */
+@media (forced-colors: active) {
+  .toast {
+    border: 2px solid ButtonText;
+  }
+
+  .toast-close:focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  .trigger-btn {
+    border: 1px solid ButtonText;
+    color: ButtonText;
+    background: ButtonFace;
+  }
+
+  .trigger-btn:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .trigger-btn:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* ── Print Styles ──────────────────────────────────────────── */
+@media print {
+  .toast-container { display: none !important; }
+  .trigger-bar { display: none !important; }
+}

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Bloom · Shapes Bloom from Center</title>
+    <meta name="description" content="Interactive geometric bloom where shapes burst and bloom from the center with vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌸 GEOMETRIC BLOOM</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="bloomCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="bloom-btn" id="bloomBtn">🌱 BLOOM</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Petals</label>
+                <input type="range" id="petalsSlider" min="4" max="12" value="8">
+                <span id="petalsLabel">8</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌸 GEOMETRIC BLOOM</span>
+            <small>bloom · geometric · radial</small>
+        </div>
+        <div class="hint">
+            <span>🌱 click to watch geometric shapes bloom from the center</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('bloomCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const bloomBtn = document.getElementById('bloomBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const petalsSlider = document.getElementById('petalsSlider');
+            const petalsLabel = document.getElementById('petalsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numPetals = 8;
+            let time = 0;
+            let bloomProgress = 0;
+            let isBlooming = false;
+            let isBloomed = false;
+
+            // ---- Bloom Petals ----
+            let petals = [];
+            let targetPetals = [];
+
+            // ---- Generate Petal ----
+            function generatePetal(index, total, phase) {
+                const angle = (index / total) * Math.PI * 2 + phase * 0.2;
+                const radius = 40 + Math.random() * 30;
+                const width = 20 + Math.random() * 30;
+                const length = 60 + Math.random() * 80;
+                const hue = (index / total) * 360 + phase * 30;
+                const sat = 70 + Math.random() * 20;
+                const light = 50 + Math.random() * 20;
+                
+                return {
+                    angle: angle,
+                    radius: radius,
+                    width: width,
+                    length: length,
+                    hue: hue % 360,
+                    sat: sat,
+                    light: light,
+                    phase: phase,
+                    scale: 0,
+                    targetScale: 1,
+                    rotation: Math.random() * 0.3 - 0.15,
+                    delay: Math.random() * 0.3
+                };
+            }
+
+            // ---- Generate Bloom ----
+            function generateBloom(phase) {
+                const petalsArray = [];
+                const total = numPetals;
+                for (let i = 0; i < total; i++) {
+                    petalsArray.push(generatePetal(i, total, phase));
+                }
+                return petalsArray;
+            }
+
+            // ---- Initialize ----
+            function initBloom() {
+                petals = generateBloom(0);
+                targetPetals = generateBloom(Math.random() * Math.PI * 2);
+                bloomProgress = 0;
+                isBlooming = false;
+                isBloomed = false;
+                render();
+            }
+
+            // ---- Bloom ----
+            function bloom() {
+                if (isBlooming) return;
+                targetPetals = generateBloom(Math.random() * Math.PI * 2);
+                isBlooming = true;
+                isBloomed = false;
+                bloomProgress = 0;
+                // Reset petal scales
+                for (let p of petals) {
+                    p.scale = 0;
+                }
+            }
+
+            // ---- Reset ----
+            function resetBloom() {
+                isBlooming = false;
+                isBloomed = false;
+                bloomProgress = 0;
+                petals = generateBloom(0);
+                targetPetals = generateBloom(Math.random() * Math.PI * 2);
+                for (let p of petals) {
+                    p.scale = 0;
+                }
+                render();
+            }
+
+            // ---- Update Bloom ----
+            function updateBloom() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isBlooming && bloomProgress < 1) {
+                    bloomProgress += 0.005 * (speed / 5);
+                    if (bloomProgress > 1) {
+                        bloomProgress = 1;
+                        isBlooming = false;
+                        isBloomed = true;
+                        targetPetals = generateBloom(Math.random() * Math.PI * 2);
+                    }
+                    
+                    // Update petal scales
+                    const ease = 1 - Math.pow(1 - bloomProgress, 3);
+                    for (let i = 0; i < petals.length; i++) {
+                        const p = petals[i];
+                        const delay = p.delay;
+                        const adjustedProgress = Math.max(0, Math.min(1, (bloomProgress - delay) / (1 - delay)));
+                        const scale = 1 - Math.pow(1 - adjustedProgress, 3);
+                        p.scale = scale;
+                        
+                        // Interpolate position
+                        if (targetPetals[i]) {
+                            const t = targetPetals[i];
+                            p.angle += (t.angle - p.angle) * 0.05 * (speed / 5);
+                            p.radius += (t.radius - p.radius) * 0.05 * (speed / 5);
+                            p.width += (t.width - p.width) * 0.05 * (speed / 5);
+                            p.length += (t.length - p.length) * 0.05 * (speed / 5);
+                            p.hue += (t.hue - p.hue) * 0.04 * (speed / 5);
+                            p.sat += (t.sat - p.sat) * 0.04 * (speed / 5);
+                            p.light += (t.light - p.light) * 0.04 * (speed / 5);
+                        }
+                    }
+                }
+            }
+
+            // ---- Draw Petal ----
+            function drawPetal(ctx, petal) {
+                const x = W / 2;
+                const y = H / 2;
+                const angle = petal.angle;
+                const radius = petal.radius;
+                const width = petal.width * petal.scale;
+                const length = petal.length * petal.scale;
+                const hue = ((petal.hue % 360) + 360) % 360;
+                const sat = Math.min(100, Math.max(0, petal.sat));
+                const light = Math.min(100, Math.max(0, petal.light));
+                
+                if (width < 0.5 || length < 0.5) return;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                
+                // Glow
+                ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.05 * petal.scale})`;
+                ctx.shadowBlur = 20 * petal.scale;
+                
+                // Petal shape
+                const grad = ctx.createRadialGradient(
+                    radius, 0, 0,
+                    radius, 0, length
+                );
+                grad.addColorStop(0, `hsla(${hue + 20}, ${sat + 10}%, ${light + 20}%, ${0.6 * petal.scale})`);
+                grad.addColorStop(0.3, `hsla(${hue}, ${sat}%, ${light}%, ${0.7 * petal.scale})`);
+                grad.addColorStop(0.7, `hsla(${hue - 20}, ${sat - 10}%, ${light - 10}%, ${0.5 * petal.scale})`);
+                grad.addColorStop(1, `hsla(${hue - 40}, ${sat - 20}%, ${light - 20}%, ${0.2 * petal.scale})`);
+                
+                ctx.fillStyle = grad;
+                ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.05 * petal.scale})`;
+                ctx.shadowBlur = 15 * petal.scale;
+                
+                // Tear-drop / petal shape
+                ctx.beginPath();
+                ctx.moveTo(radius, 0);
+                ctx.quadraticCurveTo(
+                    radius + width * 0.3,
+                    -length * 0.3,
+                    radius + width * 0.1,
+                    -length * 0.7
+                );
+                ctx.quadraticCurveTo(
+                    radius,
+                    -length * 0.9,
+                    radius - width * 0.1,
+                    -length * 0.7
+                );
+                ctx.quadraticCurveTo(
+                    radius - width * 0.3,
+                    -length * 0.3,
+                    radius,
+                    0
+                );
+                ctx.fill();
+                
+                // Petal vein
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = `hsla(${hue + 30}, 80%, 80%, ${0.05 * petal.scale})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(radius, 0);
+                ctx.quadraticCurveTo(
+                    radius + width * 0.05,
+                    -length * 0.4,
+                    radius,
+                    -length * 0.8
+                );
+                ctx.stroke();
+                
+                // Edge highlight
+                ctx.strokeStyle = `hsla(${hue + 40}, 100%, 90%, ${0.05 * petal.scale})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(radius, 0);
+                ctx.quadraticCurveTo(
+                    radius + width * 0.25,
+                    -length * 0.3,
+                    radius + width * 0.08,
+                    -length * 0.7
+                );
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Center ----
+            function drawCenter(ctx) {
+                const x = W / 2;
+                const y = H / 2;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Center glow
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 40);
+                grad.addColorStop(0, 'rgba(255, 220, 150, 0.1)');
+                grad.addColorStop(0.5, 'rgba(255, 200, 100, 0.05)');
+                grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = 'rgba(255, 200, 100, 0.05)';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(0, 0, 40, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Center dot
+                ctx.shadowBlur = 0;
+                const progress = Math.min(1, bloomProgress * 2);
+                const size = 3 + progress * 4;
+                ctx.fillStyle = `rgba(255, 220, 150, ${0.2 + progress * 0.2})`;
+                ctx.beginPath();
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw petals
+                for (let p of petals) {
+                    drawPetal(ctx, p);
+                }
+                
+                drawCenter(ctx);
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Petals: ${petals.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isBloomed ? '🌸 BLOOMED' : 
+                              isBlooming ? '🔄 BLOOMING...' : 
+                              '🌱 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateBloom();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            petalsSlider.addEventListener('input', function() {
+                numPetals = parseInt(this.value);
+                petalsLabel.textContent = numPetals;
+                initBloom();
+            });
+
+            // ---- Event Listeners ----
+            bloomBtn.addEventListener('click', bloom);
+            resetBtn.addEventListener('click', resetBloom);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    bloom();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBloom();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initBloom();
+            animate();
+
+            console.log('🌸 Geometric Bloom · Click Bloom or press Space to watch shapes bloom!');
+        })();
+    </script>
+</body>
+</html>

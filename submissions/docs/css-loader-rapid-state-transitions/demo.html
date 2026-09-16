@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>CSS Loader Rapid State Transition Tests</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="test-page">
+    <header class="page-header">
+      <p class="eyebrow">EaseMotion CSS · Issue #79559</p>
+
+      <h1>Rapid Loader State Transition Tests</h1>
+
+      <p class="intro">
+        Test CSS loader behavior during rapid start, stop, restart,
+        and reset operations.
+      </p>
+    </header>
+
+    <section class="test-panel">
+      <div class="loader-area">
+        <div
+          id="loader"
+          class="loader"
+          aria-label="CSS loader"
+          role="status"
+        >
+          <span class="loader-ring"></span>
+          <span class="loader-core"></span>
+        </div>
+
+        <div class="state-display">
+          <span>Current state</span>
+          <strong id="stateValue">idle</strong>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button type="button" data-action="start">
+          Start
+        </button>
+
+        <button type="button" data-action="stop">
+          Stop
+        </button>
+
+        <button type="button" data-action="restart">
+          Restart
+        </button>
+
+        <button type="button" data-action="reset">
+          Reset
+        </button>
+      </div>
+
+      <div class="stress-controls">
+        <h2>Rapid transition tests</h2>
+
+        <div class="button-grid">
+          <button type="button" data-stress="start-stop">
+            Start → Stop × 5
+          </button>
+
+          <button type="button" data-stress="restart">
+            Restart × 5
+          </button>
+
+          <button type="button" data-stress="start-stop-start">
+            Start → Stop → Start
+          </button>
+
+          <button type="button" data-stress="reset-start">
+            Reset → Start
+          </button>
+
+          <button type="button" data-stress="reset">
+            Start → Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-panel">
+      <div class="status-heading">
+        <h2>Transition log</h2>
+
+        <button
+          type="button"
+          id="clearLog"
+          class="secondary-button"
+        >
+          Clear
+        </button>
+      </div>
+
+      <ol id="eventLog" class="event-log" aria-live="polite">
+        <li class="empty-log">
+          No transitions recorded yet.
+        </li>
+      </ol>
+    </section>
+
+    <section class="validation-panel">
+      <h2>Validation checklist</h2>
+
+      <ul>
+        <li>No stale animation state after stopping.</li>
+        <li>No duplicate logical state classes.</li>
+        <li>Restart produces a fresh animation cycle.</li>
+        <li>Reset returns the loader to its initial state.</li>
+        <li>Final state matches the latest requested action.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const loader = document.getElementById("loader");
+    const stateValue = document.getElementById("stateValue");
+    const eventLog = document.getElementById("eventLog");
+    const clearLogButton = document.getElementById("clearLog");
+
+    const STATES = {
+      IDLE: "idle",
+      LOADING: "loading",
+      PAUSED: "paused"
+    };
+
+    let currentState = STATES.IDLE;
+    let transitionNumber = 0;
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function renderState() {
+      loader.classList.remove(
+        "is-idle",
+        "is-loading",
+        "is-paused"
+      );
+
+      if (currentState === STATES.LOADING) {
+        loader.classList.add("is-loading");
+      } else if (currentState === STATES.PAUSED) {
+        loader.classList.add("is-paused");
+      } else {
+        loader.classList.add("is-idle");
+      }
+
+      stateValue.textContent = currentState;
+    }
+
+    function addLog(action, previousState, nextState) {
+      const emptyItem = eventLog.querySelector(".empty-log");
+
+      if (emptyItem) {
+        emptyItem.remove();
+      }
+
+      transitionNumber += 1;
+
+      const item = document.createElement("li");
+
+      item.innerHTML = `
+        <span class="log-number">#${transitionNumber}</span>
+        <span class="log-action">${action}</span>
+        <span class="log-state">
+          ${previousState} → ${nextState}
+        </span>
+      `;
+
+      eventLog.prepend(item);
+    }
+
+    function setState(nextState, action) {
+      const previousState = currentState;
+
+      currentState = nextState;
+      renderState();
+      addLog(action, previousState, nextState);
+    }
+
+    function start() {
+      setState(STATES.LOADING, "START");
+    }
+
+    function stop() {
+      setState(STATES.PAUSED, "STOP");
+    }
+
+    function restart() {
+      /*
+       * Force removal of the animation class before adding it again.
+       * This simulates a fresh animation cycle.
+       */
+      loader.classList.remove("is-loading");
+
+      void loader.offsetWidth;
+
+      setState(STATES.LOADING, "RESTART");
+    }
+
+    function reset() {
+      loader.classList.remove(
+        "is-loading",
+        "is-paused"
+      );
+
+      setState(STATES.IDLE, "RESET");
+    }
+
+    async function runStartStopStress() {
+      for (let i = 0; i < 5; i += 1) {
+        start();
+        await sleep(80);
+
+        stop();
+        await sleep(80);
+      }
+    }
+
+    async function runRestartStress() {
+      start();
+
+      await sleep(100);
+
+      for (let i = 0; i < 5; i += 1) {
+        restart();
+        await sleep(80);
+      }
+    }
+
+    async function runStartStopStart() {
+      start();
+
+      await sleep(60);
+
+      stop();
+
+      await sleep(60);
+
+      start();
+    }
+
+    async function runResetStart() {
+      start();
+
+      await sleep(100);
+
+      reset();
+
+      await sleep(60);
+
+      start();
+    }
+
+    async function runStartReset() {
+      start();
+
+      await sleep(100);
+
+      reset();
+    }
+
+    document.querySelectorAll("[data-action]").forEach(button => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.action;
+
+        if (action === "start") {
+          start();
+        }
+
+        if (action === "stop") {
+          stop();
+        }
+
+        if (action === "restart") {
+          restart();
+        }
+
+        if (action === "reset") {
+          reset();
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-stress]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const stressType = button.dataset.stress;
+
+        button.disabled = true;
+
+        try {
+          if (stressType === "start-stop") {
+            await runStartStopStress();
+          }
+
+          if (stressType === "restart") {
+            await runRestartStress();
+          }
+
+          if (stressType === "start-stop-start") {
+            await runStartStopStart();
+          }
+
+          if (stressType === "reset-start") {
+            await runResetStart();
+          }
+
+          if (stressType === "reset") {
+            await runStartReset();
+          }
+        } finally {
+          button.disabled = false;
+        }
+      });
+    });
+
+    clearLogButton.addEventListener("click", () => {
+      transitionNumber = 0;
+
+      eventLog.innerHTML = `
+        <li class="empty-log">
+          No transitions recorded yet.
+        </li>
+      `;
+    });
+
+    renderState();
+  </script>
+</body>
+</html>

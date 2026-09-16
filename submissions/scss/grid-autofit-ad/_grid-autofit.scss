@@ -1,0 +1,125 @@
+// ==========================================================================
+// EaseMotion CSS — Grid Autofit mixin
+// Issue #63561
+// --------------------------------------------------------------------------
+// Responsive grids without per-breakpoint column counts.
+//
+// Plain `repeat(auto-fit, minmax(240px, 1fr))` is the usual answer, and it
+// has two failure modes that only show up at the extremes:
+//
+//   Wide viewports — `auto-fit` collapses empty tracks and stretches the
+//   remaining ones, so three cards on a 2560px display become three
+//   800px-wide cards. `$max-cols` caps this by computing a max container
+//   width from the column count.
+//
+//   Narrow viewports — a 240px minimum plus gaps overflows a 320px phone,
+//   producing horizontal scroll. `min()` clamps the track minimum against
+//   the available width so the column simply shrinks instead.
+//
+// The `min()` guard is the important one: it is what makes the mixin safe
+// to use without also writing a mobile media query.
+// ==========================================================================
+
+@use "sass:math";
+@use "sass:meta";
+
+$grid-autofit-min: 240px !default;
+$grid-autofit-gap: 1rem !default;
+
+// --------------------------------------------------------------------------
+// grid-autofit
+//
+// @param {Number} $min       Minimum track width.
+// @param {Number} $gap       Gap between tracks.
+// @param {Number} $max-cols  Cap on column count. `null` for uncapped.
+// @param {Bool}   $fill      Use `auto-fill` instead of `auto-fit`.
+// --------------------------------------------------------------------------
+@mixin grid-autofit(
+    $min: $grid-autofit-min,
+    $gap: $grid-autofit-gap,
+    $max-cols: null,
+    $fill: false
+) {
+    @if meta.type-of($min) != "number" {
+        @error "grid-autofit(): $min must be a number, got `#{$min}`.";
+    }
+
+    $mode: auto-fit;
+
+    @if $fill {
+        $mode: auto-fill;
+    }
+
+    display: grid;
+    gap: $gap;
+
+    // `min()` clamps the track floor against the actual available width,
+    // so a 240px minimum cannot overflow a 320px viewport.
+    grid-template-columns: repeat(
+        #{$mode},
+        minmax(min(#{$min}, 100%), 1fr)
+    );
+
+    @if $max-cols {
+        @if meta.type-of($max-cols) != "number" or $max-cols < 1 {
+            @error "grid-autofit(): $max-cols must be a positive number, got `#{$max-cols}`.";
+        }
+
+        // Cap the container rather than the track: n columns at $min plus
+        // (n - 1) gaps is the widest the grid should ever be.
+        max-width: calc(
+            #{$min} * #{$max-cols} + #{$gap} * #{$max-cols - 1}
+        );
+    }
+}
+
+// --------------------------------------------------------------------------
+// grid-autofit-dense
+//
+// Dense packing, for grids with mixed-span items. Backfills gaps left by
+// wide items.
+//
+// Note the accessibility cost: dense packing reorders items visually
+// without changing DOM order, so tab order and reading order diverge.
+// Documented rather than silently enabled.
+// --------------------------------------------------------------------------
+@mixin grid-autofit-dense(
+    $min: $grid-autofit-min,
+    $gap: $grid-autofit-gap,
+    $max-cols: null
+) {
+    @include grid-autofit($min, $gap, $max-cols);
+
+    grid-auto-flow: row dense;
+}
+
+// --------------------------------------------------------------------------
+// grid-span
+//
+// Span n columns, degrading to full width when fewer than n tracks exist.
+// Without the `@supports` fallback, an item spanning 2 on a single-column
+// grid overflows its container.
+// --------------------------------------------------------------------------
+@mixin grid-span($cols: 2, $rows: 1) {
+    grid-column: span $cols;
+    grid-row: span $rows;
+
+    // Clamp the span to the real track count where supported.
+    @supports (grid-column: span 2 / auto) {
+        grid-column: span min(#{$cols}, var(--grid-cols-ad, #{$cols}));
+    }
+}
+
+// --------------------------------------------------------------------------
+// grid-autofit-rows
+//
+// Equal-height rows regardless of content, for card grids where ragged
+// bottoms read as broken.
+// --------------------------------------------------------------------------
+@mixin grid-autofit-rows($min-height: 0) {
+    grid-auto-rows: 1fr;
+
+    @if $min-height != 0 {
+        grid-auto-rows: minmax(#{$min-height}, 1fr);
+    }
+}

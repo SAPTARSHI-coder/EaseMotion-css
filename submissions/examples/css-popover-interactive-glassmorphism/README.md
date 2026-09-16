@@ -1,0 +1,2 @@
+# Interactive Popover (Glassmorphism)
+A stunning frosted-glass popover overlay. Placed over an animated, multi-colored ambient background orb, the popover utilizes intense `backdrop-filter: blur()` properties to dynamically distort the background colors streaming through it.

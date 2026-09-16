@@ -1,0 +1,2 @@
+# Glowing Pagination (Neon)
+A high-contrast, cyberpunk-inspired navigation block. Unselected items remain dark and inactive. The selected page dynamically floods with a bright cyan background, triggering an intense outer drop-shadow glow and a subtle physical elevation (`translateY`).

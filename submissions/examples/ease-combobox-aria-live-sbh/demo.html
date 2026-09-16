@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ease-combobox-aria-live — Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="page__head">
+      <p class="page__eyebrow">ease-combobox-aria-live</p>
+      <h1>Autocomplete combobox with live announcements.</h1>
+      <p class="page__lede">
+        Fixes the bug where screen readers stayed silent when the options list
+        expanded. This combobox announces the result count via an
+        <code>aria-live="polite"</code> status region, announces the selected
+        option, and exposes full WAI-ARIA combobox semantics
+        (<code>role="combobox"</code>, <code>aria-expanded</code>,
+        <code>aria-controls</code>, <code>aria-activedescendant</code>,
+        <code>role="listbox"</code>/<code>option</code>). Type to filter below.
+      </p>
+    </header>
+
+    <div class="field">
+      <label class="field__label" for="combo">Country</label>
+      <div class="combobox" id="combobox">
+        <input
+          class="combobox__input"
+          id="combo"
+          type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="listbox"
+          aria-activedescendant=""
+          aria-haspopup="listbox"
+          autocomplete="off"
+          placeholder="Type a country…"
+        />
+        <button class="combobox__btn" id="toggle" type="button" aria-label="Show options" tabindex="-1">▾</button>
+      </div>
+
+      <!-- THE FIX: aria-live status region -->
+      <p class="combobox__status" id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+
+      <ul class="combobox__list" id="listbox" role="listbox" aria-label="Countries" hidden></ul>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var input = document.getElementById('combo');
+      var toggle = document.getElementById('toggle');
+      var listbox = document.getElementById('listbox');
+      var status = document.getElementById('status');
+      var options = [
+        'Argentina','Australia','Brazil','Canada','China','Denmark','Egypt','France',
+        'Germany','India','Indonesia','Italy','Japan','Mexico','Netherlands','Nigeria',
+        'Norway','Pakistan','Portugal','Russia','Saudi Arabia','South Africa','Spain',
+        'Sweden','Switzerland','Turkey','United Kingdom','United States','Vietnam','Zambia'
+      ];
+      var filtered = [];
+      var active = -1; // highlighted index
+
+      function render() {
+        var q = input.value.trim().toLowerCase();
+        filtered = q ? options.filter(function (o) { return o.toLowerCase().indexOf(q) === 0 || o.toLowerCase().indexOf(q) > -1; }) : options.slice();
+        listbox.innerHTML = '';
+        filtered.forEach(function (o, i) {
+          var li = document.createElement('li');
+          li.className = 'combobox__option';
+          li.setAttribute('role', 'option');
+          li.setAttribute('id', 'opt-' + i);
+          li.setAttribute('aria-selected', 'false');
+          li.textContent = o;
+          li.addEventListener('click', function () { select(i); });
+          listbox.appendChild(li);
+        });
+        active = filtered.length ? 0 : -1;
+        updateActive();
+        // THE FIX: announce count + state via the live region
+        announce();
+      }
+
+      function updateActive() {
+        Array.from(listbox.children).forEach(function (li, i) {
+          var on = i === active;
+          li.classList.toggle('is-active', on);
+          li.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        input.setAttribute('aria-activedescendant', active >= 0 ? 'opt-' + active : '');
+      }
+
+      function announce() {
+        if (!listbox.hidden) {
+          var n = filtered.length;
+          status.textContent = n
+            ? (n + ' ' + (n === 1 ? 'option' : 'options') + ' available' + (active >= 0 ? '. ' + filtered[active] + ' highlighted' : ''))
+            : 'No matches';
+        }
+      }
+
+      function announceSelection(value) {
+        status.textContent = value + ' selected';
+      }
+
+      function open() {
+        listbox.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        render();
+      }
+      function close() {
+        listbox.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-activedescendant', '');
+        active = -1;
+      }
+
+      function select(i) {
+        if (i < 0 || i >= filtered.length) return;
+        input.value = filtered[i];
+        announceSelection(filtered[i]);
+        close();
+      }
+
+      input.addEventListener('focus', open);
+      input.addEventListener('input', function () { if (listbox.hidden) open(); else render(); });
+      input.addEventListener('keydown', function (e) {
+        if (listbox.hidden && (e.key === 'ArrowDown' || e.key === 'Enter')) { e.preventDefault(); open(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % filtered.length; updateActive(); announce(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + filtered.length) % filtered.length; updateActive(); announce(); }
+        else if (e.key === 'Enter') { e.preventDefault(); select(active); }
+        else if (e.key === 'Escape') { close(); }
+      });
+      toggle.addEventListener('click', function () { listbox.hidden ? open() : close(); input.focus(); });
+      document.addEventListener('click', function (e) { if (!document.getElementById('combobox').contains(e.target) && e.target !== listbox) close(); });
+    })();
+  </script>
+</body>
+</html>
