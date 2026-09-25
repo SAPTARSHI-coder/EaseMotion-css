@@ -59,3 +59,7 @@ event-ticket-card-sb/
 ├── demo.html
 ├── style.css
 └── README.md
+
+## Browser Support
+
+Works in modern browsers that support standard CSS Grid, Flexbox, CSS gradients, transitions, and media queries.
