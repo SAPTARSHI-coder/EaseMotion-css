@@ -26,18 +26,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for i in {1..5}; do
-            gh api "repos/${{ github.repository }}/stats/contributors" > /tmp/contributors.json
-            if [ -s /tmp/contributors.json ] && [ "$(cat /tmp/contributors.json)" != "[]" ]; then
-              echo "Contributors stats fetched successfully."
-              exit 0
+          echo "Fetching ALL contributors via paginated /contributors endpoint..."
+          echo "[]" > /tmp/contributors.json
+          page=1
+          while true; do
+            result=$(gh api "repos/${{ github.repository }}/contributors?per_page=100&page=$page&anon=false" 2>/dev/null || echo "[]")
+            count=$(echo "$result" | jq 'length')
+            echo "Page $page: $count contributors"
+            if [ "$count" = "0" ] || [ "$count" = "null" ]; then
+              break
             fi
-            echo "Waiting for GitHub stats computation (attempt $i/5)..."
-            sleep 6
+            # Merge into accumulated JSON
+            merged=$(jq -s '.[0] + .[1]' /tmp/contributors.json <(echo "$result"))
+            echo "$merged" > /tmp/contributors.json
+            page=$((page + 1))
           done
-
-          echo "Fallback: Fetching via /contributors endpoint..."
-          gh api "repos/${{ github.repository }}/contributors?per_page=100" > /tmp/contributors.json
+          total=$(jq 'length' /tmp/contributors.json)
+          echo "Total contributors fetched: $total"
 
       - name: Pull latest before building
         run: git pull --rebase origin main
