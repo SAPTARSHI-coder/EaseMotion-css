@@ -20,29 +20,82 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: main           # always fetch the latest main, not the triggering commit
+          ref: main
 
-      - name: Fetch all contributors
+      - name: Fetch ALL merged PR authors via GraphQL
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          echo "Fetching ALL contributors via paginated /contributors endpoint..."
-          echo "[]" > /tmp/contributors.json
-          page=1
-          while true; do
-            result=$(gh api "repos/${{ github.repository }}/contributors?per_page=100&page=$page&anon=false" 2>/dev/null || echo "[]")
-            count=$(echo "$result" | jq 'length')
-            echo "Page $page: $count contributors"
-            if [ "$count" = "0" ] || [ "$count" = "null" ]; then
-              break
-            fi
-            # Merge into accumulated JSON
-            merged=$(jq -s '.[0] + .[1]' /tmp/contributors.json <(echo "$result"))
-            echo "$merged" > /tmp/contributors.json
-            page=$((page + 1))
-          done
-          total=$(jq 'length' /tmp/contributors.json)
-          echo "Total contributors fetched: $total"
+          node -e "
+          const https = require('https');
+          const TOKEN = process.env.GH_TOKEN;
+          const OWNER = '${{ github.repository_owner }}';
+          const NAME = '${{ github.event.repository.name }}';
+
+          function graphql(query, variables) {
+            return new Promise((res, rej) => {
+              const body = JSON.stringify({ query, variables });
+              const req = https.request({
+                hostname: 'api.github.com',
+                path: '/graphql',
+                method: 'POST',
+                headers: {
+                  'User-Agent': 'contributor-wall-bot',
+                  'Authorization': 'bearer ' + TOKEN,
+                  'Content-Type': 'application/json',
+                  'Content-Length': Buffer.byteLength(body)
+                }
+              }, r => {
+                let d = '';
+                r.on('data', c => d += c);
+                r.on('end', () => { try { res(JSON.parse(d)); } catch(e) { res({}); } });
+              });
+              req.on('error', rej);
+              req.write(body);
+              req.end();
+            });
+          }
+
+          const QUERY = \`
+          query(\\\$owner: String!, \\\$name: String!, \\\$after: String) {
+            repository(owner: \\\$owner, name: \\\$name) {
+              pullRequests(states: MERGED, first: 100, after: \\\$after) {
+                pageInfo { hasNextPage endCursor }
+                nodes { author { login } }
+              }
+            }
+          }
+          \`;
+
+          async function main() {
+            const counts = {};
+            let cursor = null;
+            let page = 0;
+            let hasNext = true;
+            while (hasNext) {
+              const data = await graphql(QUERY, { owner: OWNER, name: NAME, after: cursor });
+              const prs = data && data.data && data.data.repository && data.data.repository.pullRequests;
+              if (!prs) { console.error('GraphQL error:', JSON.stringify(data)); break; }
+              for (const pr of prs.nodes) {
+                const login = pr.author && pr.author.login;
+                if (login && login !== OWNER && !login.toLowerCase().includes('bot')) {
+                  counts[login] = (counts[login] || 0) + 1;
+                }
+              }
+              hasNext = prs.pageInfo.hasNextPage;
+              cursor = prs.pageInfo.endCursor;
+              page++;
+              if (page % 10 === 0) process.stdout.write('Page ' + page + ' | unique: ' + Object.keys(counts).length + '\n');
+              await new Promise(r => setTimeout(r, 80));
+            }
+            const contributors = Object.entries(counts)
+              .map(([login, n]) => ({ login, type: 'User', contributions: n }))
+              .sort((a, b) => b.contributions - a.contributions);
+            console.log('Total unique contributors from all merged PRs:', contributors.length);
+            require('fs').writeFileSync('/tmp/contributors.json', JSON.stringify(contributors));
+          }
+          main().catch(e => { console.error(e); process.exit(1); });
+          "
 
       - name: Pull latest before building
         run: git pull --rebase origin main
