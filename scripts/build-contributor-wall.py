@@ -9,7 +9,7 @@ import json
 import re
 import sys
 
-COLS = 5
+COLS = 4
 INPUT = "/tmp/contributors.json"
 README = "README.md"
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
@@ -25,11 +25,11 @@ def build_wall(contributors):
             login = c["author"]["login"]
             count = c["total"]
             cells += (
-                f'<td align="center">'
+                f'<td align="center" width="25%">'
                 f'<a href="https://github.com/{login}">'
                 f'<img src="https://avatars.githubusercontent.com/{login}?s=64" '
-                f'width="48" height="48" alt="{login}" '
-                f'style="border-radius:50%;margin:3px"/>'
+                f'width="56" height="56" alt="{login}" '
+                f'style="border-radius:50%;margin:4px"/>'
                 f"<br/><sub><b>{login}</b></sub>"
                 f"<br/><sub>{count} PR{'s' if count != 1 else ''}</sub>"
                 f"</a></td>"
