@@ -9,7 +9,7 @@ import json
 import re
 import sys
 
-COLS = 14
+COLS = 5
 INPUT = "/tmp/contributors.json"
 README = "README.md"
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
